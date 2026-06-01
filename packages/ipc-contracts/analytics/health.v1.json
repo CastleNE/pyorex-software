@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "analytics.health.v1",
+  "title": "Health Ping",
+  "description": "Verify the Python analytics service is running",
+  "version": "v1",
+  "method": "health.ping",
+  "request": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  },
+  "response": {
+    "type": "object",
+    "required": ["pong", "service"],
+    "properties": {
+      "pong": { "type": "boolean" },
+      "service": { "type": "string" }
+    }
+  }
+}

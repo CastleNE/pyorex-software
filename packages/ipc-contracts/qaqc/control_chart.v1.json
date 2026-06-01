@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qaqc.control_chart.v1",
+  "title": "QAQC Shewhart Control Chart",
+  "description": "Generate Shewhart control chart data for a CRM variable",
+  "version": "v1",
+  "method": "qaqc.control_chart",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id", "crm_name", "variable"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "crm_name": { "type": "string" },
+      "variable": { "type": "string" },
+      "certified_value": { "type": "number" },
+      "sigma_levels": {
+        "type": "array",
+        "items": { "type": "number" },
+        "default": [1, 2, 3],
+        "description": "Sigma levels to plot as control limits"
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["points", "control_limits", "westgard_violations"],
+    "properties": {
+      "points": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "index": { "type": "integer" },
+            "sample_id": { "type": "string" },
+            "recovery_pct": { "type": "number" },
+            "status": { "type": "string", "enum": ["pass", "warning", "fail"] }
+          }
+        }
+      },
+      "control_limits": {
+        "type": "object",
+        "properties": {
+          "mean": { "type": "number" },
+          "sigma": { "type": "number" },
+          "ucl_1s": { "type": "number" },
+          "ucl_2s": { "type": "number" },
+          "ucl_3s": { "type": "number" },
+          "lcl_1s": { "type": "number" },
+          "lcl_2s": { "type": "number" },
+          "lcl_3s": { "type": "number" }
+        }
+      },
+      "westgard_violations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "rule": { "type": "string", "enum": ["1_3s", "2_2s", "10x", "drift"] },
+            "description": { "type": "string" },
+            "affected_indices": { "type": "array", "items": { "type": "integer" } },
+            "severity": { "type": "string", "enum": ["warning", "reject"] }
+          }
+        }
+      },
+      "n_points": { "type": "integer" }
+    }
+  }
+}

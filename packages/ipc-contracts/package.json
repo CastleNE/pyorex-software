@@ -1,0 +1,10 @@
+{
+  "name": "@pyorex/ipc-contracts",
+  "version": "0.1.0",
+  "description": "JSON-RPC 2.0 IPC contracts for PyOrex",
+  "exports": {
+    "./analytics/*": "./analytics/*",
+    "./preprocessing/*": "./preprocessing/*",
+    "./data/*": "./data/*"
+  }
+}

@@ -1,0 +1,12 @@
+# Normalize line endings to LF on commit (cross-platform safe)
+* text=auto eol=lf
+
+# Binaries — no conversion
+*.png binary
+*.jpg binary
+*.ico binary
+*.exe binary
+*.dll binary
+
+# Rust lockfile — preserve exactly
+Cargo.lock text eol=lf
