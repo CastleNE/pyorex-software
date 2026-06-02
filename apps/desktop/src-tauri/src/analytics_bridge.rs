@@ -99,6 +99,17 @@ pub async fn call_analytics(
     Ok(response.result.unwrap_or(serde_json::Value::Null))
 }
 
+/// Open a folder in Windows Explorer.
+/// Uses explorer.exe directly — more reliable than plugin-shell open() for local paths.
+#[command]
+pub async fn open_in_explorer(path: String) -> Result<(), String> {
+    std::process::Command::new("explorer")
+        .arg(&path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 fn uuid_v4() -> String {
     // Simple UUID v4 without external crate for now
     format!(

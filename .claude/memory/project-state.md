@@ -1,11 +1,11 @@
 ﻿# Estado del Proyecto — PyOrex
 
-> Última actualización: 2026-06-01
+> Última actualización: 2026-06-02
 > Actualizar este archivo cuando cambie el estado significativo del proyecto.
 
 ## Fase Actual
 
-**FASE 0: FUNDACIÓN** — Configuración del equipo de agentes completada
+**FASE 1: DATA IMPORT** — En progreso
 
 ### Completado en Fase 0
 - [x] CLAUDE.md — constitución del proyecto
@@ -27,11 +27,49 @@
 - [x] Tauri app compilada y corriendo: `pyorex.exe` activo ✅
 - [x] Herramientas instaladas: Node.js v24, pnpm v11.5, Rust, Python 3.12
 
+### Completado en Fase 1 (2026-06-02)
+- [x] `analysis/__init__.py` — paquete Python registrado
+- [x] `analysis/data/importer.py` — importador CSV/Excel con null-mapping (RF-02, RF-04-CUA)
+- [x] `analysis/data/storage.py` — persistencia Parquet + metadata JSON + get_rows()
+- [x] `app/routers/data_routes.py` — endpoints REST /data/preview, /data/import, /data/list
+- [x] `app/routers/rpc.py` — métodos RPC: data.preview, data.import, data.list, data.rows
+- [x] `app/main.py` — router /data registrado
+- [x] `src/lib/rpc.ts` — cliente TypeScript IPC (callRpc wrapper)
+- [x] `src/lib/data-api.ts` — helpers tipados: previewFile, importFile, listDatasets, getRows
+- [x] `src/components/ImportWizard.tsx` — wizard 3 pasos (preview + sample-type + null-mapping)
+- [x] `src/components/DataTable.tsx` — tabla con infinite scroll + column selector
+- [x] `src/stores/dataset-store.ts` — actualizado con setLoading/setError
+- [x] `src/App.tsx` — "Open Data" → dialog → wizard → DataTable funcional
+- [x] `@tauri-apps/plugin-dialog` instalado
+- [x] TypeScript typecheck: 0 errores
+
+**HITO ALCANZADO (Fase 1a)**: Primer flujo E2E completo — Open CSV → ImportWizard → DataTable con infinite scroll.
+
+### Completado en Fase 1 — Spatial + KML (2026-06-02)
+- [x] `analysis/data/importer.py` — `detect_spatial_columns()` + catálogo 140+ CRS (WGS84, AMG84/GDA94, UTM, PSAD56, GDA2020); detección automática de columnas ioGAS `[X]`; `SpatialRef` dataclass en `ImportConfig`
+- [x] `analysis/spatial/__init__.py` + `analysis/spatial/kml_export.py` — exportador KML 2.2 con Placemarks por muestra, color por cuantiles (5 clases), reproyección automática con `pyproj`
+- [x] `app/routers/rpc.py` — método `data.export_kml`; `data.import` persiste `spatial_ref` + `iogas_display_cols` en metadata
+- [x] `src/lib/data-api.ts` — tipos `SpatialRef`, `SpatialDetection`, `CoordPairDetection`; `exportKml()` helper
+- [x] `src/stores/dataset-store.ts` — `DatasetInfo` incluye `spatialRef` e `iogasDisplayCols`
+- [x] `src/components/ImportWizard.tsx` — Paso 2 "Spatial Reference" (auto-detectado, skip opcional); columnas ioGAS marcadas en la tabla
+- [x] `src/App.tsx` — botón "Export KML" habilitado cuando dataset tiene `spatialRef`
+- [x] `pyproj` instalado y verificado (reproyección AMG84 z51 → WGS84, precisión centimétrica)
+- [x] TypeScript typecheck: 0 errores
+
+**HITO ALCANZADO (Fase 1b)**: Georeferenciación completa — Import con CRS → Export KML para Google Earth.
+
+### Completado en Fase 1 — Export History (2026-06-02)
+- [x] `kml_export.py` — parámetro `output_dir`; nombre de archivo incluye dataset name; guarda en carpeta del usuario (Descargas)
+- [x] `src/stores/export-store.ts` — Zustand store con `persist` a localStorage; historial de hasta 100 entradas, sobrevive reinicios
+- [x] `src/components/ExportHistory.tsx` — panel dropdown: icono por tipo (KML/CSV/PDF/PNG), antigüedad relativa, botón abrir carpeta con `plugin-shell`, botón eliminar entrada
+- [x] `src/App.tsx` — `downloadDir()` de Tauri para guardar en Descargas; botón "📥 Downloads (N)" con badge; panel se abre automáticamente tras cada export
+- [x] TypeScript typecheck: 0 errores
+
+**HITO ALCANZADO (Fase 1c)**: Sistema de exportación con historial persistente — KML → Descargas → historial con "abrir carpeta".
+
 ### Pendiente en Fase 0
 - [ ] Plugin Core: registry, lifecycle, event bus básico (packages/plugin-sdk)
 - [ ] Pipeline CI/CD base (GitHub Actions)
-
-**HITO ALCANZADO**: Stack completo corriendo — Python service + Tauri app + IPC bridge funcional.
 
 ### Fase 1 (próxima)
 - [ ] Plugin Data Manager: importación CSV/Excel con wizard (incluye paso de tipo de muestra QAQC)
@@ -50,8 +88,9 @@
 
 ## Prioridades Actuales
 
-1. Completar setup de infraestructura (Fase 0 pendiente)
-2. Primer flujo E2E: importar CSV → ejecutar PCA → ver biplot
+1. **Plugin Analytics** — estadísticas descriptivas + PCA (completa el flujo E2E principal: import → analyze → biplot)
+2. **Plugin Visualization** — scatter + biplot PCA en el panel derecho
+3. **Plugin QAQC** (ADR-0003) — blancos, %RPD, %Recovery, cartas Shewhart
 
 ## Decisiones Técnicas Tomadas
 
@@ -96,11 +135,20 @@ Ver `.claude/memory/design-system.md` para el ASCII mockup del layout extraído.
 - Los outliers en datos geoquímicos NO se eliminan automáticamente — siempre reportar al usuario
 - La UI target tiene dark theme, split view — ver mockup en design-system.md
 
+## Repositorio GitHub
+
+- URL: https://github.com/ctarazonas/pyorex-desktop
+- Visibilidad: Privado
+- Rama default: `main`
+- Commit inicial: `e665cce` — 88 archivos, Fase 0 completa
+
 ## Métricas del Proyecto
 
 - Agentes configurados: 8
 - Skills configurados: 5
-- ADRs: 1
-- Features implementadas: 0 (Fase 0)
-- Tests existentes: 0 (Fase 0)
+- ADRs: 3
+- Features implementadas: Fase 1a (import E2E) + 1b (spatial/KML) + 1c (export history)
+- Tests existentes: 0 (deuda técnica — próximo sprint)
+- TypeScript typecheck: 0 errores (mantenido)
+- Python: pyproj instalado y verificado
 

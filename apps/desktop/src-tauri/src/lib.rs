@@ -19,6 +19,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             analytics_bridge::check_analytics_service,
             analytics_bridge::call_analytics,
+            analytics_bridge::open_in_explorer,
         ])
         .setup(|app| {
             #[cfg(debug_assertions)]

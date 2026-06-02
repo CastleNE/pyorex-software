@@ -6,7 +6,7 @@ Communicates with Tauri via JSON-RPC 2.0 over HTTP on port 5174.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import health, rpc
+from app.routers import health, rpc, data_routes
 
 app = FastAPI(
     title="PyOrex Analytics Engine",
@@ -29,6 +29,7 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/health", tags=["health"])
 app.include_router(rpc.router, tags=["rpc"])
+app.include_router(data_routes.router, prefix="/data", tags=["data"])
 
 
 @app.get("/")

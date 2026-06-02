@@ -25,6 +25,7 @@ venv/
 *.enc
 logs/
 *.log
+services/analytics/data/
 
 # ── OS ───────────────────────────────────────────────────────────────────────
 .DS_Store
