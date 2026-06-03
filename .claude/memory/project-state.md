@@ -85,6 +85,7 @@
 | ADR | Decisión | Estado |
 |-----|----------|--------|
 | ADR-0001 | Stack tecnológico principal (Tauri+React+FastAPI) | Aceptado |
+| ADR-0004 | Formato de proyecto nativo `.orex` (ZIP: Parquet + JSON + viz configs) | Aceptado |
 
 ## Prioridades Actuales
 
@@ -95,6 +96,7 @@
 ## Decisiones Técnicas Tomadas
 
 - [x] Librería de gráficos: **Plotly.js** (tipos TS maduros, gráficos geoquímicos disponibles)
+- [x] Formato de proyecto nativo: **`.orex`** — ZIP con Parquet + JSON manifest + viz configs (como `.pbix` de PowerBI)
 - [ ] Formato de empaquetado de plugins: `.zip` vs `.pyorex-plugin` personalizado (Fase 4)
 - [ ] Motor PDF: Chromium headless (Tauri) vs wkhtmltopdf (Fase 1)
 

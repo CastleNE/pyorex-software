@@ -1,28 +1,18 @@
 import { create } from "zustand";
 
-type AppModule =
-  | "home"
-  | "data"
-  | "calculation"
-  | "analysis"
-  | "graph"
-  | "map"
-  | "structure"
-  | "diagram"
-  | "spider"
-  | "help";
+export type AppNav = "file" | "data" | "modulos" | "view";
 
 interface AppState {
-  activeModule: AppModule;
+  activeNav: AppNav;
   analyticsServiceStatus: "unknown" | "online" | "offline";
-  setActiveModule: (module: AppModule) => void;
+  setActiveNav: (nav: AppNav) => void;
   setAnalyticsServiceStatus: (status: "unknown" | "online" | "offline") => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  activeModule: "home",
+  activeNav: "file",
   analyticsServiceStatus: "unknown",
-  setActiveModule: (module) => set({ activeModule: module }),
+  setActiveNav: (nav) => set({ activeNav: nav }),
   setAnalyticsServiceStatus: (status) =>
     set({ analyticsServiceStatus: status }),
 }));
