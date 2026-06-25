@@ -103,7 +103,6 @@ def _rpc_data_export_kml(params: dict) -> dict:
         lon_col=params.get("lon_col"),
         name_col=params.get("name_col"),
         color_col=params.get("color_col"),
-        output_dir=params.get("output_dir"),
     )
     return {"kml_path": path}
 
@@ -115,7 +114,7 @@ METHOD_REGISTRY: dict[str, Any] = {
     "data.preview":    _rpc_data_preview,
     "data.import":     _rpc_data_import,
     "data.list":       lambda _: {"datasets": list_datasets()},
-    "data.rows":       lambda p: get_rows(p["dataset_id"], p.get("offset", 0), p.get("limit", 200)),
+    "data.rows":       lambda p: get_rows(p["dataset_id"], p.get("offset", 0), min(p.get("limit", 200), 5000)),
     "data.delete":     lambda p: {"deleted": delete_dataset(p["dataset_id"])},
     "data.export_kml": _rpc_data_export_kml,
 }
@@ -154,5 +153,5 @@ async def json_rpc(request: RpcRequest) -> RpcResponse:
     except Exception as exc:
         return RpcResponse(
             id=request.id,
-            error=RpcError(code=-32603, message=f"Internal error: {exc}"),
+            error=RpcError(code=-32603, message=f"Internal error: {type(exc).__name__}"),
         )

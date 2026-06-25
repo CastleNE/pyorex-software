@@ -69,6 +69,56 @@ Incluye capturas de todos los módulos: Home, File, Data, Analysis, Calculation,
 
 ---
 
+## 2026-06-04 — Patrones de orquestación multi-agente: repo affaan-m/ecc
+
+**Situación**: Se revisó el repo https://github.com/affaan-m/ecc (Everything Claude Code — 63 agentes, 251 skills, 79 comandos). Se extrajeron patrones aplicables a PyOrex.
+
+**Lección 1 — PreCompact hook para memoria automática**: Claude Code soporta un hook `PreCompact` cuya salida se inyecta en el prompt de compactación. Configurado en `.claude/settings.json`, permite que el estado del proyecto sobreviva la compactación automáticamente. Implementar leyendo `project-state.md` en el hook.
+
+**Lección 2 — Contextos por modo de trabajo**: ECC usa `.claude/contexts/` con archivos específicos por modo (dev.md, research.md, review.md). Aplicado a PyOrex: `analytics-mode.md` y `qaqc-mode.md` creados. Cargar el contexto del modo antes de trabajar en esa área — evita tener que re-explicar reglas del dominio.
+
+**Lección 3 — No usar instrucciones negativas**: Agregar pases de limpieza separados en lugar de instrucciones como "no hagas X". Un agente separado de cleanup (de-sloppify) que nunca escribió el código original elimina el sesgo del autor. Aplicar: después de implementar una feature, invocar un pase de revisión con contexto limpio.
+
+**Lección 4 — Compactación manual en hitos, no automática**: No dejar que la compactación ocurra a mitad de una sesión de debugging. Hacer `/compact` manualmente al terminar una subfase o antes de empezar algo nuevo. La compactación a mitad de trabajo puede perder contexto crítico de errores activos.
+
+**Lección 5 — Separar implementador de revisor**: El agente que implementa nunca debe ser el mismo que revisa. En PyOrex: `python-engineer` implementa → `data-scientist` valida la corrección estadística → `qa-architect` revisa calidad. Contextos separados eliminan el sesgo.
+
+**Lección 6 — Pipeline secuencial para features complejas**: Para features de análisis, el patrón es:
+```
+data-scientist (especificación) → python-engineer (implementación) → data-scientist (validación) → qa-architect (tests)
+```
+Cada agente opera con contexto fresco, no hereda el contexto del anterior.
+
+**Cómo aplicar**:
+- Al iniciar trabajo en analytics/qaqc: cargar `.claude/contexts/analytics-mode.md` o `qaqc-mode.md`
+- Al terminar una subfase: hacer `/compact` manual antes de la siguiente
+- Features estadísticas: SIEMPRE consultar data-scientist antes de que python-engineer implemente
+
+**Agente**: orchestrator
+
+---
+
+## 2026-06-03 — Integración de repo científico externo: k-dense-ai/scientific-agent-skills
+
+**Situación**: El usuario compartió el repo https://github.com/k-dense-ai/scientific-agent-skills (142 skills MIT para agentes científicos). Se revisó y extrajeron patrones útiles para el motor analítico de PyOrex.
+
+**Lección 1 — pingouin sobre scipy para tests estadísticos**: pingouin calcula effect sizes (Cohen's d, η², r) y 95% CI automáticamente en cada test. Para reportes geoquímicos auditables, esto es obligatorio. scipy.stats solo da p-value — insuficiente para análisis científico riguroso.
+
+**Lección 2 — Okabe-Ito como paleta estándar**: La paleta Okabe-Ito (`#E69F00, #56B4E9, #009E73, ...`) es el estándar colorblind-safe para publicaciones científicas. Nunca usar jet/rainbow en datos geoquímicos.
+
+**Lección 3 — Polars lazy por defecto para datasets > 10k filas**: `scan_parquet` + chain de expresiones + `.collect()` al final es 10-100x más rápido que eager. El patrón está documentado en python-engineer.md.
+
+**Lección 4 — pyproject.toml debe declarar todo lo instalado**: En esta sesión se descubrió que pingouin, matplotlib y seaborn habían sido instalados en el venv pero NO declarados en pyproject.toml. Si alguien hace `pip install -e .` desde cero, pierde esas dependencias. Regla: toda instalación manual debe ir seguida de actualizar pyproject.toml.
+
+**Cómo aplicar**: 
+- Antes de implementar análisis estadístico → usar pingouin
+- Al instalar un paquete nuevo → actualizar pyproject.toml en la misma sesión
+- Skills más útiles del repo para PyOrex: statistical-analysis, statsmodels, scikit-learn, exploratory-data-analysis, geomaster
+
+**Agente**: orchestrator
+
+---
+
 ## 2026-06-01 — Diseño del sistema de memoria
 
 **Situación**: Se evaluó cómo hacer que los agentes "aprendan" entre sesiones en Claude Code.

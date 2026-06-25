@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -14,6 +15,18 @@ import polars as pl
 
 DATA_DIR = Path(os.getenv("PYOREX_DATA_DIR", "./data"))
 DATASETS_DIR = DATA_DIR / "datasets"
+
+_DATASET_ID_RE = re.compile(r"^[a-zA-Z0-9\-_]{1,64}$")
+
+
+def validate_dataset_id(dataset_id: str) -> str:
+    """Raise ValueError if dataset_id could cause path traversal."""
+    if not _DATASET_ID_RE.match(dataset_id):
+        raise ValueError(f"Invalid dataset_id: {dataset_id!r}")
+    resolved = (DATASETS_DIR / dataset_id).resolve()
+    if not str(resolved).startswith(str(DATASETS_DIR.resolve())):
+        raise ValueError("Path traversal attempt blocked")
+    return dataset_id
 
 
 def _ensure_dirs() -> None:
@@ -51,6 +64,7 @@ def save_dataset(df: pl.DataFrame, name: str, meta_extra: dict) -> str:
 
 def load_dataset(dataset_id: str) -> pl.DataFrame:
     """Load a dataset by ID from Parquet storage."""
+    validate_dataset_id(dataset_id)
     _ensure_dirs()
     parquet_path = DATASETS_DIR / f"{dataset_id}.parquet"
     if not parquet_path.exists():
@@ -60,6 +74,7 @@ def load_dataset(dataset_id: str) -> pl.DataFrame:
 
 def load_metadata(dataset_id: str) -> dict:
     """Load dataset metadata JSON."""
+    validate_dataset_id(dataset_id)
     _ensure_dirs()
     meta_path = DATASETS_DIR / f"{dataset_id}.meta.json"
     if not meta_path.exists():
@@ -81,6 +96,7 @@ def get_rows(dataset_id: str, offset: int = 0, limit: int = 200) -> dict:
 
 def delete_dataset(dataset_id: str) -> bool:
     """Remove Parquet + metadata files for a dataset. Returns True if found."""
+    validate_dataset_id(dataset_id)
     _ensure_dirs()
     parquet_path = DATASETS_DIR / f"{dataset_id}.parquet"
     meta_path = DATASETS_DIR / f"{dataset_id}.meta.json"

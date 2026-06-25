@@ -1,6 +1,6 @@
 ﻿# Estado del Proyecto — PyOrex
 
-> Última actualización: 2026-06-02
+> Última actualización: 2026-06-04
 > Actualizar este archivo cuando cambie el estado significativo del proyecto.
 
 ## Fase Actual
@@ -66,6 +66,23 @@
 - [x] TypeScript typecheck: 0 errores
 
 **HITO ALCANZADO (Fase 1c)**: Sistema de exportación con historial persistente — KML → Descargas → historial con "abrir carpeta".
+
+### Completado en sesión 2026-06-04 — Seguridad, ECC patterns, sistema de memoria mejorado
+- [x] **Agente `security-engineer`** creado — cubre 8 superficies de ataque de PyOrex (file import, IPC, plugins, multi-tenant, asteval, SQLite, Tauri capabilities, deps)
+- [x] `CLAUDE.md` actualizado — equipo ahora es de 9 agentes
+- [x] `.claude/settings.json` creado — hooks `PreCompact` (inyecta project-state en compactación) + `Stop` (recordatorio actualizar memoria)
+- [x] `.claude/contexts/` creado con: `analytics-mode.md`, `qaqc-mode.md`, `security-mode.md`, `README.md`
+- [x] Bug corregido en `DatasetPanel.tsx` — `<button>` dentro de `<button>` → exterior cambiado a `<div role="button">` (hydration error resuelto)
+- [x] Revisado repo `affaan-m/ecc` — patrones integrados en `lessons-learned.md` + `repo-ecc.md` en auto-memoria
+- [x] Auto-memoria actualizada: 4 entradas en `MEMORY.md` (project-iogas, lessons-tauri-windows, repo-scientific-skills, repo-ecc)
+- [x] **Tip PowerShell**: usar `;` en lugar de `&&` para encadenar comandos (5.1 no soporta `&&`)
+
+### Completado en sesión 2026-06-03 — Mejoras de memoria y dependencias
+- [x] `pyproject.toml` — agregados `pingouin>=0.5.4`, `matplotlib>=3.8.0`, `seaborn>=0.13.0` (estaban instalados pero no declarados)
+- [x] `data-scientist.md` — pingouin patterns, Okabe-Ito palette, EDA checklist, effect size thresholds
+- [x] `python-engineer.md` — Polars lazy patterns, seaborn/matplotlib PDF report standards, pingouin + geopandas en stack
+- [x] Auto-memoria actualizada: `project-iogas.md` (actualizado a Fase 1), `repo-scientific-skills.md` (nuevo)
+- [x] Fuente: https://github.com/k-dense-ai/scientific-agent-skills (142 skills científicos MIT — revisado y extractos integrados)
 
 ### Pendiente en Fase 0
 - [ ] Plugin Core: registry, lifecycle, event bus básico (packages/plugin-sdk)
@@ -146,7 +163,7 @@ Ver `.claude/memory/design-system.md` para el ASCII mockup del layout extraído.
 
 ## Métricas del Proyecto
 
-- Agentes configurados: 8
+- Agentes configurados: 9 (se agregó security-engineer el 2026-06-04)
 - Skills configurados: 5
 - ADRs: 3
 - Features implementadas: Fase 1a (import E2E) + 1b (spatial/KML) + 1c (export history)

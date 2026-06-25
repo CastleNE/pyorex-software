@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat .claude/memory/project-state.md"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '=== FIN DE SESION === Si implementaste algo nuevo, actualizaste una decision arquitectonica, o aprendiste algo util, actualiza .claude/memory/project-state.md y .claude/memory/lessons-learned.md antes de cerrar.'"
+          }
+        ]
+      }
+    ]
+  }
+}

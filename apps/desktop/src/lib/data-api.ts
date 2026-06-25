@@ -122,7 +122,6 @@ export function exportKml(opts: {
   lonCol?: string;
   nameCol?: string;
   colorCol?: string;
-  outputDir?: string;
 }): Promise<{ kml_path: string }> {
   return callRpc("data.export_kml", {
     dataset_id: opts.datasetId,
@@ -130,6 +129,5 @@ export function exportKml(opts: {
     lon_col: opts.lonCol,
     name_col: opts.nameCol,
     color_col: opts.colorCol,
-    output_dir: opts.outputDir,
   });
 }

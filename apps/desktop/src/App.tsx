@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { downloadDir } from "@tauri-apps/api/path";
 import { useAppStore } from "@/stores/app-store";
 import type { AppNav } from "@/stores/app-store";
 import { useDatasetStore } from "@/stores/dataset-store";
@@ -104,18 +103,16 @@ export default function App() {
   async function handleExportKml() {
     if (!dataset) return;
     try {
-      const outputDir = await downloadDir();
       const numericCols = dataset.columns.filter((c) => c.dataType === "numeric");
       const colorCol = numericCols[0]?.name;
       const result = await exportKml({
         datasetId: dataset.id,
         colorCol,
-        outputDir,
       });
       const sep = result.kml_path.includes("\\") ? "\\" : "/";
       const parts = result.kml_path.split(sep);
       const filename = parts.pop() ?? result.kml_path;
-      const folder = parts.join(sep) || outputDir;
+      const folder = parts.join(sep) || result.kml_path;
       addExportEntry({
         type: "kml",
         datasetName: dataset.name,

@@ -148,6 +148,79 @@ Ver `.claude/memory/domain/geochemistry.md` para la biblioteca completa de índi
 | Outliers | n_outliers, umbral χ² usado, método aplicado (MinCovDet/IsolationForest) |
 | Índices geoquímicos | n_calculados, n_nulos_resultado, variables fuente |
 
+## Estadística con Effect Sizes — pingouin (OBLIGATORIO)
+
+Usar **pingouin** para tests estadísticos. Calcula automáticamente effect sizes + CIs — esencial para reportes geoquímicos auditables.
+
+```python
+import pingouin as pg
+
+# T-test con Cohen's d automático
+result = pg.ttest(grupo_a, grupo_b, correction='auto')
+t, df_val, p, d, ci = (result['T'].iloc[0], result['dof'].iloc[0],
+                        result['p_val'].iloc[0], result['cohen_d'].iloc[0],
+                        result['CI95'].iloc[0])
+
+# ANOVA con η² parcial
+aov = pg.anova(dv='concentration', between='lithology', data=df, detailed=True)
+eta_p2 = aov['np2'].iloc[0]  # Partial eta-squared
+
+# Correlación Pearson/Spearman con CI
+corr = pg.corr(df['Au'], df['As'], method='spearman')
+r, ci_low, ci_high = corr['r'].iloc[0], corr['CI95%'].iloc[0][0], corr['CI95%'].iloc[0][1]
+
+# Post-hoc con corrección Bonferroni/FDR
+posthoc = pg.pairwise_tukey(dv='value', between='group', data=df)
+```
+
+**Umbrales de effect size — contexto geoquímico:**
+
+| Métrica | Pequeño | Medio | Grande |
+|---|---|---|---|
+| Cohen's d | 0.20 | 0.50 | 0.80 |
+| η² parcial | 0.01 | 0.06 | 0.14 |
+| r (correlación) | 0.10 | 0.30 | 0.50 |
+
+> Siempre reportar effect size + 95% CI + n. Distinguir significancia estadística de importancia práctica.
+
+## Estándares de Visualización para Reportes Python
+
+Los reportes PDF generados en el servicio Python deben seguir estos estándares:
+
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Paleta Okabe-Ito — colorblind-safe SIEMPRE en reportes geoquímicos
+OKABE_ITO = ['#E69F00', '#56B4E9', '#009E73', '#F0E442',
+             '#0072B2', '#D55E00', '#CC79A7', '#000000']
+
+# Config base para reportes
+sns.set_theme(style='ticks', context='paper', font_scale=1.1)
+sns.set_palette(OKABE_ITO)
+
+# Heatmap correlación (columnas geoquímicas)
+corr = df[numeric_cols].corr(method='spearman')
+mask = np.triu(np.ones_like(corr, dtype=bool))
+sns.heatmap(corr, mask=mask, annot=True, fmt='.2f',
+            cmap='RdBu_r', center=0, square=True,
+            linewidths=1, cbar_kws={'shrink': 0.8})
+
+# Siempre incluir: error bars, n muestral, tipo de error en leyenda
+# NUNCA usar: jet, rainbow, red-green diverging maps
+# Formato exportación: PDF vectorial (no JPEG)
+```
+
+## EDA Automático en Import (checklist)
+
+Al importar un dataset, el pipeline debe reportar:
+- Dimensiones + tipos de columnas (numérico/texto/espacial)
+- % nulos por columna — alertar si > 40%
+- Distribución (histograma) de columnas numéricas
+- Outliers univariantes (IQR + z-score) — reportar, NO eliminar
+- Matriz de correlación (Spearman, robusta a outliers)
+- Test de normalidad Shapiro-Wilk por columna numérica
+
 ## Checklist de Revisión de Implementación Analítica
 
 - [ ] ¿Se validan supuestos antes de ejecutar? (KMO/Bartlett para PCA/FA)
@@ -158,7 +231,10 @@ Ver `.claude/memory/domain/geochemistry.md` para la biblioteca completa de índi
 - [ ] ¿El pipeline de preprocesamiento se serializa en los metadatos?
 - [ ] ¿Los índices personalizados usan asteval (no eval)?
 - [ ] ¿El fallback a IsolationForest se activa cuando n < 5×p?
-- [ ] ¿Se aplica corrección de Bonferroni en comparaciones múltiples?
+- [ ] ¿Se aplica corrección de Bonferroni/FDR en comparaciones múltiples?
+- [ ] ¿Los tests estadísticos reportan effect size + CI? (usar pingouin)
+- [ ] ¿Los reportes usan paleta Okabe-Ito (colorblind-safe)?
+- [ ] ¿La EDA automática se ejecuta en cada import?
 
 ## Colaboración con el Equipo
 

@@ -16,7 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from analysis.data.storage import load_dataset, load_metadata, DATA_DIR
+from analysis.data.storage import load_dataset, load_metadata, validate_dataset_id, DATA_DIR
 
 EXPORTS_DIR = DATA_DIR / "exports"
 
@@ -45,7 +45,6 @@ def export_kml(
     lon_col: str | None = None,
     name_col: str | None = None,
     color_col: str | None = None,
-    output_dir: str | None = None,
 ) -> str:
     """
     Generate a KML file for the given dataset and return its absolute path.
@@ -62,6 +61,7 @@ def export_kml(
     -------
     Absolute path to the generated .kml file.
     """
+    validate_dataset_id(dataset_id)
     meta = load_metadata(dataset_id)
     df = load_dataset(dataset_id)
 
@@ -177,11 +177,8 @@ def export_kml(
         pt = ET.SubElement(pm, "Point")
         ET.SubElement(pt, "coordinates").text = f"{lon:.6f},{lat:.6f},0"
 
-    # Write to file
-    if output_dir:
-        dest_dir = Path(output_dir)
-    else:
-        dest_dir = EXPORTS_DIR
+    # Write to file — always use the managed exports directory (no client-provided paths)
+    dest_dir = EXPORTS_DIR
     dest_dir.mkdir(parents=True, exist_ok=True)
     dataset_name_safe = re.sub(r"[^\w\-]", "_", meta.get("name", dataset_id))[:40]
     ts = datetime.utcnow().strftime("%Y%m%dT%H%M%S")

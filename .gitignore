@@ -48,3 +48,7 @@ secrets/
 coverage/
 htmlcov/
 lcov.info
+
+# ── Claude resources — extraction artifacts ───────────────────────────────────
+.claude/resources/**/*_extracted/
+.claude/resources/**/*_temp.zip

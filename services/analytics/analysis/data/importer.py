@@ -171,10 +171,18 @@ class PreviewResult:
 
 # ── Preview ───────────────────────────────────────────────────────────────────
 
+MAX_FILE_SIZE_MB = 500
+
+
 def preview_file(path: str, n_rows: int = 50, separator: str = ",") -> PreviewResult:
     """Read a file and return a preview with spatial detection."""
     p = Path(path)
-    file_size_kb = round(p.stat().st_size / 1024, 1)
+    size_mb = p.stat().st_size / (1024 * 1024)
+    if size_mb > MAX_FILE_SIZE_MB:
+        raise ValueError(
+            f"File too large: {size_mb:.1f} MB (maximum: {MAX_FILE_SIZE_MB} MB)"
+        )
+    file_size_kb = round(size_mb * 1024, 1)
     ext = p.suffix.lower()
 
     if ext == ".csv":
@@ -235,6 +243,11 @@ def preview_file(path: str, n_rows: int = 50, separator: str = ",") -> PreviewRe
 def import_file(path: str, config: ImportConfig) -> pl.DataFrame:
     """Full import: read → apply null mappings → apply sample type mapping."""
     p = Path(path)
+    size_mb = p.stat().st_size / (1024 * 1024)
+    if size_mb > MAX_FILE_SIZE_MB:
+        raise ValueError(
+            f"File too large: {size_mb:.1f} MB (maximum: {MAX_FILE_SIZE_MB} MB)"
+        )
     ext = p.suffix.lower()
 
     if ext == ".csv":
@@ -281,10 +294,28 @@ def import_file(path: str, config: ImportConfig) -> pl.DataFrame:
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
+# Characters that trigger formula execution in spreadsheet apps downstream
+_FORMULA_PREFIXES = frozenset({"=", "+", "-", "@", "\t", "\r"})
+
+
+def _sanitize_formula_injection(df: pl.DataFrame) -> pl.DataFrame:
+    """Prefix string cells starting with formula chars to prevent CSV injection."""
+    string_cols = [col for col in df.columns if df[col].dtype == pl.String]
+    if not string_cols:
+        return df
+    return df.with_columns([
+        pl.when(pl.col(col).str.slice(0, 1).is_in(list(_FORMULA_PREFIXES)))
+        .then(pl.lit("'") + pl.col(col))
+        .otherwise(pl.col(col))
+        .alias(col)
+        for col in string_cols
+    ])
+
+
 def _read_csv_polars(path: str, separator: str = ",") -> pl.DataFrame:
     sep = separator if len(separator) == 1 else ","
     try:
-        return pl.read_csv(
+        df = pl.read_csv(
             path,
             separator=sep,
             infer_schema_length=2000,
@@ -293,21 +324,23 @@ def _read_csv_polars(path: str, separator: str = ",") -> pl.DataFrame:
             ignore_errors=False,
         )
     except Exception:
-        return pl.read_csv(
+        df = pl.read_csv(
             path,
             separator=sep,
             infer_schema=False,
             null_values=["", "NA", "N/A"],
         )
+    return _sanitize_formula_injection(df)
 
 
 def _read_excel_polars(path: str, sheet: str | int = 0) -> pl.DataFrame:
     try:
-        return pl.read_excel(path, sheet_name=sheet, infer_schema_length=2000)
+        df = pl.read_excel(path, sheet_name=sheet, infer_schema_length=2000)
     except Exception as e:
         raise RuntimeError(
             f"Failed to read Excel file. Make sure 'fastexcel' is installed. Error: {e}"
         ) from e
+    return _sanitize_formula_injection(df)
 
 
 def _friendly_dtype(dtype: pl.DataType) -> str:

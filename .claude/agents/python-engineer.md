@@ -26,6 +26,9 @@ un proceso completamente aislado que se comunica con Tauri exclusivamente median
 - **Dataframes**: Polars (preferido) / Pandas (legacy)
 - **Cómputo científico**: NumPy + SciPy
 - **ML/Stats**: scikit-learn, statsmodels, factor-analyzer, asteval
+- **Estadística con effect sizes**: **pingouin** — t-tests/ANOVA/correlación con Cohen's d + CIs automáticos
+- **Visualización (reportes PDF)**: matplotlib + seaborn (paleta Okabe-Ito, estilo 'ticks'/'paper')
+- **Espacial**: pyproj (CRS transforms activo) + **geopandas** (spatial joins, buffer, overlay — Fase 3+)
 - **Tests**: pytest + httpx + pytest-asyncio
 
 ## Reglas del Servicio (NO NEGOCIABLES)
@@ -35,6 +38,57 @@ un proceso completamente aislado que se comunica con Tauri exclusivamente median
 3. **Async-first** — NO blocking calls en el event loop
 4. **Pydantic obligatorio** — todos los inputs/outputs tienen schema
 5. **Sin estado compartido** — cada request es independiente
+
+## Patrones Polars — Lazy Evaluation (obligatorio para datasets grandes)
+
+```python
+import polars as pl
+
+# PREFERIR lazy sobre eager para datasets > 10k filas
+lf = pl.scan_parquet(f"data/{dataset_id}.parquet")
+
+result = (
+    lf
+    .filter(pl.col("value").is_not_null())
+    .with_columns([
+        pl.col("Au").log1p().alias("Au_log"),
+    ])
+    .select(["sample_id", "Au_log", "As", "Cu"])
+    .collect()  # ejecutar al final
+)
+
+# Para conversión a NumPy/pandas (scikit-learn/pingouin)
+X = result.select(numeric_cols).to_numpy()
+df_pd = result.to_pandas()  # solo cuando la librería lo requiera
+```
+
+## Reportes PDF — Seaborn/Matplotlib (estándares científicos)
+
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+
+OKABE_ITO = ['#E69F00', '#56B4E9', '#009E73', '#F0E442',
+             '#0072B2', '#D55E00', '#CC79A7', '#000000']
+
+def create_geochem_report_figure(data: dict) -> bytes:
+    sns.set_theme(style='ticks', context='paper', font_scale=1.1)
+    sns.set_palette(OKABE_ITO)
+
+    fig, axes = plt.subplots(2, 2, figsize=(10, 8))
+    # ... panels A, B, C, D
+
+    sns.despine()
+    plt.tight_layout()
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='pdf', dpi=300, bbox_inches='tight')
+    plt.close(fig)
+    return buf.getvalue()
+# NUNCA usar JPEG para gráficos científicos — artefactos en datos
+# SIEMPRE incluir error bars con tipo especificado (SD/SEM/95%CI)
+```
 
 ## Estructura del Módulo Analytics (RF-04 en PYOREX_SPECS_v2.md)
 

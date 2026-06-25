@@ -76,11 +76,13 @@ export default function DatasetPanel({ onOpenData }: Props) {
               const isActive = ds.id === active?.id;
               const isDeleting = deletingId === ds.id;
               return (
-                <button
+                <div
                   key={ds.id}
-                  onClick={() => setActiveDataset(ds.id)}
-                  disabled={isDeleting}
-                  className={`group w-full flex items-center gap-2 px-3 py-2 text-left border-b border-zinc-800/60 transition-colors ${
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => !isDeleting && setActiveDataset(ds.id)}
+                  onKeyDown={(e) => e.key === "Enter" && !isDeleting && setActiveDataset(ds.id)}
+                  className={`group w-full flex items-center gap-2 px-3 py-2 text-left border-b border-zinc-800/60 transition-colors cursor-pointer ${
                     isActive
                       ? "bg-blue-900/30 border-l-2 border-l-blue-500"
                       : "hover:bg-zinc-800 border-l-2 border-l-transparent"
@@ -114,7 +116,7 @@ export default function DatasetPanel({ onOpenData }: Props) {
                   >
                     {isDeleting ? "…" : "×"}
                   </button>
-                </button>
+                </div>
               );
             })
           )}

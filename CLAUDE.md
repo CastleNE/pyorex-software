@@ -21,6 +21,7 @@ entorno extensible por plugins. Target: Windows 10/11, offline-first, multi-tena
 | `python-engineer` | sonnet | FastAPI + Polars + asyncio |
 | `data-scientist` | sonnet | Estadística geoquímica, ML, validación de algoritmos |
 | `qa-architect` | sonnet | Tests, CI/CD, contract tests, E2E |
+| `security-engineer` | sonnet | Seguridad end-to-end — file imports, IPC, plugins, multi-tenant, CVE audits |
 
 ## Sistema de Memoria (PROTOCOLO OBLIGATORIO)
 
