@@ -92,7 +92,7 @@ export default function App() {
         nullCount: c.null_count,
       })),
       importedAt: meta.imported_at,
-      spatialRef: meta.spatial_ref,
+      spatialConfig: meta.spatial_config,
       iogasDisplayCols: meta.iogas_display_cols,
     };
     setDataset(ds);
@@ -174,9 +174,9 @@ export default function App() {
             <ActionButton
               label="Export KML"
               icon="🌍"
-              disabled={!hasData || !dataset?.spatialRef}
+              disabled={!hasData || !dataset?.spatialConfig || dataset.spatialConfig.geometry_source === "none"}
               onClick={handleExportKml}
-              title={!dataset?.spatialRef ? "No spatial reference — re-import with coordinates" : "Export samples to Google Earth KML"}
+              title={(!dataset?.spatialConfig || dataset.spatialConfig.geometry_source === "none") ? "No spatial reference — re-import with coordinates" : "Export samples to Google Earth KML"}
             />
             <div className="flex-1" />
             {/* Export History */}

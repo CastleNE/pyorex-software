@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { SpatialRef } from "@/lib/data-api";
+import type { SpatialConfig } from "@/lib/data-api";
 
 export interface ColumnMeta {
   name: string;
@@ -16,7 +16,7 @@ export interface DatasetInfo {
   columnCount: number;
   columns: ColumnMeta[];
   importedAt: string;
-  spatialRef?: SpatialRef | null;
+  spatialConfig?: SpatialConfig | null;
   iogasDisplayCols?: string[];
 }
 

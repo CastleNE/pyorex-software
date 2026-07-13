@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Any
 import uuid
 
-from analysis.data.importer import ImportConfig, NullMapping, SampleTypeMapping, SpatialRef, import_file, preview_file
+from analysis.data.importer import ColumnMapping, ImportConfig, NullMapping, SampleTypeMapping, SpatialConfig, import_file, preview_file
 from analysis.data.storage import save_dataset, load_metadata, list_datasets, get_rows, delete_dataset
 from analysis.spatial.kml_export import export_kml
 
@@ -48,6 +48,7 @@ def _rpc_data_preview(params: dict) -> dict:
         "total_rows": result.total_rows,
         "file_size_kb": result.file_size_kb,
         "spatial_detection": result.spatial_detection,
+        "column_profiles": result.column_profiles,
     }
 
 
@@ -67,33 +68,59 @@ def _rpc_data_import(params: dict) -> dict:
         if stm_raw
         else None
     )
-    sr_raw = params.get("spatial_ref")
-    spatial_ref = (
-        SpatialRef(
-            x_col=sr_raw["x_col"],
-            y_col=sr_raw["y_col"],
-            crs=sr_raw["crs"],
-            crs_label=sr_raw["crs_label"],
-            is_geographic=sr_raw["is_geographic"],
+    sc_raw = params.get("spatial_config")
+    spatial_config = (
+        SpatialConfig(
+            geometry_source=sc_raw["geometry_source"],
+            east_col=sc_raw.get("east_col"),
+            north_col=sc_raw.get("north_col"),
+            projected_epsg=sc_raw.get("projected_epsg"),
+            projected_crs_label=sc_raw.get("projected_crs_label"),
+            lon_col=sc_raw.get("lon_col"),
+            lat_col=sc_raw.get("lat_col"),
         )
-        if sr_raw
+        if sc_raw
         else None
     )
+    column_mappings = [
+        ColumnMapping(
+            original_name=m["original_name"],
+            import_flag=m.get("import_flag", "yes"),
+            role_override=m.get("role_override"),
+            analyte_override=m.get("analyte_override"),
+            unit_override=m.get("unit_override"),
+            alias=m.get("alias"),
+        )
+        for m in params.get("column_mappings", [])
+    ]
     config = ImportConfig(
         null_mappings=null_mappings,
         sample_type_mapping=sample_type_mapping,
         sheet_name=params.get("sheet_name", 0),
         separator=params.get("separator", ","),
-        spatial_ref=spatial_ref,
+        spatial_config=spatial_config,
+        column_role_overrides=params.get("column_role_overrides", {}),
+        column_mappings=column_mappings,
     )
-    df = import_file(params["file_path"], config)
+    df, import_meta = import_file(params["file_path"], config)
     meta_extra = {
         "source_path": params["file_path"],
-        "spatial_ref": sr_raw,
+        "spatial_config": spatial_config.to_dict() if spatial_config else None,
         "iogas_display_cols": params.get("iogas_display_cols", []),
+        "import_status": import_meta["import_status"],
+        "chemical_status": import_meta["chemical_status"],
+        "spatial_status": import_meta["spatial_status"],
+        "plot_status": import_meta["plot_status"],
+        "qaqc_status": import_meta["qaqc_status"],
+        "module_availability": import_meta["module_availability"],
     }
     dataset_id = save_dataset(df, name=params["dataset_name"], meta_extra=meta_extra)
-    return {"success": True, "dataset": load_metadata(dataset_id)}
+    meta = load_metadata(dataset_id)
+    meta["module_availability"] = import_meta["module_availability"]
+    meta["qaqc_status"] = import_meta["qaqc_status"]
+    meta["spatial_status"] = import_meta["spatial_status"]
+    meta["spatial_config"] = spatial_config.to_dict() if spatial_config else None
+    return {"success": True, "dataset": meta}
 
 
 def _rpc_data_export_kml(params: dict) -> dict:
@@ -151,7 +178,8 @@ async def json_rpc(request: RpcRequest) -> RpcResponse:
             result = await result
         return RpcResponse(id=request.id, result=result)
     except Exception as exc:
+        detail = str(exc) if str(exc) else repr(exc)
         return RpcResponse(
             id=request.id,
-            error=RpcError(code=-32603, message=f"Internal error: {type(exc).__name__}"),
+            error=RpcError(code=-32603, message=f"Internal error: {type(exc).__name__}: {detail}"),
         )

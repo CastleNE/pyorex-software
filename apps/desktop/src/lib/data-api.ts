@@ -5,6 +5,7 @@ import { callRpc } from "./rpc";
 
 // ── Spatial types ─────────────────────────────────────────────────────────────
 
+/** Detected coordinate pair from column name analysis — used by preview only. */
 export interface SpatialRef {
   x_col: string;
   y_col: string;
@@ -13,13 +14,92 @@ export interface SpatialRef {
   is_geographic: boolean;
 }
 
-export interface CoordPairDetection extends SpatialRef {
-  // same shape as SpatialRef — backend returns detected pairs with same fields
-}
+export interface CoordPairDetection extends SpatialRef {}
 
 export interface SpatialDetection {
   pairs: CoordPairDetection[];
   iogas_display_cols: string[];
+}
+
+/**
+ * Active geometry chosen by the user (GIS rule).
+ * geometry_source determines which coordinate columns are used for plotting.
+ */
+export type GeometrySource = "projected_xy" | "wgs84_lonlat" | "local_grid" | "none";
+
+export interface SpatialConfig {
+  geometry_source: GeometrySource;
+
+  // Projected East/North
+  east_col?: string | null;
+  north_col?: string | null;
+  projected_epsg?: string | null;      // e.g. "EPSG:32718"
+  projected_crs_label?: string | null;
+
+  // Geographic WGS84
+  lon_col?: string | null;
+  lat_col?: string | null;
+}
+
+// ── Column role types ─────────────────────────────────────────────────────────
+
+export type ColumnRole =
+  | "sample_identifier"
+  | "coordinate_x" | "coordinate_y" | "coordinate_z"
+  | "longitude_wgs84" | "latitude_wgs84"
+  | "datetime"
+  | "sample_type_qaqc"
+  | "assay_element" | "assay_oxide" | "assay_compound"
+  | "calculated_numeric" | "ratio_numeric" | "index_numeric" | "physical_numeric"
+  | "text_attribute" | "date_attribute" | "qaqc_attribute"
+  | "metadata" | "ignored" | "unknown";
+
+// ── Import flag and unit types ────────────────────────────────────────────────
+
+export type ImportFlag = "yes" | "no_import";
+export type Unit = "ppm" | "ppb" | "pct";
+
+// ── Column profile (returned by preview) ─────────────────────────────────────
+
+export interface ImportedColumnProfile {
+  original_name: string;
+  clean_name: string;
+  role: ColumnRole;
+  data_type: "numeric" | "text" | "date" | "mixed" | "empty";
+  semantic_type?: string | null;
+  analyte?: string | null;
+  unit?: string | null;
+  raw_unit_token?: string | null;
+  needs_manual_unit?: boolean;
+  formula?: string | null;
+  is_measured: boolean;
+  is_calculated: boolean;
+  validation_rule: string;
+  missing_count: number;
+  valid_count: number;
+  warning_count: number;
+  error_count: number;
+  import_flag?: ImportFlag;
+  alias?: string | null;
+}
+
+// ── Column mapping (sent during import) ──────────────────────────────────────
+
+export interface ColumnMapping {
+  original_name: string;
+  import_flag: ImportFlag;
+  role_override?: ColumnRole | null;
+  analyte_override?: string | null;
+  unit_override?: Unit | null;
+  alias?: string | null;
+}
+
+export interface ModuleAvailability {
+  table: boolean;
+  charts: boolean;
+  map: boolean;
+  qaqc: boolean;
+  three_d: boolean;
 }
 
 // ── Column / dataset types ────────────────────────────────────────────────────
@@ -31,6 +111,7 @@ export interface ColumnPreview {
   null_pct: number;
   sample_values: string[];
   is_iogas_display: boolean;
+  column_role: ColumnRole;
 }
 
 export interface PreviewResult {
@@ -39,6 +120,7 @@ export interface PreviewResult {
   total_rows: number;
   file_size_kb: number;
   spatial_detection: SpatialDetection;
+  column_profiles: ImportedColumnProfile[];
 }
 
 export interface NullMappingInput {
@@ -61,8 +143,11 @@ export interface ImportedDatasetMeta {
   columns: { name: string; dtype: string; null_count: number }[];
   imported_at: string;
   source_path: string;
-  spatial_ref: SpatialRef | null;
+  spatial_config: SpatialConfig | null;
   iogas_display_cols: string[];
+  module_availability?: ModuleAvailability;
+  qaqc_status?: string;
+  spatial_status?: string;
 }
 
 export interface DatasetRowsResult {
@@ -85,8 +170,10 @@ export function importFile(opts: {
   nullMappings?: NullMappingInput[];
   sampleTypeMapping?: SampleTypeMappingInput;
   sheetName?: string | number;
-  spatialRef?: SpatialRef | null;
+  spatialConfig?: SpatialConfig | null;
   iogasDisplayCols?: string[];
+  columnRoleOverrides?: Record<string, ColumnRole>;
+  columnMappings?: ColumnMapping[];
 }): Promise<{ success: boolean; dataset: ImportedDatasetMeta }> {
   return callRpc("data.import", {
     file_path: opts.filePath,
@@ -95,8 +182,10 @@ export function importFile(opts: {
     null_mappings: opts.nullMappings ?? [],
     sample_type_mapping: opts.sampleTypeMapping ?? null,
     sheet_name: opts.sheetName ?? 0,
-    spatial_ref: opts.spatialRef ?? null,
+    spatial_config: opts.spatialConfig ?? null,
     iogas_display_cols: opts.iogasDisplayCols ?? [],
+    column_role_overrides: opts.columnRoleOverrides ?? {},
+    column_mappings: opts.columnMappings ?? [],
   });
 }
 

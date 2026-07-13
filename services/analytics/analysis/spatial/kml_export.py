@@ -4,8 +4,9 @@ KML export for geochemical sample datasets.
 Generates KML 2.2 with one Placemark per sample row, colour-coded
 by a selected variable using a 5-class quantile scheme.
 
-Reprojection from projected CRS → WGS84 is performed with pyproj when
-the dataset's spatial_ref is not already geographic (EPSG:4326).
+Coordinate columns are resolved from the dataset's spatial_config.geometry_source
+(GIS rule). Reprojection to WGS84 is performed with pyproj only for web render
+when geometry_source is "projected_xy" — original coordinates are never modified.
 """
 from __future__ import annotations
 
@@ -52,8 +53,8 @@ def export_kml(
     Parameters
     ----------
     dataset_id  : ID of the dataset in storage
-    lat_col     : column with latitude / northing (overrides spatial_ref if given)
-    lon_col     : column with longitude / easting (overrides spatial_ref if given)
+    lat_col     : column with latitude / northing (overrides spatial_config if given)
+    lon_col     : column with longitude / easting (overrides spatial_config if given)
     name_col    : column to use as Placemark name (default: first text column)
     color_col   : numeric column to colour-code placemarks (default: no colour)
 
@@ -65,27 +66,46 @@ def export_kml(
     meta = load_metadata(dataset_id)
     df = load_dataset(dataset_id)
 
-    # Resolve coordinate columns
-    spatial_ref = meta.get("spatial_ref")
+    # Resolve coordinate columns from geometry_source (GIS rule)
+    sc = meta.get("spatial_config")
     if not lat_col or not lon_col:
-        if spatial_ref:
-            lon_col = spatial_ref["x_col"]
-            lat_col = spatial_ref["y_col"]
+        if sc:
+            gsource = sc.get("geometry_source", "none")
+            if gsource == "projected_xy":
+                lon_col = sc.get("east_col")
+                lat_col = sc.get("north_col")
+            elif gsource == "wgs84_lonlat":
+                lon_col = sc.get("lon_col")
+                lat_col = sc.get("lat_col")
+            else:
+                raise ValueError(
+                    f"Dataset has geometry_source='{gsource}' — cannot export KML. "
+                    "Re-import with Projected X/Y or WGS84 Lon/Lat geometry."
+                )
         else:
             raise ValueError(
-                "No coordinate columns specified and no spatial_ref in dataset metadata. "
+                "No coordinate columns specified and no spatial_config in dataset metadata. "
                 "Re-import the dataset with spatial reference selected."
             )
+
+    if not lon_col or not lat_col:
+        raise ValueError("Coordinate columns could not be resolved from spatial_config.")
 
     if lon_col not in df.columns or lat_col not in df.columns:
         raise ValueError(
             f"Coordinate columns '{lon_col}' / '{lat_col}' not found in dataset."
         )
 
-    is_geographic = spatial_ref.get("is_geographic", True) if spatial_ref else True
-    crs_epsg = spatial_ref.get("crs", "EPSG:4326") if spatial_ref else "EPSG:4326"
+    # Determine CRS for reprojection (only needed for web/KML render)
+    if sc:
+        gsource = sc.get("geometry_source", "none")
+        is_geographic = (gsource == "wgs84_lonlat")
+        crs_epsg = sc.get("projected_epsg", "EPSG:4326") if gsource == "projected_xy" else "EPSG:4326"
+    else:
+        is_geographic = True
+        crs_epsg = "EPSG:4326"
 
-    # Reproject if needed
+    # Reproject projected coords to WGS84 for web render — originals not modified
     lon_values, lat_values = _get_lonlat(df, lon_col, lat_col, crs_epsg, is_geographic)
 
     # Resolve name column (first text column that isn't a coordinate or ioGAS display)
