@@ -95,6 +95,21 @@
 
 **HITO ALCANZADO**: navegación del shell alineada con el UX planificado — próximas features (PCA, Litogeochemistry, imports TSG/KT-10) ya tienen dónde vivir sin volver a tocar `App.tsx`.
 
+### Completado en sesión 2026-07-14 (continuación) — Plugin Analytics: descriptive stats + PCA
+
+- [x] `analysis/analytics/preprocessing.py` — `prepare_matrix()` compartido: maneja nulos RF-04-CUA (NOT_ANALYZED excluye muestra, BELOW_LOD imputa LOD/2, MISSING imputa mediana) + estandarización opcional. Bug corregido: la mediana de MISSING se calculaba sobre valores ya imputados por BELOW_LOD en vez de solo los realmente medidos.
+- [x] `analysis/analytics/descriptive.py` — estadística descriptiva + normalidad (Shapiro-Wilk) + correlación (Spearman)
+- [x] `analysis/analytics/pca.py` — PCA con validación obligatoria KMO/Bartlett/VIF (RF-04.2/2a/2b); bloquea con error si KMO < 0.5
+- [x] `services/analytics/tests/` — 7 tests (preprocessing + PCA), todos en verde
+- [x] `packages/ipc-contracts/analytics/descriptive.v1.json` + `pca.v1.json`
+- [x] `app/routers/rpc.py` — métodos `analytics.descriptive` / `analytics.pca`
+- [x] `src/lib/data-api.ts` — tipos + helpers `runDescriptive()` / `runPca()`
+- [x] `src/components/AnalyticsWorkspace.tsx` — tool "Data Analysis" del grupo Geochemistry (pasa de `planned` a `active` en `modules-registry.ts`): picker de variables, tabla de stats + heatmap de correlación, y para PCA: KMO/Bartlett/warnings, scree plot, biplot de scores por sample type, tabla de loadings/VIF
+- [x] TypeScript typecheck: 0 errores. Verificado visualmente con Vite + Edge headless (estado vacío, picker con dataset, resultados vía fixtures)
+- [ ] **Pendiente**: verificación E2E real contra el servicio Python (requiere compilar el stack Tauri completo) — no se probó aún con datos reales de punta a punta
+
+**HITO ALCANZADO**: primer plugin de análisis estadístico end-to-end (backend + contratos + UI) — flujo principal import → analyze (descriptive/PCA) ya tiene su primera pieza funcional.
+
 ### Pendiente en Fase 0
 - [ ] Plugin Core: registry, lifecycle, event bus básico (packages/plugin-sdk)
 - [ ] Pipeline CI/CD base (GitHub Actions)
@@ -118,11 +133,10 @@
 
 ## Prioridades Actuales
 
-1. **Plugin Analytics** — estadísticas descriptivas + PCA (completa el flujo E2E principal: import → analyze → biplot)
-2. **Plugin Visualization** — scatter + biplot PCA en el panel derecho
-3. **Plugin QAQC** (ADR-0003) — blancos, %RPD, %Recovery, cartas Shewhart
-4. **Definir tools de Espectrometría** con product-manager (hoy solo import + visualization genérica en `modules-registry.ts`)
-5. **Investigar formatos TSG y KT-10** antes de extender `services/analytics/analysis/data/importer.py` (bloqueante para los módulos Espectrometría/Petrofísica)
+1. **Verificación E2E real del Plugin Analytics** — correr `pnpm dev` completo (Tauri+Rust+Python) e importar un dataset real para probar `analytics.descriptive`/`analytics.pca` de punta a punta (solo se verificó UI con fixtures hasta ahora)
+2. **Plugin QAQC** (ADR-0003) — blancos, %RPD, %Recovery, cartas Shewhart
+3. **Definir tools de Espectrometría** con product-manager (hoy solo import + visualization genérica en `modules-registry.ts`)
+4. **Investigar formatos TSG y KT-10** antes de extender `services/analytics/analysis/data/importer.py` (bloqueante para los módulos Espectrometría/Petrofísica)
 
 ## Decisiones Técnicas Tomadas
 
