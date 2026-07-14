@@ -119,6 +119,48 @@ Cada agente opera con contexto fresco, no hereda el contexto del anterior.
 
 ---
 
+## 2026-07-14 — Verificar UI de Tauri sin compilar Rust, y trampa de PowerShell background jobs
+
+**Situación**: Se necesitaba verificar visualmente un cambio de navegación en `apps/desktop/src`
+en una máquina nueva sin Node/Rust instalados. Compilar Tauri completo (`pnpm dev`) tarda
+~5 min la primera vez (ver lección de 2026-06-01). Además, `Start-Job` de PowerShell
+lanzado desde una tool call moría apenas terminaba esa tool call — el proceso hijo no
+sobrevive al proceso padre que lo lanzó.
+
+**Lección 1 — Verificar UI sin Tauri**: `pnpm --filter @pyorex/desktop vite:dev` levanta
+solo Vite (sin Rust) y sirve la misma UI en `http://localhost:5173`. Para features que
+son puramente de frontend (no dependen de comandos Tauri nativos), esto es suficiente y
+~20x más rápido que `pnpm dev`.
+
+**Lección 2 — Screenshot sin instalar nada**: Microsoft Edge ya viene instalado en
+Windows 10/11. `msedge.exe --headless=new --disable-gpu --window-size=1440,900
+--screenshot=out.png http://localhost:5173/` genera un PNG del render real sin necesidad
+de instalar Playwright/Puppeteer ni descargar Chromium (~150MB). Útil para verificación
+visual rápida en cualquier máquina Windows.
+
+**Lección 3 — `Start-Job` no sirve para procesos de larga duración desde tool calls**:
+cada llamada a la herramienta PowerShell es un proceso nuevo; un `Start-Job` lanzado ahí
+muere cuando esa llamada termina. Para dejar un servidor corriendo entre llamadas, usar
+`Start-Process` con un proceso verdaderamente desacoplado (ej. `cmd.exe /c pnpm ...`
+con `-WindowStyle Hidden` y `-RedirectStandardOutput/-RedirectStandardError` a archivos de
+log) — y recordar que `Start-Process -FilePath` debe apuntar a un `.exe` real: los shims
+de `pnpm`/`npm` en Windows son `.cmd`, no ejecutables Win32 válidos para `-FilePath`
+directo, hay que envolverlos en `cmd.exe /c`.
+
+**Lección 4 — Verificar múltiples estados de una SPA sin navegación por URL**: si el nav
+activo vive en un store (Zustand) sin reflejarse en la URL, se puede editar temporalmente
+el valor default del store, dejar que Vite HMR recompile, y tomar el screenshot — cada
+invocación de Edge headless es un proceso nuevo que re-lee el store desde cero, así que
+no hace falta simular clicks. Revertir el default al terminar.
+
+**Cómo aplicar**: para cualquier cambio de UI en `apps/desktop` que no toque código Rust,
+usar `vite:dev` + Edge headless como ciclo de verificación rápido antes de pedir un
+`pnpm dev` completo.
+
+**Agente**: desktop-engineer
+
+---
+
 ## 2026-06-01 — Diseño del sistema de memoria
 
 **Situación**: Se evaluó cómo hacer que los agentes "aprendan" entre sesiones en Claude Code.

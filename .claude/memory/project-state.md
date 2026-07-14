@@ -1,6 +1,6 @@
 ﻿# Estado del Proyecto — PyOrex
 
-> Última actualización: 2026-06-04
+> Última actualización: 2026-07-14
 > Actualizar este archivo cuando cambie el estado significativo del proyecto.
 
 ## Fase Actual
@@ -84,6 +84,17 @@
 - [x] Auto-memoria actualizada: `project-iogas.md` (actualizado a Fase 1), `repo-scientific-skills.md` (nuevo)
 - [x] Fuente: https://github.com/k-dense-ai/scientific-agent-skills (142 skills científicos MIT — revisado y extractos integrados)
 
+### Completado en sesión 2026-07-14 — Separación Data/Módulos + scope Espectrometría/Petrofísica
+
+- [x] **Auditoría visual del UX planificado**: `UX_PyOrex_06.26.pptx` (10 slides, sin abrir antes — exportadas a PNG vía PowerPoint COM automation) comparado pantalla por pantalla contra `apps/desktop/src`. Confirmó que "Data" y "Módulos" caían en la misma vista genérica en el código, y que el mockup ya asumía alcance de minería/exploración (Litogeochemistry, Mineral Exploration), no solo O&G — ver Gap Crítico de 2026-06-01, ahora resuelto.
+- [x] **ADR-0005** — separación de `App.tsx` en 4 pantallas reales (`FileScreen`, `DataScreen`, `ModulosScreen`, `ViewScreen`) + `VizWorkspace.tsx` compartido + `ActionButton.tsx` compartido.
+- [x] **`apps/desktop/src/lib/modules-registry.ts`** — registro estático de grupos de módulos (seam de migración a `PluginManifest[]` cuando el Plugin Core exista). Grupos: `geochemistry` (Data Analysis, Visualization, Litogeochemistry, Mineral Exploration), `espectrometria` (Import TSG data, Visualization), `petrofisica` (Import KT-10 data, Down-hole Log).
+- [x] **Alcance de producto ampliado** (confirmado por el dueño del producto): PyOreX = **Py**thon + **Ore** + e**X**ploration. Además de geoquímica, el producto incluirá módulo **Espectrometría** (datos estilo TSG — The Spectral Geologist) y módulo **Petrofísica** (susceptibilidad/conductividad estilo KT-10). Ambos módulos son hermanos de Geochemistry en el sidebar de Módulos, confirmado por wireframes adicionales del usuario.
+- [x] Decisión de diseño: visualizador de Petrofísica = **Down-hole Log** (profundidad en eje Y invertido, susceptibilidad/conductividad como pistas paralelas — estándar de log de wireline, no un scatter genérico).
+- [x] TypeScript typecheck: 0 errores (verificado con Node/pnpm instalados por primera vez en esta máquina + Vite dev server + capturas Edge headless de las 4 pantallas).
+
+**HITO ALCANZADO**: navegación del shell alineada con el UX planificado — próximas features (PCA, Litogeochemistry, imports TSG/KT-10) ya tienen dónde vivir sin volver a tocar `App.tsx`.
+
 ### Pendiente en Fase 0
 - [ ] Plugin Core: registry, lifecycle, event bus básico (packages/plugin-sdk)
 - [ ] Pipeline CI/CD base (GitHub Actions)
@@ -103,12 +114,15 @@
 |-----|----------|--------|
 | ADR-0001 | Stack tecnológico principal (Tauri+React+FastAPI) | Aceptado |
 | ADR-0004 | Formato de proyecto nativo `.orex` (ZIP: Parquet + JSON + viz configs) | Aceptado |
+| ADR-0005 | Separar Data/Módulos/View + registro estático de grupos de módulos | Aceptado |
 
 ## Prioridades Actuales
 
 1. **Plugin Analytics** — estadísticas descriptivas + PCA (completa el flujo E2E principal: import → analyze → biplot)
 2. **Plugin Visualization** — scatter + biplot PCA en el panel derecho
 3. **Plugin QAQC** (ADR-0003) — blancos, %RPD, %Recovery, cartas Shewhart
+4. **Definir tools de Espectrometría** con product-manager (hoy solo import + visualization genérica en `modules-registry.ts`)
+5. **Investigar formatos TSG y KT-10** antes de extender `services/analytics/analysis/data/importer.py` (bloqueante para los módulos Espectrometría/Petrofísica)
 
 ## Decisiones Técnicas Tomadas
 
@@ -139,13 +153,17 @@ Ver `.claude/memory/design-system.md` para el ASCII mockup del layout extraído.
 - Índices de alteración hidrotermal (CAI, CCPI, AI, etc.) — exploración minera
 - Centred Log Ratio (CLR) transform — para datos composicionales (% suma 100)
 
-**Decisión pendiente** → `product-manager` + `chief-architect` deben aclarar:
-¿El MVP cubre solo O&G (como dice el spec) o también geoquímica de exploración/minería?
+**Resuelto 2026-07-14**: el MVP cubre O&G **y** minería/exploración — confirmado tanto por
+`UX_PyOrex_06.26.pptx` (incluye Litogeochemistry y Mineral Exploration como módulos de
+Geochemistry) como directamente por el dueño del producto, quien además amplió el alcance
+a **Espectrometría** (TSG) y **Petrofísica** (KT-10) — ver ADR-0005. `NOTA: PYOREX_SPECS_v2.md`
+mencionado abajo no existe en el repo — debe re-crearse o localizarse para reflejar este
+alcance ampliado.
 
 ## Contexto Importante para Agentes
 
 - El proyecto está en estado **inicial** — no hay código de producción aún
-- Especificación completa: `PYOREX_SPECS_v2.md` en la raíz del proyecto
+- Especificación completa: `PYOREX_SPECS_v2.md` en la raíz del proyecto (⚠ archivo no encontrado en el repo — ver nota arriba)
 - Software de referencia/competencia: **ioGAS v7.3 de IMDEX** — ver capturas en resources
 - Multi-tenancy es un requerimiento duro desde el inicio
 - Offline-first es no negociable (clientes en campo sin internet)
@@ -153,6 +171,7 @@ Ver `.claude/memory/design-system.md` para el ASCII mockup del layout extraído.
 - Los análisis deben ser completamente reproducibles (metadatos + pipeline serializado)
 - Los outliers en datos geoquímicos NO se eliminan automáticamente — siempre reportar al usuario
 - La UI target tiene dark theme, split view — ver mockup en design-system.md
+- PyOreX = **Py**thon + **Ore** + e**X**ploration — no es solo O&G, el nombre ya apunta a exploración minera
 
 ## Repositorio GitHub
 
@@ -165,9 +184,10 @@ Ver `.claude/memory/design-system.md` para el ASCII mockup del layout extraído.
 
 - Agentes configurados: 9 (se agregó security-engineer el 2026-06-04)
 - Skills configurados: 5
-- ADRs: 3
-- Features implementadas: Fase 1a (import E2E) + 1b (spatial/KML) + 1c (export history)
+- ADRs: 5
+- Features implementadas: Fase 1a (import E2E) + 1b (spatial/KML) + 1c (export history) + nav Data/Módulos/View separada (2026-07-14)
 - Tests existentes: 0 (deuda técnica — próximo sprint)
 - TypeScript typecheck: 0 errores (mantenido)
 - Python: pyproj instalado y verificado
+- Módulos de producto: Geochemistry (parcial) + Espectrometría (scaffold) + Petrofísica (scaffold) — ver `modules-registry.ts`
 
