@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "analytics.descriptive.v1",
+  "title": "Descriptive Statistics",
+  "description": "Descriptive statistics, normality (Shapiro-Wilk) and Spearman correlation for a set of numeric variables",
+  "version": "v1",
+  "method": "analytics.descriptive",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id", "variables"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "variables": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 1,
+        "description": "Numeric column names to analyze"
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["stats", "correlation", "n_samples_used", "warnings"],
+    "properties": {
+      "stats": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["variable", "n", "n_nulls", "mean", "median", "std", "min", "max", "skewness", "normal"],
+          "properties": {
+            "variable": { "type": "string" },
+            "n": { "type": "integer" },
+            "n_nulls": { "type": "integer" },
+            "mean": { "type": "number" },
+            "median": { "type": "number" },
+            "std": { "type": "number" },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "skewness": { "type": "number" },
+            "shapiro_p": { "type": ["number", "null"] },
+            "normal": { "type": "boolean" }
+          }
+        }
+      },
+      "correlation": {
+        "type": "object",
+        "properties": {
+          "variables": { "type": "array", "items": { "type": "string" } },
+          "matrix": {
+            "type": "array",
+            "items": { "type": "array", "items": { "type": "number" } },
+            "description": "Spearman correlation matrix, rows/cols ordered like 'variables'"
+          }
+        }
+      },
+      "n_samples_used": { "type": "integer" },
+      "warnings": { "type": "array", "items": { "type": "string" } }
+    }
+  }
+}

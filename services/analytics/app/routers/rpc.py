@@ -6,11 +6,14 @@ desde Tauri. Despacha al handler correcto según el método.
 from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Any
+from dataclasses import asdict
 import uuid
 
 from analysis.data.importer import ColumnMapping, ImportConfig, NullMapping, SampleTypeMapping, SpatialConfig, import_file, preview_file
-from analysis.data.storage import save_dataset, load_metadata, list_datasets, get_rows, delete_dataset
+from analysis.data.storage import save_dataset, load_metadata, list_datasets, get_rows, delete_dataset, load_dataset
 from analysis.spatial.kml_export import export_kml
+from analysis.analytics.descriptive import run_descriptive
+from analysis.analytics.pca import run_pca
 
 router = APIRouter()
 
@@ -123,6 +126,18 @@ def _rpc_data_import(params: dict) -> dict:
     return {"success": True, "dataset": meta}
 
 
+def _rpc_analytics_descriptive(params: dict) -> dict:
+    df = load_dataset(params["dataset_id"])
+    result = run_descriptive(df, params["variables"])
+    return asdict(result)
+
+
+def _rpc_analytics_pca(params: dict) -> dict:
+    df = load_dataset(params["dataset_id"])
+    result = run_pca(df, params["variables"], params.get("n_components"))
+    return asdict(result)
+
+
 def _rpc_data_export_kml(params: dict) -> dict:
     path = export_kml(
         dataset_id=params["dataset_id"],
@@ -144,6 +159,10 @@ METHOD_REGISTRY: dict[str, Any] = {
     "data.rows":       lambda p: get_rows(p["dataset_id"], p.get("offset", 0), min(p.get("limit", 200), 5000)),
     "data.delete":     lambda p: {"deleted": delete_dataset(p["dataset_id"])},
     "data.export_kml": _rpc_data_export_kml,
+
+    # Analytics (RF-04): descriptive stats + PCA
+    "analytics.descriptive": _rpc_analytics_descriptive,
+    "analytics.pca":         _rpc_analytics_pca,
 }
 
 

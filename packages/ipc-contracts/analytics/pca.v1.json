@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "analytics.pca.v1",
+  "title": "Principal Component Analysis",
+  "description": "PCA with mandatory KMO/Bartlett/VIF pre-validation (RF-04.2). Blocks with an error if KMO < 0.5.",
+  "version": "v1",
+  "method": "analytics.pca",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id", "variables"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "variables": {
+        "type": "array",
+        "items": { "type": "string" },
+        "minItems": 2,
+        "description": "Numeric column names to analyze"
+      },
+      "n_components": { "type": ["integer", "null"], "description": "Defaults to min(n_samples, n_variables)" }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "job_id", "n_components", "explained_variance_ratio", "cumulative_variance",
+      "loadings", "scores", "eigenvalues", "variables_used", "n_samples",
+      "sample_ids", "sample_types", "kmo_global", "bartlett_p_value", "vif", "warnings", "pipeline"
+    ],
+    "properties": {
+      "job_id": { "type": "string" },
+      "n_components": { "type": "integer" },
+      "explained_variance_ratio": { "type": "array", "items": { "type": "number" } },
+      "cumulative_variance": { "type": "array", "items": { "type": "number" } },
+      "loadings": { "type": "array", "items": { "type": "array", "items": { "type": "number" } }, "description": "variables x components" },
+      "scores": { "type": "array", "items": { "type": "array", "items": { "type": "number" } }, "description": "samples x components" },
+      "eigenvalues": { "type": "array", "items": { "type": "number" } },
+      "variables_used": { "type": "array", "items": { "type": "string" } },
+      "n_samples": { "type": "integer" },
+      "sample_ids": { "type": "array", "items": { "type": "string" } },
+      "sample_types": { "type": "array", "items": { "type": "string" } },
+      "components_for_70pct": { "type": "integer" },
+      "components_for_80pct": { "type": "integer" },
+      "components_for_90pct": { "type": "integer" },
+      "kmo_global": { "type": "number" },
+      "bartlett_p_value": { "type": "number" },
+      "vif": { "type": "object", "additionalProperties": { "type": "number" } },
+      "warnings": { "type": "array", "items": { "type": "string" } },
+      "pipeline": {
+        "type": "object",
+        "description": "Serialized preprocessing pipeline for reproducibility (CLAUDE.md rule 7)",
+        "properties": {
+          "variables": { "type": "array", "items": { "type": "string" } },
+          "standardized": { "type": "boolean" },
+          "imputation": { "type": "object" },
+          "n_excluded_not_analyzed": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "errors": {
+    "kmo_too_low": "KMO < 0.5 — request is rejected with a JSON-RPC error, not a partial result"
+  }
+}
