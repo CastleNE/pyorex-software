@@ -205,6 +205,64 @@ export function getRows(
   return callRpc("data.rows", { dataset_id: datasetId, offset, limit });
 }
 
+// ── Analytics (descriptive + PCA, RF-04) ─────────────────────────────────────
+
+export interface VariableStats {
+  variable: string;
+  n: number;
+  n_nulls: number;
+  mean: number;
+  median: number;
+  std: number;
+  min: number;
+  max: number;
+  skewness: number;
+  shapiro_p: number | null;
+  normal: boolean;
+}
+
+export interface CorrelationMatrix {
+  variables: string[];
+  matrix: number[][];
+}
+
+export interface DescriptiveResult {
+  stats: VariableStats[];
+  correlation: CorrelationMatrix;
+  n_samples_used: number;
+  warnings: string[];
+}
+
+export function runDescriptive(datasetId: string, variables: string[]): Promise<DescriptiveResult> {
+  return callRpc("analytics.descriptive", { dataset_id: datasetId, variables });
+}
+
+export interface PcaResult {
+  job_id: string;
+  n_components: number;
+  explained_variance_ratio: number[];
+  cumulative_variance: number[];
+  loadings: number[][]; // variables x components
+  scores: number[][];   // samples x components
+  eigenvalues: number[];
+  variables_used: string[];
+  n_samples: number;
+  sample_ids: string[];
+  sample_types: string[];
+  components_for_70pct: number;
+  components_for_80pct: number;
+  components_for_90pct: number;
+  kmo_global: number;
+  bartlett_p_value: number;
+  vif: Record<string, number>;
+  warnings: string[];
+  pipeline: Record<string, unknown>;
+}
+
+export function runPca(datasetId: string, variables: string[], nComponents?: number): Promise<PcaResult> {
+  return callRpc("analytics.pca", { dataset_id: datasetId, variables, n_components: nComponents ?? null });
+}
+
 export function exportKml(opts: {
   datasetId: string;
   latCol?: string;

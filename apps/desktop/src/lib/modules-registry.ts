@@ -20,7 +20,7 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     id: "geochemistry",
     label: "Geochemistry",
     tools: [
-      { id: "data-analysis", label: "Data Analysis", status: "planned" },
+      { id: "data-analysis", label: "Data Analysis", status: "active" },
       { id: "visualization", label: "Visualization", status: "active" },
       { id: "litogeochemistry", label: "Litogeochemistry", status: "planned" },
       { id: "mineral-exploration", label: "Mineral Exploration", status: "planned" },

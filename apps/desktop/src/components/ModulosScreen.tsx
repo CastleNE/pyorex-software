@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDatasetStore } from "@/stores/dataset-store";
 import DatasetPanel from "@/components/DatasetPanel";
 import VizWorkspace, { PlaceholderPanel } from "@/components/VizWorkspace";
+import AnalyticsWorkspace from "@/components/AnalyticsWorkspace";
 import { MODULE_GROUPS, type ModuleTool } from "@/lib/modules-registry";
 
 interface Props {
@@ -60,7 +61,8 @@ export default function ModulosScreen({ onOpenData }: Props) {
         </div>
       )}
       {selected?.id === "visualization" && <VizWorkspace hasData={hasData} onOpenData={onOpenData} />}
-      {selected && selected.id !== "visualization" && (
+      {selected?.id === "data-analysis" && <AnalyticsWorkspace onOpenData={onOpenData} />}
+      {selected && selected.id !== "visualization" && selected.id !== "data-analysis" && (
         <div className="flex flex-1 bg-zinc-900">
           <PlaceholderPanel label={`${selected.label} — Próximamente`} />
         </div>
