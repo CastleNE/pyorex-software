@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.interpretation.v1",
+  "title": "Mineral interpretation — manual / rule-based / library-match (SAM)",
+  "description": "3-state model: suggested -> interpreted -> confirmed (see analysis/spectrometry/interpretation.py). interpretation.confirm NEVER mutates a row in place — it creates a new row with previous_interpretation_id set and flips the old row's is_current=false, so automatic result / original / edited result / who / when / why are all recoverable (spec §19). library_match uses Spectral Angle Mapper and only ever returns ranked candidates (available:false with a reason when the project's reference library is empty) — accepting a candidate is a separate, explicit accept_match call that commits it as state=suggested, never auto-confirmed.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.interpretation.create_manual": {
+      "request": { "project_id": "string", "sample_id": "string", "spectrum_id": "string?", "primary_mineral": "string?", "secondary_mineral": "string?", "mineral_group": "string?", "assemblage_name": "string?", "confidence": "number?", "comment": "string?", "created_by": "string (default 'user')", "state": "'suggested'|'interpreted'|'confirmed' (default 'interpreted')" },
+      "response": { "interpretation_id": "string" }
+    },
+    "spectrometry.interpretation.rules.list": { "request": { "project_id": "string" }, "response": { "rules": "[{id, mineral, mineral_group, conditions:[{feature_preset,param,op,value}], match_all}]" } },
+    "spectrometry.interpretation.rules.upsert": { "request": { "project_id": "string", "rule": "object (see rules.list shape)" }, "response": { "rule": "object" } },
+    "spectrometry.interpretation.apply_rules": {
+      "request": { "project_id": "string", "spectrum_id": "string" },
+      "response": { "matched_rules": "object[]", "interpretation_ids": "string[] (one per matched rule, state=suggested)" }
+    },
+    "spectrometry.interpretation.library.list": { "request": { "project_id": "string" }, "response": { "references": "reference_spectra rows (wavelength/reflectance arrays omitted)" } },
+    "spectrometry.interpretation.library.upsert": { "request": { "project_id": "string", "name": "string", "mineral_label": "string?", "wavelength": "number[]", "reflectance": "number[]", "source": "'project_sample'|'imported' (default imported)" }, "response": { "reference_id": "string" } },
+    "spectrometry.interpretation.library_match": {
+      "request": { "project_id": "string", "spectrum_id": "string", "region": "[number,number]? (default: full spectrum range)" },
+      "response": { "available": "boolean", "reason": "string?", "matches": "[{reference_id, name, mineral_label, angle_radians, match_score}] sorted best-first" }
+    },
+    "spectrometry.interpretation.accept_match": {
+      "request": { "project_id": "string", "spectrum_id": "string", "match": "one MatchResult from library_match", "region": "[number,number]" },
+      "response": { "interpretation_id": "string (state=suggested, method=library_match)" }
+    },
+    "spectrometry.interpretation.confirm": {
+      "request": { "project_id": "string", "interpretation_id": "string", "new_state": "'suggested'|'interpreted'|'confirmed'", "field_overrides": "object?", "edited_by": "string (default 'user')", "reason": "string?" },
+      "response": { "interpretation_id": "string (a NEW id — the old row is never mutated)" }
+    },
+    "spectrometry.interpretation.list": { "request": { "project_id": "string", "sample_id": "string?" }, "response": { "interpretations": "is_current=true rows only" } },
+    "spectrometry.interpretation.history": { "request": { "project_id": "string", "sample_id": "string" }, "response": { "history": "ALL rows (current + superseded) for this sample, sorted by created_at" } }
+  }
+}

@@ -22,18 +22,19 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     tools: [
       { id: "data-analysis", label: "Data Analysis", status: "active" },
       { id: "visualization", label: "Visualization", status: "active" },
+      { id: "qaqc", label: "QAQC", status: "active" },
       { id: "litogeochemistry", label: "Litogeochemistry", status: "planned" },
       { id: "mineral-exploration", label: "Mineral Exploration", status: "planned" },
     ],
   },
   {
-    // Herramientas más allá de import/visualization aún sin definir con
-    // product-manager — agregar aquí cuando se especifiquen, no antes.
+    // Un solo entry point, como "Data Analysis" — Spectrometry tiene su
+    // propio catálogo interno de ~26 herramientas (ver
+    // lib/spectrometry-tools-registry.ts) en vez de listarlas acá.
     id: "espectrometria",
     label: "Espectrometría",
     tools: [
-      { id: "tsg-import", label: "Import TSG data", status: "planned" },
-      { id: "spectral-visualization", label: "Visualization", status: "planned" },
+      { id: "spectrometry", label: "Spectrometry", status: "active" },
     ],
   },
   {

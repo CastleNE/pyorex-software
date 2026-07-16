@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.features.v1",
+  "title": "Absorption feature extraction",
+  "description": "Generic continuum-removed band-feature extraction over a configurable window (analysis/spectrometry/features.py::extract_feature) — presets (Al-OH/Mg-OH/Fe-OH/H2O/OH) are just named default windows (feature_presets.py), never hardcoded into the algorithm. quality_indicator flags no_feature_detected/minimum_at_edge/multiple_local_minima/shallow_feature instead of crashing on ambiguous spectra.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.features.presets.list": { "request": { "project_id": "string" }, "response": { "presets": "{preset_name: {window:[min,max], continuum_method, label}}" } },
+    "spectrometry.features.extract": {
+      "request": { "project_id": "string", "spectrum_ids": "string[]", "preset_name": "string?", "window": "[number,number]? (required if no preset_name)", "continuum_method": "'convex_hull'|'linear' (default convex_hull)" },
+      "response": {
+        "results": "[{feature_id, spectrum_id, sample_id, preset_name, center, depth, width_fwhm, area, asymmetry, method, window_min, window_max, continuum_method, quality_indicator, calc_date}]",
+        "failures": "[{spectrum_id, reason}]"
+      }
+    },
+    "spectrometry.features.list": { "request": { "project_id": "string", "spectrum_id": "string?" }, "response": { "features": "object[]" } }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.specialized.v1",
+  "title": "White Mica / Chlorite population analysis",
+  "description": "Both call the SAME generic analysis/spectrometry/mineral_population.py::classify_population() with a different default preset/class table — not two bespoke algorithms. Results are explicitly spectral proxies, not direct chemical analyses (spec §14/§15). Clay Mineral Analysis and Mineral Assemblages are 'Coming soon' this pass (see project-state.md) — no RPC methods exist for them yet.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.white_mica.analyze": {
+      "request": { "project_id": "string", "preset_name": "string (default 'AlOH_2200')" },
+      "response": { "results": "[{sample_id, drillhole_id, from_m, to_m, spectrum_id, diagnostic_position, spectral_class, depth, quality_indicator}]" }
+    },
+    "spectrometry.chlorite.analyze": {
+      "request": { "project_id": "string", "preset_name": "string (default 'MgOH_2320')" },
+      "response": "same shape as white_mica.analyze"
+    }
+  }
+}

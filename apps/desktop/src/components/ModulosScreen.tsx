@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { useDatasetStore } from "@/stores/dataset-store";
+import { useAppStore } from "@/stores/app-store";
 import DatasetPanel from "@/components/DatasetPanel";
 import VizWorkspace, { PlaceholderPanel } from "@/components/VizWorkspace";
-import AnalyticsWorkspace from "@/components/AnalyticsWorkspace";
+import DataAnalysisScreen from "@/components/DataAnalysisScreen";
+import QaqcScreen from "@/components/QaqcScreen";
+import SpectrometryScreen from "@/components/SpectrometryScreen";
 import { MODULE_GROUPS, type ModuleTool } from "@/lib/modules-registry";
 
 interface Props {
@@ -13,9 +16,21 @@ interface Props {
 // Espectrometría, Petrofísica, ...) + workspace de la herramienta elegida.
 // Los grupos vienen de modules-registry.ts — agregar un módulo nuevo no
 // requiere tocar este componente.
+//
+// La herramienta seleccionada vive en app-store (activeModuleId) en vez de
+// useState local, para que otras pantallas (ej. el botón "Open in
+// Visualization" de un resultado de análisis) puedan seleccionarla desde
+// afuera de este árbol de render.
 export default function ModulosScreen({ onOpenData }: Props) {
   const { hasData } = useDatasetStore();
-  const [selected, setSelected] = useState<ModuleTool | null>(null);
+  const { activeModuleId, setActiveModuleId } = useAppStore();
+  const selected = useMemo<ModuleTool | null>(() => {
+    for (const group of MODULE_GROUPS) {
+      const found = group.tools.find((t) => t.id === activeModuleId);
+      if (found) return found;
+    }
+    return null;
+  }, [activeModuleId]);
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -34,7 +49,7 @@ export default function ModulosScreen({ onOpenData }: Props) {
                 return (
                   <button
                     key={tool.id}
-                    onClick={() => setSelected(tool)}
+                    onClick={() => setActiveModuleId(tool.id)}
                     className={`w-full flex items-center justify-between px-4 py-1.5 text-xs text-left transition-colors ${
                       isSelected ? "bg-blue-900/30 text-blue-300" : "hover:bg-zinc-800 text-zinc-300"
                     }`}
@@ -61,8 +76,10 @@ export default function ModulosScreen({ onOpenData }: Props) {
         </div>
       )}
       {selected?.id === "visualization" && <VizWorkspace hasData={hasData} onOpenData={onOpenData} />}
-      {selected?.id === "data-analysis" && <AnalyticsWorkspace onOpenData={onOpenData} />}
-      {selected && selected.id !== "visualization" && selected.id !== "data-analysis" && (
+      {selected?.id === "data-analysis" && <DataAnalysisScreen onOpenData={onOpenData} />}
+      {selected?.id === "qaqc" && <QaqcScreen onOpenData={onOpenData} />}
+      {selected?.id === "spectrometry" && <SpectrometryScreen />}
+      {selected && !["visualization", "data-analysis", "qaqc", "spectrometry"].includes(selected.id) && (
         <div className="flex flex-1 bg-zinc-900">
           <PlaceholderPanel label={`${selected.label} — Próximamente`} />
         </div>

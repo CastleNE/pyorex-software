@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.project.v1",
+  "title": "Spectral project lifecycle",
+  "description": "A spectral project is its own relational unit (Samples/Spectra/Features/Interpretations) — NOT the tabular dataset used by DATA/Data Analysis. See analysis/spectrometry/storage.py. This file documents create/list/get/delete together for maintainability rather than one file per method.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.project.create": {
+      "request": { "name": "string", "workflow_type": "'native'|'processed_table'|'mixed' (default 'native')" },
+      "response": { "project": "project.meta.json contents (id, name, workflow_type, created_at, sample_count, spectra_count, ...)" }
+    },
+    "spectrometry.project.list": {
+      "request": {},
+      "response": { "projects": "array of project.meta.json contents" }
+    },
+    "spectrometry.project.get": {
+      "request": { "project_id": "string" },
+      "response": { "project": "project.meta.json contents" }
+    },
+    "spectrometry.project.delete": {
+      "request": { "project_id": "string" },
+      "response": { "deleted": "boolean" }
+    }
+  }
+}

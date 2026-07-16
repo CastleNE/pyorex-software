@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.indices.v1",
+  "title": "Spectral indices — formula engine",
+  "description": "Reuses analysis/data/formula.py's AST whitelist validator via its additive extra_allowed_funcs parameter (REFLECTANCE, DEPTH) instead of duplicating the security-critical logic — see analysis/spectrometry/spectral_formula.py. DEPTH(feature_name) raises if that feature hasn't been extracted yet for the spectrum (enforces extract-before-index ordering). A spectral index is NEVER a definitive mineral ID — see spectrometry.interpretation.v1.json for how minerals are actually assigned.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.indices.presets.list": { "request": { "project_id": "string" }, "response": { "presets": "{index_name: {formula, unit, reference}}" } },
+    "spectrometry.indices.preview_formula": {
+      "request": { "project_id": "string", "spectrum_id": "string", "formula": "string, e.g. 'REFLECTANCE(2160)/REFLECTANCE(2190)'" },
+      "response": { "available": true, "value": "number" },
+      "errors": { "invalid_formula": "Rejected/adversarial formulas raise a hard JSON-RPC error (same convention as data.preview_formula in the DATA module) — NOT a soft available:false response, since a FormulaError is a validation failure, not a legitimate empty state." }
+    },
+    "spectrometry.indices.compute": {
+      "request": { "project_id": "string", "spectrum_ids": "string[]", "index_name": "string?", "formula": "string? (required if no index_name / overrides preset)", "unit": "string?", "reference": "string?" },
+      "response": { "results": "[{index_id, spectrum_id, sample_id, index_name, formula, result, unit, reference, quality_indicator, calc_date}]", "failures": "[{spectrum_id, reason}]" }
+    },
+    "spectrometry.indices.presets.save": { "request": { "project_id": "string", "name": "string", "formula": "string", "unit": "string?", "reference": "string?" }, "response": { "success": true } },
+    "spectrometry.indices.list": { "request": { "project_id": "string", "spectrum_id": "string?" }, "response": { "indices": "object[]" } }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.import.v1",
+  "title": "Spectral import — native spectra + processed results table",
+  "description": "Reading is separate from interpretation (spec §4). ASD/SED readers are EXPERIMENTAL (see analysis/spectrometry/readers/asd_reader.py, sed_reader.py docstrings) — best-effort from unverified third-party format docs, fail loudly (raise) on anything unrecognized rather than guessing. One bad file in a batch never aborts the rest (import.native_spectra always returns both `imported` and `failures`).",
+  "version": "v1",
+  "methods": {
+    "spectrometry.import.preview_file": {
+      "request": { "file_path": "string" },
+      "response": { "available": "boolean", "reason": "string?", "spectrum": "RawSpectrum dict (see readers/common.py) when available" }
+    },
+    "spectrometry.import.native_spectra": {
+      "request": { "project_id": "string", "paths": "string[] (files and/or folders, mixed formats)", "recursive": "boolean (default true)", "sample_id_map": "{filename: sample_id}? (default: filename stem)" },
+      "response": { "imported": "[{filename, spectrum_id, sample_id, warnings}]", "failures": "[{path, reason}]", "n_imported": "integer", "n_failed": "integer" }
+    },
+    "spectrometry.import.processed_table_preview": {
+      "request": { "file_path": "string (csv/xlsx/xls)" },
+      "response": { "columns": "[{name, sample_values}]", "preview_rows": "object[]", "total_rows": "integer" }
+    },
+    "spectrometry.import.processed_table": {
+      "request": {
+        "project_id": "string", "file_path": "string",
+        "column_mapping": "{internal_field: source_column_name} — internal_field is one of the spec §5 field names (Sample ID, Drillhole ID, ..., Al-OH, Mg-OH, ...); no fixed/required column names in the source file"
+      },
+      "response": { "n_samples": "integer", "n_interpretations": "integer", "n_indices": "integer" }
+    },
+    "spectrometry.import.mapping_presets.list": {
+      "request": {},
+      "response": { "presets": "{name: {internal_field: source_column_name}}" }
+    },
+    "spectrometry.import.mapping_presets.upsert": {
+      "request": { "name": "string", "mapping": "{internal_field: source_column_name}" },
+      "response": { "presets": "updated map" }
+    }
+  }
+}

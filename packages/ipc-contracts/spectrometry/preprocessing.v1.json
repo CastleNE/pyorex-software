@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.preprocessing.v1",
+  "title": "Non-destructive spectral preprocessing overlay",
+  "description": "Structural analog of data.apply_operation/undo_operation/etc (see analysis/data/overlay.py) applied to spectral reflectance arrays instead of dataframe columns. `reflectance_raw` in spectra.parquet is NEVER mutated — every op carries a `scope` ({\"all\":true} or {\"spectrum_ids\":[...]}) and is validated against the current effective spectrum before being persisted (invalid ops never get appended). See analysis/spectrometry/preprocessing.py for the full operation list (remove_invalid_values, select_range, remove_bands, interpolate_gaps, smooth, normalize, baseline_correct, continuum_remove, reflectance_to_absorbance, absorbance_to_reflectance, derivative, correct_splice, resample).",
+  "version": "v1",
+  "methods": {
+    "spectrometry.preprocessing.preview": {
+      "request": { "project_id": "string", "spectrum_id": "string", "op_type": "string", "params": "object" },
+      "response": { "available": "boolean", "reason": "string?", "wavelength": "number[]?", "reflectance": "number[]?" }
+    },
+    "spectrometry.preprocessing.apply_operation": {
+      "request": { "project_id": "string", "op_type": "string", "params": "object", "scope": "{all:true}|{spectrum_ids:string[]}" },
+      "response": { "project_id": "string", "ops": "object[]", "redo_stack": "object[]", "history": "object[] (append-only audit trail)" }
+    },
+    "spectrometry.preprocessing.undo_operation": { "request": { "project_id": "string" }, "response": "same overlay shape as apply_operation" },
+    "spectrometry.preprocessing.redo_operation": { "request": { "project_id": "string" }, "response": "same overlay shape as apply_operation" },
+    "spectrometry.preprocessing.get_operations": { "request": { "project_id": "string" }, "response": "same overlay shape as apply_operation" },
+    "spectrometry.preprocessing.pipeline_presets.list": { "request": { "project_id": "string" }, "response": { "presets": "{name: op[]}" } },
+    "spectrometry.preprocessing.pipeline_presets.save": { "request": { "project_id": "string", "name": "string", "ops": "[{type, params}]" }, "response": { "success": true } },
+    "spectrometry.preprocessing.pipeline_presets.apply": { "request": { "project_id": "string", "name": "string", "scope": "object" }, "response": "same overlay shape as apply_operation" }
+  }
+}

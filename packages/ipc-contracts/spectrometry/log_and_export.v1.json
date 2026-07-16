@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.log_and_export.v1",
+  "title": "Spectral Log + export/integration with DATA",
+  "description": "log.data always reads is_current=true interpretations fresh on each call — editing an interpretation is reflected automatically with no separate cache-invalidation step. export.to_dataset builds one Polars DataFrame (samples join interpretations join pivoted indices, by sample_id) and calls the EXISTING analysis/data/storage.py::save_dataset() directly — this creates a brand-new DATA-module dataset, not a live/bidirectional join into an existing one. Image (PNG/SVG) export is client-side only via Plotly's toImage — no backend round-trip.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.log.data": {
+      "request": { "project_id": "string", "drillhole_ids": "string[]? (default: all)" },
+      "response": { "samples": "object[]", "interpretations": "object[] (is_current=true)", "indices": "object[]", "quality": "[{sample_id, quality_status, quality_score}]" }
+    },
+    "spectrometry.export.table": {
+      "request": { "project_id": "string", "table_name": "'samples'|'features'|'indices'|'interpretations'|'reference_spectra'", "format": "'csv'|'json'" },
+      "response": { "path": "string (written under DATA_DIR/exports/)" }
+    },
+    "spectrometry.export.to_dataset": {
+      "request": { "project_id": "string" },
+      "response": { "dataset_id": "string (new DATA-module dataset id, readable via the existing data.rows/data.list)" }
+    }
+  }
+}

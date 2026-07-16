@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.browsing.v1",
+  "title": "Sample/spectrum browsing for the Spectral Viewer",
+  "description": "spectra.get is a combined payload (raw + processed/effective arrays + linked features + current interpretations) — everything the Spectral Viewer's 3 panels need in one call, mirroring qaqc.calculate's combined-payload precedent.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.samples.list": {
+      "request": { "project_id": "string" },
+      "response": { "samples": "Sample rows + spectra_count", "total": "integer" }
+    },
+    "spectrometry.spectra.get": {
+      "request": { "project_id": "string", "spectrum_id": "string" },
+      "response": {
+        "available": "boolean", "reason": "string?",
+        "raw_wavelength": "number[]", "raw_reflectance": "number[]",
+        "processed_wavelength": "number[]", "processed_reflectance": "number[]",
+        "applied_processing_steps": "string[]",
+        "quality_status": "string", "quality_score": "number?", "import_warnings": "string[]",
+        "features": "object[]", "interpretations": "object[] (is_current=true only)"
+      }
+    },
+    "spectrometry.spectra.list_for_sample": {
+      "request": { "project_id": "string", "sample_id": "string" },
+      "response": { "spectra": "spectrum metadata rows (wavelength/reflectance arrays omitted for size)" }
+    }
+  }
+}

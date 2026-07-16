@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "spectrometry.quality.v1",
+  "title": "Spectral Quality Control",
+  "description": "Mirrors data.quality_report's shape (analysis/data/quality.py) applied to spectra instead of tabular columns — see analysis/spectrometry/quality.py for the 15 checks. Never auto-deletes a flagged spectrum; quality.set_status is the only way to change a spectrum's status, and it's always a logged manual override.",
+  "version": "v1",
+  "methods": {
+    "spectrometry.quality.report": {
+      "request": { "project_id": "string" },
+      "response": {
+        "project_id": "string",
+        "checks": "{check_name: finding[]} for all 15 checks (check_empty_spectra, check_non_numeric_values, check_out_of_range_reflectance, check_saturation, check_low_reflectance, check_high_noise, check_missing_bands, check_duplicate_wavelengths, check_incomplete_spectra, check_detector_discontinuities, check_possible_calibration_issues, check_duplicate_files, check_duplicate_sample_ids, check_identical_spectra, check_insufficient_spectral_range)",
+        "per_spectrum": "[{spectrum_id, status: Valid|Warning|Invalid, score: 0-100, reasons: string[]}]"
+      }
+    },
+    "spectrometry.quality.set_status": {
+      "request": { "project_id": "string", "spectrum_id": "string", "status": "string", "reason": "string" },
+      "response": { "success": true }
+    }
+  }
+}
