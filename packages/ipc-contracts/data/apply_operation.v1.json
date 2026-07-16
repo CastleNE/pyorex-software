@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "data.apply_operation.v1",
+  "title": "Apply a non-destructive column operation",
+  "description": "Appends a column-shape-changing operation to the dataset's ops overlay (analysis/data/overlay.py). Never mutates the original Parquet. Also see data.undo_operation, data.redo_operation, data.get_operations, data.save_changes.",
+  "version": "v1",
+  "method": "data.apply_operation",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id", "operation"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "operation": {
+        "type": "object",
+        "required": ["type", "params"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["rename_column", "hide_column", "unhide_column", "drop_column", "change_dtype", "add_calculated_column"]
+          },
+          "params": { "type": "object" }
+        }
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["dataset_id", "ops", "redo_stack", "history"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "ops": { "type": "array", "items": { "type": "object" } },
+      "redo_stack": { "type": "array", "items": { "type": "object" } },
+      "history": { "type": "array", "items": { "type": "object" }, "description": "Append-only audit trail — never truncated" }
+    }
+  }
+}

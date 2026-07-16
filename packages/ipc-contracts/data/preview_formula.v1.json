@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "data.preview_formula.v1",
+  "title": "Preview a calculated-column formula",
+  "description": "Restricted asteval evaluator (analysis/data/formula.py) — same whitelist/AST validation as the full-dataset commit path, evaluated over a small sample so preview and commit never diverge on accept/reject.",
+  "version": "v1",
+  "method": "data.preview_formula",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id", "formula"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "formula": { "type": "string", "description": "e.g. 'Cu_ppm / Au_ppm', 'log10(As_ppm)', 'IF(Au_ppm > 0.5, 1, 0)'" },
+      "variables": { "type": "array", "items": { "type": "string" } },
+      "sample_size": { "type": "integer", "default": 20, "maximum": 100 }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["values", "errors", "inferred_dtype", "n_sampled", "n_errors"],
+    "properties": {
+      "values": { "type": "array" },
+      "errors": { "type": "array", "items": { "type": ["string", "null"] } },
+      "inferred_dtype": { "type": "string", "enum": ["numeric", "text"] },
+      "n_sampled": { "type": "integer" },
+      "n_errors": { "type": "integer" }
+    }
+  },
+  "errors": {
+    "invalid_formula": "Syntax outside the whitelist (attribute access, imports, disallowed functions) is rejected with a JSON-RPC error, not silently ignored"
+  }
+}

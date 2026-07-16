@@ -140,7 +140,7 @@ export interface ImportedDatasetMeta {
   name: string;
   row_count: number;
   column_count: number;
-  columns: { name: string; dtype: string; null_count: number }[];
+  columns: { name: string; dtype: string; null_count: number; role?: ColumnRole }[];
   imported_at: string;
   source_path: string;
   spatial_config: SpatialConfig | null;
@@ -154,7 +154,84 @@ export interface DatasetRowsResult {
   columns: string[];
   rows: Record<string, unknown>[];
   total_rows: number;
+  total_rows_unfiltered: number;
   offset: number;
+  hidden_columns: string[];
+}
+
+// ── Filters / sort (DATA grid header menus) ──────────────────────────────────
+
+export type FilterOp =
+  | "eq" | "neq" | "gt" | "lt" | "gte" | "lte" | "between" | "is_null" | "not_null"
+  | "contains" | "not_contains" | "starts_with" | "ends_with" | "in"
+  | "before" | "after" | "year" | "month";
+
+export interface RowFilter {
+  column: string;
+  op: FilterOp;
+  value?: unknown;
+  value2?: unknown;
+}
+
+export interface RowSort {
+  column: string;
+  direction: "asc" | "desc";
+}
+
+// ── Non-destructive edit overlay (DATA toolbar) ──────────────────────────────
+
+export type OperationType =
+  | "rename_column" | "hide_column" | "unhide_column" | "drop_column"
+  | "change_dtype" | "add_calculated_column";
+
+export interface ColumnOperation {
+  type: OperationType;
+  params: Record<string, unknown>;
+}
+
+export interface OverlayOpEntry {
+  id: string;
+  type: OperationType;
+  params: Record<string, unknown>;
+  applied_at: string;
+}
+
+export interface OverlayHistoryEntry {
+  op_id: string;
+  action: "applied" | "undone" | "redone";
+  at: string;
+}
+
+export interface OverlayState {
+  dataset_id: string;
+  ops: OverlayOpEntry[];
+  redo_stack: OverlayOpEntry[];
+  history: OverlayHistoryEntry[];
+}
+
+export interface FormulaPreviewResult {
+  values: (number | string | boolean | null)[];
+  errors: (string | null)[];
+  inferred_dtype: "numeric" | "text";
+  n_sampled: number;
+  n_errors: number;
+}
+
+export interface QualityCheckResult {
+  dataset_id: string;
+  row_count: number;
+  hidden_columns: string[];
+  checks: {
+    nulls: { column: string; null_count: number; null_pct: number }[];
+    duplicate_rows: { count: number; sample_row_indices: number[] };
+    duplicate_column_names: string[];
+    constant_columns: { column: string; value: unknown }[];
+    mixed_type_columns: { column: string; examples: unknown[] }[];
+    non_numeric_in_numeric: { column: string; invalid_values: unknown[]; count: number }[];
+    below_lod: { column: string; count: number }[];
+    outliers_iqr: { column: string; outlier_count: number; lower_bound: number; upper_bound: number }[];
+    invalid_coordinates: { checked: boolean; invalid_count: number; reason?: string };
+  };
 }
 
 // ── API ───────────────────────────────────────────────────────────────────────
@@ -199,10 +276,66 @@ export function deleteDataset(datasetId: string): Promise<{ deleted: boolean }> 
 
 export function getRows(
   datasetId: string,
-  offset = 0,
-  limit = 200
+  opts: {
+    offset?: number;
+    limit?: number;
+    filters?: RowFilter[];
+    sort?: RowSort | null;
+    includeHidden?: boolean;
+  } = {}
 ): Promise<DatasetRowsResult> {
-  return callRpc("data.rows", { dataset_id: datasetId, offset, limit });
+  return callRpc("data.rows", {
+    dataset_id: datasetId,
+    offset: opts.offset ?? 0,
+    limit: opts.limit ?? 200,
+    filters: opts.filters ?? [],
+    sort: opts.sort ?? null,
+    include_hidden: opts.includeHidden ?? false,
+  });
+}
+
+// ── Data Quality ──────────────────────────────────────────────────────────────
+
+export function getQualityReport(datasetId: string): Promise<QualityCheckResult> {
+  return callRpc("data.quality_report", { dataset_id: datasetId });
+}
+
+// ── Calculated column formula engine ─────────────────────────────────────────
+
+export function previewFormula(
+  datasetId: string,
+  formula: string,
+  variables: string[] = [],
+  sampleSize = 20
+): Promise<FormulaPreviewResult> {
+  return callRpc("data.preview_formula", {
+    dataset_id: datasetId,
+    formula,
+    variables,
+    sample_size: sampleSize,
+  });
+}
+
+// ── Non-destructive edit overlay (Undo/Redo/Save) ────────────────────────────
+
+export function applyOperation(datasetId: string, operation: ColumnOperation): Promise<OverlayState> {
+  return callRpc("data.apply_operation", { dataset_id: datasetId, operation });
+}
+
+export function undoOperation(datasetId: string): Promise<OverlayState> {
+  return callRpc("data.undo_operation", { dataset_id: datasetId });
+}
+
+export function redoOperation(datasetId: string): Promise<OverlayState> {
+  return callRpc("data.redo_operation", { dataset_id: datasetId });
+}
+
+export function getOperations(datasetId: string): Promise<OverlayState> {
+  return callRpc("data.get_operations", { dataset_id: datasetId });
+}
+
+export function saveChanges(datasetId: string): Promise<{ success: boolean; dataset: ImportedDatasetMeta }> {
+  return callRpc("data.save_changes", { dataset_id: datasetId });
 }
 
 // ── Analytics (descriptive + PCA, RF-04) ─────────────────────────────────────
@@ -231,10 +364,19 @@ export interface DescriptiveResult {
   correlation: CorrelationMatrix;
   n_samples_used: number;
   warnings: string[];
+  n_excluded_qaqc: number;
 }
 
-export function runDescriptive(datasetId: string, variables: string[]): Promise<DescriptiveResult> {
-  return callRpc("analytics.descriptive", { dataset_id: datasetId, variables });
+export function runDescriptive(
+  datasetId: string,
+  variables: string[],
+  includeQaqcFlagged = false
+): Promise<DescriptiveResult> {
+  return callRpc("analytics.descriptive", {
+    dataset_id: datasetId,
+    variables,
+    include_qaqc_flagged: includeQaqcFlagged,
+  });
 }
 
 export interface PcaResult {
@@ -257,10 +399,174 @@ export interface PcaResult {
   vif: Record<string, number>;
   warnings: string[];
   pipeline: Record<string, unknown>;
+  n_excluded_qaqc: number;
 }
 
-export function runPca(datasetId: string, variables: string[], nComponents?: number): Promise<PcaResult> {
-  return callRpc("analytics.pca", { dataset_id: datasetId, variables, n_components: nComponents ?? null });
+export function runPca(
+  datasetId: string,
+  variables: string[],
+  nComponents?: number,
+  includeQaqcFlagged = false
+): Promise<PcaResult> {
+  return callRpc("analytics.pca", {
+    dataset_id: datasetId,
+    variables,
+    n_components: nComponents ?? null,
+    include_qaqc_flagged: includeQaqcFlagged,
+  });
+}
+
+// ── QAQC (RF-10): blanks, duplicates, CRM, Shewhart control charts ──────────
+
+export interface QaqcSummary {
+  n_samples_by_type: Record<string, number>;
+  n_flags_by_severity: Record<string, number>;
+  n_blank_flags: number;
+  n_duplicate_pairs: number;
+  n_duplicate_failures: number;
+  n_crm_results: number;
+  n_crm_failures: number;
+}
+
+export interface BlankFlagDto {
+  sample_id: string;
+  sample_type: string;
+  variable: string;
+  measured_value: number;
+  threshold: number;
+  severity: "critical" | "warning";
+}
+
+export interface DuplicatePairDto {
+  original_id: string;
+  duplicate_id: string;
+  dup_type: "FD" | "LD";
+  rpd_by_variable: Record<string, number>;
+  failed_variables: string[];
+  status: "pass" | "warning" | "fail";
+}
+
+export interface CrmResultDto {
+  sample_id: string;
+  crm_name: string;
+  recovery_by_variable: Record<string, number>;
+  warning_variables: string[];
+  failed_variables: string[];
+  status: "pass" | "warning" | "fail";
+}
+
+export interface QaqcCalculateResult {
+  available: boolean;
+  reason?: string;
+  dataset_id?: string;
+  generated_at?: string;
+  summary?: QaqcSummary;
+  blank_flags?: BlankFlagDto[];
+  duplicate_pairs?: DuplicatePairDto[];
+  crm_results?: CrmResultDto[];
+  warnings?: string[];
+}
+
+export interface WestgardViolationDto {
+  rule: "1_3s" | "2_2s" | "10x" | "drift";
+  description: string;
+  affected_indices: number[];
+  severity: "warning" | "reject";
+}
+
+export interface ControlChartPoint {
+  index: number;
+  sample_id: string;
+  recovery_pct: number;
+  status: "pass" | "warning" | "fail";
+}
+
+export interface ControlChartResult {
+  available: boolean;
+  reason?: string;
+  n_points?: number;
+  points?: ControlChartPoint[];
+  mean?: number;
+  sigma?: number;
+  ucl_1s?: number;
+  ucl_2s?: number;
+  ucl_3s?: number;
+  lcl_1s?: number;
+  lcl_2s?: number;
+  lcl_3s?: number;
+  westgard_violations?: WestgardViolationDto[];
+}
+
+export interface CrmDefinition {
+  name: string;
+  certified_values: Record<string, number>;
+  uncertainty: Record<string, number>;
+  updated_at: string;
+}
+
+export interface QaqcThresholds {
+  blankFactor?: number;
+  fdThreshold?: number;
+  ldThreshold?: number;
+  crmWarningPct?: number;
+  crmFailurePct?: number;
+}
+
+function thresholdParams(opts: QaqcThresholds) {
+  return {
+    blank_factor: opts.blankFactor ?? 0.20,
+    fd_threshold: opts.fdThreshold ?? 20.0,
+    ld_threshold: opts.ldThreshold ?? 15.0,
+    crm_warning_pct: opts.crmWarningPct ?? 15.0,
+    crm_failure_pct: opts.crmFailurePct ?? 25.0,
+  };
+}
+
+export function qaqcCalculate(
+  datasetId: string,
+  variables: string[],
+  opts: QaqcThresholds = {}
+): Promise<QaqcCalculateResult> {
+  return callRpc("qaqc.calculate", { dataset_id: datasetId, variables, ...thresholdParams(opts) });
+}
+
+export function qaqcReport(
+  datasetId: string,
+  variables: string[],
+  opts: QaqcThresholds = {}
+): Promise<QaqcCalculateResult> {
+  return callRpc("qaqc.report", { dataset_id: datasetId, variables, ...thresholdParams(opts) });
+}
+
+export function qaqcControlChart(
+  datasetId: string,
+  crmName: string,
+  variable: string,
+  opts: { crmWarningPct?: number; crmFailurePct?: number } = {}
+): Promise<ControlChartResult> {
+  return callRpc("qaqc.control_chart", {
+    dataset_id: datasetId,
+    crm_name: crmName,
+    variable,
+    crm_warning_pct: opts.crmWarningPct ?? 15.0,
+    crm_failure_pct: opts.crmFailurePct ?? 25.0,
+  });
+}
+
+export function qaqcCrmLibraryList(): Promise<{ crms: CrmDefinition[] }> {
+  return callRpc("qaqc.crm_library.list", {});
+}
+
+export function qaqcCrmLibraryUpsert(
+  name: string,
+  certifiedValues: Record<string, number>,
+  uncertainty?: Record<string, number>
+): Promise<{ crm: CrmDefinition }> {
+  return callRpc("qaqc.crm_library.upsert", {
+    name,
+    certified_values: certifiedValues,
+    uncertainty: uncertainty ?? {},
+  });
 }
 
 export function exportKml(opts: {

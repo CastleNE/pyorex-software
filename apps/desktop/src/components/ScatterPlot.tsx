@@ -74,7 +74,7 @@ export default function ScatterPlot() {
     setLoadError(null);
     setRows([]);
     // Fetch up to 50 000 rows — sufficient for typical geochemical assay tables
-    getRows(dataset.id, 0, 50_000)
+    getRows(dataset.id, { offset: 0, limit: 50_000 })
       .then((r) => {
         setRows(r.rows);
         setLoading(false);

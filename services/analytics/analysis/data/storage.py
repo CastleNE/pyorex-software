@@ -42,6 +42,7 @@ def save_dataset(df: pl.DataFrame, name: str, meta_extra: dict) -> str:
 
     df.write_parquet(parquet_path)
 
+    column_roles = meta_extra.pop("column_roles", {})
     meta = {
         "id": dataset_id,
         "name": name,
@@ -52,6 +53,7 @@ def save_dataset(df: pl.DataFrame, name: str, meta_extra: dict) -> str:
                 "name": col,
                 "dtype": str(df[col].dtype),
                 "null_count": df[col].null_count(),
+                "role": column_roles.get(col, "unknown"),
             }
             for col in df.columns
         ],
@@ -80,18 +82,6 @@ def load_metadata(dataset_id: str) -> dict:
     if not meta_path.exists():
         raise FileNotFoundError(f"Dataset metadata not found: {dataset_id}")
     return json.loads(meta_path.read_text(encoding="utf-8"))
-
-
-def get_rows(dataset_id: str, offset: int = 0, limit: int = 200) -> dict:
-    """Return a page of rows + column names for display."""
-    df = load_dataset(dataset_id)
-    page = df.slice(offset, limit)
-    return {
-        "columns": df.columns,
-        "rows": page.to_dicts(),
-        "total_rows": df.height,
-        "offset": offset,
-    }
 
 
 def delete_dataset(dataset_id: str) -> bool:

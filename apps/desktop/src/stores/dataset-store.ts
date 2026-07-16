@@ -1,9 +1,10 @@
 import { create } from "zustand";
-import type { SpatialConfig } from "@/lib/data-api";
+import type { ColumnRole, SpatialConfig } from "@/lib/data-api";
 
 export interface ColumnMeta {
   name: string;
   dataType: "numeric" | "categorical" | "datetime" | "text";
+  role: ColumnRole;
   unit?: string;
   nullCount: number;
   nullType?: "BELOW_LOD" | "NOT_ANALYZED" | "MISSING";

@@ -14,12 +14,14 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@tanstack/react-table": "^8.21.3",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.7.1",
     "plotly.js-dist-min": "^2.30.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-plotly.js": "^2.6.0",
+    "react-rnd": "^10.5.3",
     "zustand": "^5.0.0"
   },
   "devDependencies": {

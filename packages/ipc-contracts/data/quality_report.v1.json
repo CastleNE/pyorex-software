@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "data.quality_report.v1",
+  "title": "Data Quality report",
+  "description": "Generic dataset quality checks (DATA screen 'Data Quality' tool) — distinct from analysis/qaqc/* geochemical lab-QC. Read-only findings; outliers and duplicates are reported, never auto-removed.",
+  "version": "v1",
+  "method": "data.quality_report",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id"],
+    "properties": { "dataset_id": { "type": "string" } }
+  },
+  "response": {
+    "type": "object",
+    "required": ["dataset_id", "row_count", "hidden_columns", "checks"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "row_count": { "type": "integer" },
+      "hidden_columns": { "type": "array", "items": { "type": "string" } },
+      "checks": {
+        "type": "object",
+        "properties": {
+          "nulls": { "type": "array", "items": { "type": "object" } },
+          "duplicate_rows": { "type": "object" },
+          "duplicate_column_names": { "type": "array", "items": { "type": "string" } },
+          "constant_columns": { "type": "array", "items": { "type": "object" } },
+          "mixed_type_columns": { "type": "array", "items": { "type": "object" } },
+          "non_numeric_in_numeric": { "type": "array", "items": { "type": "object" } },
+          "below_lod": { "type": "array", "items": { "type": "object" } },
+          "outliers_iqr": { "type": "array", "items": { "type": "object" } },
+          "invalid_coordinates": { "type": "object" }
+        }
+      }
+    }
+  }
+}

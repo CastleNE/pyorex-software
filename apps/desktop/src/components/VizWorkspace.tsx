@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ScatterPlot from "@/components/ScatterPlot";
-import DataTable from "@/components/DataTable";
+import DataGrid from "@/components/DataGrid";
 
 type VizTab = "scatter" | "table" | "spider" | "map";
 
@@ -24,7 +24,7 @@ export default function VizWorkspace({ hasData, onOpenData }: Props) {
       </div>
       <div className="flex-1 overflow-hidden">
         {vizTab === "scatter" && (hasData ? <ScatterPlot /> : <EmptyVizState onOpen={onOpenData} />)}
-        {vizTab === "table" && (hasData ? <DataTable /> : <EmptyVizState onOpen={onOpenData} />)}
+        {vizTab === "table" && (hasData ? <DataGrid /> : <EmptyVizState onOpen={onOpenData} />)}
         {vizTab === "spider" && <PlaceholderPanel label="Spider / REE diagrams — Fase 2" />}
         {vizTab === "map" && <PlaceholderPanel label="Sample Map — Fase 3" />}
       </div>

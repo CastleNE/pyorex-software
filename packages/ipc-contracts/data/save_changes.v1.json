@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "data.save_changes.v1",
+  "title": "Commit the ops overlay as a new dataset version",
+  "description": "Bakes the effective dataframe (original + all overlay ops) into a brand-new Parquet dataset via storage.save_dataset — the original dataset id and its Parquet file are left untouched. The frontend must re-point dataset-store at the returned dataset id. Old versions accumulate on disk until explicitly deleted via data.delete.",
+  "version": "v1",
+  "method": "data.save_changes",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id"],
+    "properties": { "dataset_id": { "type": "string" } }
+  },
+  "response": {
+    "type": "object",
+    "required": ["success", "dataset"],
+    "properties": {
+      "success": { "type": "boolean" },
+      "dataset": { "type": "object", "description": "Metadata of the newly created dataset version" }
+    }
+  }
+}

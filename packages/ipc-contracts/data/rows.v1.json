@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "data.rows.v1",
+  "title": "Get dataset rows (paginated, filtered, sorted)",
+  "description": "Reads through the non-destructive overlay (analysis/data/overlay.py::get_effective_dataframe) — reflects rename/hide/drop/calculated-column ops. Filters/sort run against the FULL effective dataframe, not just the returned page.",
+  "version": "v1",
+  "method": "data.rows",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "offset": { "type": "integer", "default": 0 },
+      "limit": { "type": "integer", "default": 200, "maximum": 5000 },
+      "include_hidden": { "type": "boolean", "default": false },
+      "filters": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["column", "op"],
+          "properties": {
+            "column": { "type": "string" },
+            "op": {
+              "type": "string",
+              "enum": [
+                "eq", "neq", "gt", "lt", "gte", "lte", "between", "is_null", "not_null",
+                "contains", "not_contains", "starts_with", "ends_with", "in",
+                "before", "after", "year", "month"
+              ]
+            },
+            "value": {},
+            "value2": {}
+          }
+        }
+      },
+      "sort": {
+        "type": ["object", "null"],
+        "properties": {
+          "column": { "type": "string" },
+          "direction": { "type": "string", "enum": ["asc", "desc"] }
+        }
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["columns", "rows", "total_rows", "total_rows_unfiltered", "offset", "hidden_columns"],
+    "properties": {
+      "columns": { "type": "array", "items": { "type": "string" } },
+      "rows": { "type": "array", "items": { "type": "object" } },
+      "total_rows": { "type": "integer", "description": "Rows matching filters" },
+      "total_rows_unfiltered": { "type": "integer" },
+      "offset": { "type": "integer" },
+      "hidden_columns": { "type": "array", "items": { "type": "string" } }
+    }
+  }
+}
