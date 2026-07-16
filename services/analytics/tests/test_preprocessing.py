@@ -59,3 +59,57 @@ def test_no_nulltype_column_defaults_to_missing_median():
     assert prepared.n_excluded_not_analyzed == 0
     assert len(prepared.sample_ids) == 3
     assert prepared.imputation_summary["Cu"]["missing_imputed"] == 1
+
+
+def _df_with_qaqc_types() -> pl.DataFrame:
+    return pl.DataFrame(
+        {
+            "internal_feature_id": [f"ROW-{i:06d}" for i in range(1, 7)],
+            "Au": [10.0, 20.0, 30.0, 40.0, 50.0, 60.0],
+            "__sample_type__": ["S", "S", "S", "S", "FD", "CRM"],
+        }
+    )
+
+
+def test_qaqc_flagged_samples_excluded_by_default():
+    df = _df_with_qaqc_types()
+    prepared = prepare_matrix(df, ["Au"], scale=False)
+
+    assert prepared.n_excluded_qaqc == 2
+    assert len(prepared.sample_ids) == 4
+    assert "ROW-000005" not in prepared.sample_ids
+    assert "ROW-000006" not in prepared.sample_ids
+
+
+def test_qaqc_flagged_samples_included_when_requested():
+    df = _df_with_qaqc_types()
+    prepared = prepare_matrix(df, ["Au"], scale=False, include_qaqc_flagged=True)
+
+    assert prepared.n_excluded_qaqc == 2  # count still reported...
+    assert len(prepared.sample_ids) == 6  # ...but rows are NOT excluded
+    assert "ROW-000005" in prepared.sample_ids
+    assert "ROW-000006" in prepared.sample_ids
+    assert any("incluidas manualmente" in w for w in prepared.warnings)
+
+
+def test_no_sample_type_column_means_zero_qaqc_exclusions():
+    df = pl.DataFrame({
+        "internal_feature_id": ["ROW-000001", "ROW-000002"],
+        "Cu": [1.0, 2.0],
+    })
+    prepared = prepare_matrix(df, ["Cu"], scale=False)
+
+    assert prepared.n_excluded_qaqc == 0
+    assert len(prepared.sample_ids) == 2
+
+
+def test_unrecognized_sample_type_value_treated_as_regular():
+    df = pl.DataFrame({
+        "internal_feature_id": ["ROW-000001", "ROW-000002", "ROW-000003"],
+        "Cu": [1.0, 2.0, 3.0],
+        "__sample_type__": ["S", "WEIRD_UNKNOWN_CODE", "S"],
+    })
+    prepared = prepare_matrix(df, ["Cu"], scale=False)
+
+    assert prepared.n_excluded_qaqc == 0
+    assert len(prepared.sample_ids) == 3

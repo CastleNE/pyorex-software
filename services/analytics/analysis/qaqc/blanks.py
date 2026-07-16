@@ -6,6 +6,8 @@ from __future__ import annotations
 import polars as pl
 from dataclasses import dataclass, field
 
+from analysis.qaqc.common import infer_sample_id_column
+
 
 @dataclass
 class BlankFlag:
@@ -65,7 +67,7 @@ def analyze_blanks(
     blank_mask = df[sample_type_col].is_in(["FB", "LB"])
     blank_df = df.filter(blank_mask)
 
-    sample_id_col = _infer_sample_id_column(df)
+    sample_id_col = infer_sample_id_column(df)
 
     for row in blank_df.iter_rows(named=True):
         contaminated_vars = []
@@ -92,13 +94,3 @@ def analyze_blanks(
             )
 
     return flags
-
-
-def _infer_sample_id_column(df: pl.DataFrame) -> str:
-    """Heuristic to find the sample ID column."""
-    candidates = ["sample_id", "sampleid", "id", "sample", "muestra", "codigo"]
-    lower_cols = {c.lower(): c for c in df.columns}
-    for c in candidates:
-        if c in lower_cols:
-            return lower_cols[c]
-    return df.columns[0]

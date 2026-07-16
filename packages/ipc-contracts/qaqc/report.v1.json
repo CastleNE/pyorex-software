@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qaqc.report.v1",
+  "title": "QAQC Report",
+  "description": "One-shot QAQC report generation — today calls the exact same analysis/qaqc/report.py::build_qaqc_report() as qaqc.calculate (same response shape, see calculate.v1.json), kept as a distinct method so a future PDF-export step (RF-10.6.4, blocked on an undecided PDF-engine ADR) can diverge from the interactive qaqc.calculate contract without a breaking change.",
+  "version": "v1",
+  "method": "qaqc.report",
+  "request": { "$ref": "calculate.v1.json#/request" },
+  "response": { "$ref": "calculate.v1.json#/response" }
+}

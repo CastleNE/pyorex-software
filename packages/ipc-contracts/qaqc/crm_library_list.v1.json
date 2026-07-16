@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qaqc.crm_library.list.v1",
+  "title": "List CRM library entries",
+  "description": "Reads analysis/qaqc/crm_library.py's single-file JSON store. Not per-tenant yet (no multi-tenancy exists in the app) — single local library shared across projects on this machine.",
+  "version": "v1",
+  "method": "qaqc.crm_library.list",
+  "request": { "type": "object", "properties": {} },
+  "response": {
+    "type": "object",
+    "required": ["crms"],
+    "properties": {
+      "crms": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "certified_values": { "type": "object", "additionalProperties": { "type": "number" } },
+            "uncertainty": { "type": "object", "additionalProperties": { "type": "number" } },
+            "updated_at": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

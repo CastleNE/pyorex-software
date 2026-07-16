@@ -7,6 +7,8 @@ import polars as pl
 import numpy as np
 from dataclasses import dataclass
 
+from analysis.qaqc.common import infer_sample_id_column
+
 
 @dataclass
 class DuplicatePair:
@@ -46,7 +48,7 @@ def analyze_duplicates(
     2. Otherwise: positional pairing (duplicate follows its original in the dataset)
     """
     pairs: list[DuplicatePair] = []
-    sample_id_col = _infer_sample_id_column(df)
+    sample_id_col = infer_sample_id_column(df)
 
     for dup_type, threshold in [("FD", fd_threshold), ("LD", ld_threshold)]:
         dup_mask = df[sample_type_col] == dup_type
@@ -110,12 +112,3 @@ def analyze_duplicates(
             )
 
     return pairs
-
-
-def _infer_sample_id_column(df: pl.DataFrame) -> str:
-    candidates = ["sample_id", "sampleid", "id", "sample", "muestra", "codigo"]
-    lower_cols = {c.lower(): c for c in df.columns}
-    for c in candidates:
-        if c in lower_cols:
-            return lower_cols[c]
-    return df.columns[0]

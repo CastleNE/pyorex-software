@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qaqc.crm_library.upsert.v1",
+  "title": "Create or update a CRM library entry",
+  "description": "Upserts by 'name' (dict key in the JSON store) — calling again with the same name overwrites the entry and refreshes updated_at.",
+  "version": "v1",
+  "method": "qaqc.crm_library.upsert",
+  "request": {
+    "type": "object",
+    "required": ["name", "certified_values"],
+    "properties": {
+      "name": { "type": "string" },
+      "certified_values": { "type": "object", "additionalProperties": { "type": "number" } },
+      "uncertainty": { "type": "object", "additionalProperties": { "type": "number" }, "description": "1σ per variable, optional" }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["crm"],
+    "properties": {
+      "crm": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "certified_values": { "type": "object", "additionalProperties": { "type": "number" } },
+          "uncertainty": { "type": "object", "additionalProperties": { "type": "number" } },
+          "updated_at": { "type": "string" }
+        }
+      }
+    }
+  }
+}

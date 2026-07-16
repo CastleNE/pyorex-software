@@ -20,7 +20,37 @@ import type {
   Unit,
   ColumnMapping,
   PreviewResult,
+  SampleTypeMappingInput,
 } from "@/lib/data-api";
+
+// ── Sample type value mapping (RF-10.1.2) ────────────────────────────────────
+
+const SAMPLE_TYPE_CODES = ["S", "FB", "LB", "FD", "LD", "CRM"] as const;
+type SampleTypeCode = (typeof SAMPLE_TYPE_CODES)[number];
+
+const SAMPLE_TYPE_LABELS: Record<SampleTypeCode, string> = {
+  S: "S — Regular",
+  FB: "FB — Field Blank",
+  LB: "LB — Lab Blank",
+  FD: "FD — Field Duplicate",
+  LD: "LD — Lab Duplicate",
+  CRM: "CRM — Reference Material",
+};
+
+/** Auto-suggestion only — the user reviews/overrides every mapping before import. */
+function guessSampleTypeCode(raw: string): SampleTypeCode | null {
+  const v = raw.toLowerCase();
+  if (v.includes("blanco") || v.includes("blank")) {
+    return v.includes("lab") ? "LB" : "FB";
+  }
+  if (v.includes("dup")) {
+    return v.includes("lab") ? "LD" : "FD";
+  }
+  if (v.includes("crm") || v.includes("std") || v.includes("standard") || v.includes("ref")) {
+    return "CRM";
+  }
+  return null;
+}
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -264,6 +294,7 @@ export default function ImportWizard({ filePath, onImported, onCancel }: Props) 
   const [unitOvr,        setUnitOvr]        = useState<Record<string, Unit | null>>({});
   const [aliasOvr,       setAliasOvr]       = useState<Record<string, string>>({});
   const [roleOvr,        setRoleOvr]        = useState<Record<string, ColumnRole>>({});
+  const [sampleTypeValueMap, setSampleTypeValueMap] = useState<Record<string, string>>({});
 
   const isExcel  = /\.(xlsx|xls|xlsm)$/i.test(fileName);
   const activeSep = separator === "custom" ? customSep : separator;
@@ -306,6 +337,20 @@ export default function ImportWizard({ filePath, onImported, onCancel }: Props) 
         const flags: Record<string, ImportFlag> = {};
         profs.forEach(p => { if (p.import_flag === "no_import") flags[p.original_name] = "no_import"; });
         setImportFlags(flags);
+
+        // Auto-suggest sample-type value mapping from the detected column's
+        // sample raw values (RF-10.1.2) — the user always reviews/overrides
+        // every mapping in the wizard before importing, this is only a seed.
+        const sampleTypeCol = profs.find(p => p.role === "qaqc_attribute")?.original_name;
+        if (sampleTypeCol) {
+          const colPreview = r.columns.find(c => c.name === sampleTypeCol);
+          const seeded: Record<string, string> = {};
+          (colPreview?.sample_values ?? []).forEach(raw => {
+            const guess = guessSampleTypeCode(raw);
+            if (guess) seeded[raw] = guess;
+          });
+          setSampleTypeValueMap(seeded);
+        }
         setLoading(false);
       })
       .catch((e) => {
@@ -366,6 +411,9 @@ export default function ImportWizard({ filePath, onImported, onCancel }: Props) 
         unit_override:    (unitOvr[p.original_name] ?? null) as Unit | null,
         alias:            aliasOvr[p.original_name] ?? null,
       }));
+      const sampleTypeMapping: SampleTypeMappingInput | undefined = specialCols.sample_type
+        ? { column: specialCols.sample_type, value_map: sampleTypeValueMap }
+        : undefined;
 
       const result = await importFile({
         filePath,
@@ -374,6 +422,7 @@ export default function ImportWizard({ filePath, onImported, onCancel }: Props) 
         spatialConfig,
         iogasDisplayCols: preview.spatial_detection.iogas_display_cols,
         columnMappings,
+        sampleTypeMapping,
       });
       onImported(result.dataset);
     } catch (e) {
@@ -468,6 +517,10 @@ export default function ImportWizard({ filePath, onImported, onCancel }: Props) 
               roleOvr={roleOvr}
               onRoleOvr={(col, r) => setRoleOvr(prev => ({ ...prev, [col]: r }))}
               moduleAvailability={moduleAvailability}
+              sampleTypeValueMap={sampleTypeValueMap}
+              onSampleTypeValueMapChange={(raw, code) =>
+                setSampleTypeValueMap(prev => ({ ...prev, [raw]: code }))
+              }
             />
           )}
 
@@ -643,10 +696,55 @@ function PreviewStep({
 
 // ── Step 2: Columns ───────────────────────────────────────────────────────────
 
+function SampleTypeValueMappingPanel({
+  columnName, allColumns, valueMap, onChange,
+}: {
+  columnName: string;
+  allColumns: ColumnPreview[];
+  valueMap: Record<string, string>;
+  onChange: (raw: string, code: string) => void;
+}) {
+  const sampleValues = allColumns.find(c => c.name === columnName)?.sample_values ?? [];
+
+  return (
+    <div className="mb-5 border border-zinc-700 rounded-lg p-4 bg-zinc-800/30">
+      <h3 className="text-xs font-semibold text-zinc-300 mb-1 uppercase tracking-wide">
+        Sample Type Value Mapping
+      </h3>
+      <p className="text-xs text-zinc-500 mb-3">
+        Mapea los valores de "{columnName}" a los tipos estándar QAQC. Valores sin mapear se importan como S (Regular).
+        Solo se muestra una muestra de hasta 5 valores distintos detectados.
+      </p>
+      {sampleValues.length === 0 ? (
+        <p className="text-xs text-zinc-600">No se detectaron valores de muestra para esta columna.</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+          {sampleValues.map((raw) => (
+            <div key={raw} className="flex items-center gap-2">
+              <span className="text-xs text-zinc-400 font-mono w-40 shrink-0 truncate" title={raw}>{raw}</span>
+              <select
+                value={valueMap[raw] ?? ""}
+                onChange={e => onChange(raw, e.target.value)}
+                className="flex-1 px-2 py-1 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-200 focus:outline-none focus:border-blue-500"
+              >
+                <option value="">— unmapped (defaults to S) —</option>
+                {SAMPLE_TYPE_CODES.map(code => (
+                  <option key={code} value={code}>{SAMPLE_TYPE_LABELS[code]}</option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ColumnsStep({
   profiles, allColumns, specialCols, onSpecialChange,
   importFlags, onImportFlag, analyteOvr, onAnalyte, unitOvr, onUnit,
   aliasOvr, onAlias, roleOvr, onRoleOvr, moduleAvailability,
+  sampleTypeValueMap, onSampleTypeValueMapChange,
 }: {
   profiles: ImportedColumnProfile[];
   allColumns: ColumnPreview[];
@@ -663,6 +761,8 @@ function ColumnsStep({
   roleOvr: Record<string, ColumnRole>;
   onRoleOvr: (col: string, r: ColumnRole) => void;
   moduleAvailability: ModuleAvailability;
+  sampleTypeValueMap: Record<string, string>;
+  onSampleTypeValueMapChange: (raw: string, code: string) => void;
 }) {
   const colNames = allColumns.map(c => c.name);
   const hasSampleId = !!specialCols.id;
@@ -788,6 +888,16 @@ function ColumnsStep({
           );
         })()}
       </div>
+
+      {/* ── Sample Type value mapping (RF-10.1.2) ── */}
+      {specialCols.sample_type && (
+        <SampleTypeValueMappingPanel
+          columnName={specialCols.sample_type}
+          allColumns={allColumns}
+          valueMap={sampleTypeValueMap}
+          onChange={onSampleTypeValueMapChange}
+        />
+      )}
 
       {/* ── Column table ── */}
       <h3 className="text-xs font-semibold text-zinc-300 mb-2 uppercase tracking-wide">

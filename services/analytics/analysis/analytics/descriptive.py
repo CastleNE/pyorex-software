@@ -33,13 +33,16 @@ class DescriptiveResult:
     correlation: dict
     n_samples_used: int
     warnings: list[str] = field(default_factory=list)
+    n_excluded_qaqc: int = 0
 
 
-def run_descriptive(df: pl.DataFrame, variables: list[str]) -> DescriptiveResult:
+def run_descriptive(
+    df: pl.DataFrame, variables: list[str], include_qaqc_flagged: bool = False
+) -> DescriptiveResult:
     if not variables:
         raise ValueError("Seleccioná al menos una variable.")
 
-    prepared = prepare_matrix(df, variables, scale=False)
+    prepared = prepare_matrix(df, variables, scale=False, include_qaqc_flagged=include_qaqc_flagged)
     X = prepared.X
 
     stats_list: list[VariableStats] = []
@@ -89,4 +92,5 @@ def run_descriptive(df: pl.DataFrame, variables: list[str]) -> DescriptiveResult
         correlation=correlation,
         n_samples_used=X.shape[0],
         warnings=prepared.warnings,
+        n_excluded_qaqc=prepared.n_excluded_qaqc,
     )

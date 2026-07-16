@@ -40,13 +40,19 @@ class PCAResultInternal:
     vif: dict[str, float]
     warnings: list[str] = field(default_factory=list)
     pipeline: dict = field(default_factory=dict)
+    n_excluded_qaqc: int = 0
 
 
-def run_pca(df: pl.DataFrame, variables: list[str], n_components: int | None = None) -> PCAResultInternal:
+def run_pca(
+    df: pl.DataFrame,
+    variables: list[str],
+    n_components: int | None = None,
+    include_qaqc_flagged: bool = False,
+) -> PCAResultInternal:
     if len(variables) < 2:
         raise PCAValidationError("PCA requiere al menos 2 variables.")
 
-    prepared = prepare_matrix(df, variables, scale=True)
+    prepared = prepare_matrix(df, variables, scale=True, include_qaqc_flagged=include_qaqc_flagged)
     X = prepared.X_scaled
     n_samples, n_vars = X.shape
 
@@ -133,4 +139,5 @@ def run_pca(df: pl.DataFrame, variables: list[str], n_components: int | None = N
             "imputation": prepared.imputation_summary,
             "n_excluded_not_analyzed": prepared.n_excluded_not_analyzed,
         },
+        n_excluded_qaqc=prepared.n_excluded_qaqc,
     )

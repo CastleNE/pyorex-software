@@ -690,20 +690,21 @@ def import_file(path: str, config: ImportConfig) -> tuple[pl.DataFrame, dict]:
             .alias(null_type_col)
         )
 
-    # Apply sample type mapping
-    if config.sample_type_mapping:
+    # Apply sample type mapping — __sample_type__ always exists post-import,
+    # regardless of whether the wizard mapped a column, so downstream QAQC
+    # consumers never have to special-case "column missing".
+    if config.sample_type_mapping and config.sample_type_mapping.column in df.columns:
         stm = config.sample_type_mapping
-        if stm.column in df.columns:
-            expr = pl.col(stm.column).cast(pl.String)
-            for raw_val, standard_type in stm.value_map.items():
-                expr = (
-                    pl.when(pl.col(stm.column).cast(pl.String) == raw_val)
-                    .then(pl.lit(standard_type))
-                    .otherwise(expr)
-                )
-            df = df.with_columns(expr.alias("__sample_type__"))
-        else:
-            df = df.with_columns(pl.lit("S").alias("__sample_type__"))
+        expr = pl.lit("S")  # unmapped raw values default cleanly to "S" (Regular)
+        for raw_val, standard_type in stm.value_map.items():
+            expr = (
+                pl.when(pl.col(stm.column).cast(pl.String) == raw_val)
+                .then(pl.lit(standard_type))
+                .otherwise(expr)
+            )
+        df = df.with_columns(expr.alias("__sample_type__"))
+    else:
+        df = df.with_columns(pl.lit("S").alias("__sample_type__"))
 
     # Generate internal_feature_id for every row (Addendum V3)
     df = df.with_columns(
@@ -769,7 +770,7 @@ def import_file(path: str, config: ImportConfig) -> tuple[pl.DataFrame, dict]:
     roles = {p["role"] for p in profiles}
     has_assay = bool(roles & {"assay_element", "assay_oxide", "assay_compound"})
     has_sample_id = "sample_identifier" in roles
-    has_qaqc = "qaqc_attribute" in roles
+    has_qaqc = bool(roles & {"qaqc_attribute", "sample_type_qaqc"})
     sc = config.spatial_config
     spatial_ok = (
         sc is not None

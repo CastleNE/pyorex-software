@@ -11,6 +11,9 @@ import polars as pl
 from sklearn.preprocessing import StandardScaler
 
 
+QAQC_FLAGGED_TYPES = {"FB", "LB", "FD", "LD", "CRM"}
+
+
 @dataclass
 class PreparedMatrix:
     variables: list[str]
@@ -20,14 +23,25 @@ class PreparedMatrix:
     X_scaled: np.ndarray | None
     warnings: list[str] = field(default_factory=list)
     n_excluded_not_analyzed: int = 0
+    n_excluded_qaqc: int = 0
     imputation_summary: dict = field(default_factory=dict)
 
 
-def prepare_matrix(df: pl.DataFrame, variables: list[str], scale: bool = True) -> PreparedMatrix:
+def prepare_matrix(
+    df: pl.DataFrame,
+    variables: list[str],
+    scale: bool = True,
+    include_qaqc_flagged: bool = False,
+) -> PreparedMatrix:
     """
     RF-04-CUA: NOT_ANALYZED excludes the sample; MISSING imputes with the median;
     BELOW_LOD imputes with half the observed minimum (the real LOD isn't persisted
     by the importer yet — see ADR for Data Analysis feature).
+
+    RF-10.1.5: samples flagged as QAQC control samples (FB/LB/FD/LD/CRM in
+    __sample_type__) are excluded by default — pass include_qaqc_flagged=True
+    to include them anyway (a warning is appended so results aren't silently
+    treated as fully representative).
     """
     missing_cols = [v for v in variables if v not in df.columns]
     if missing_cols:
@@ -37,18 +51,32 @@ def prepare_matrix(df: pl.DataFrame, variables: list[str], scale: bool = True) -
     warnings: list[str] = []
     imputation_summary: dict = {}
 
-    exclude_mask = np.zeros(n_rows, dtype=bool)
+    not_analyzed_mask = np.zeros(n_rows, dtype=bool)
     nulltype_by_var: dict[str, np.ndarray] = {}
     for var in variables:
         nt_col = f"_nulltype_{var}"
         if nt_col in df.columns:
             nt_values = df.get_column(nt_col).to_numpy()
             nulltype_by_var[var] = nt_values
-            exclude_mask |= nt_values == "NOT_ANALYZED"
+            not_analyzed_mask |= nt_values == "NOT_ANALYZED"
         else:
             nulltype_by_var[var] = np.array([None] * n_rows)
 
-    n_excluded = int(exclude_mask.sum())
+    n_excluded_qaqc = 0
+    qaqc_mask = np.zeros(n_rows, dtype=bool)
+    if "__sample_type__" in df.columns:
+        qaqc_mask = df.get_column("__sample_type__").is_in(list(QAQC_FLAGGED_TYPES)).to_numpy()
+        n_excluded_qaqc = int(qaqc_mask.sum())
+        if include_qaqc_flagged:
+            qaqc_mask = np.zeros(n_rows, dtype=bool)  # don't exclude, just report the count
+            if n_excluded_qaqc > 0:
+                warnings.append(
+                    f"{n_excluded_qaqc} muestra(s) con tipo QAQC activo (FB/LB/FD/LD/CRM) fueron "
+                    f"incluidas manualmente en este análisis — los resultados pueden no ser representativos."
+                )
+
+    exclude_mask = not_analyzed_mask | qaqc_mask
+    n_excluded_not_analyzed = int(not_analyzed_mask.sum())
     keep_indices = np.where(~exclude_mask)[0]
 
     X_columns: list[np.ndarray] = []
@@ -100,6 +128,7 @@ def prepare_matrix(df: pl.DataFrame, variables: list[str], scale: bool = True) -
         X=X,
         X_scaled=X_scaled,
         warnings=warnings,
-        n_excluded_not_analyzed=n_excluded,
+        n_excluded_not_analyzed=n_excluded_not_analyzed,
+        n_excluded_qaqc=n_excluded_qaqc,
         imputation_summary=imputation_summary,
     )

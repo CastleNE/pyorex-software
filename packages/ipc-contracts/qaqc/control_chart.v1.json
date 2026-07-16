@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "qaqc.control_chart.v1",
   "title": "QAQC Shewhart Control Chart",
-  "description": "Generate Shewhart control chart data for a CRM variable",
+  "description": "Shewhart control chart for a CRM/variable pair — mean/sigma are computed from the historical recovery series itself (RF-10.5.1), not from a passed-in certified value. 'available: false' with n_points<2 is a valid response, not an error. Supersedes the earlier draft of this contract (which assumed certified_value/sigma_levels request params and a nested control_limits object) — the response now mirrors analysis/qaqc/control_charts.py::ControlChartResult exactly.",
   "version": "v1",
   "method": "qaqc.control_chart",
   "request": {
@@ -12,19 +12,17 @@
       "dataset_id": { "type": "string" },
       "crm_name": { "type": "string" },
       "variable": { "type": "string" },
-      "certified_value": { "type": "number" },
-      "sigma_levels": {
-        "type": "array",
-        "items": { "type": "number" },
-        "default": [1, 2, 3],
-        "description": "Sigma levels to plot as control limits"
-      }
+      "crm_warning_pct": { "type": "number", "default": 15.0 },
+      "crm_failure_pct": { "type": "number", "default": 25.0 }
     }
   },
   "response": {
     "type": "object",
-    "required": ["points", "control_limits", "westgard_violations"],
+    "required": ["available"],
     "properties": {
+      "available": { "type": "boolean" },
+      "reason": { "type": "string" },
+      "n_points": { "type": "integer" },
       "points": {
         "type": "array",
         "items": {
@@ -37,19 +35,14 @@
           }
         }
       },
-      "control_limits": {
-        "type": "object",
-        "properties": {
-          "mean": { "type": "number" },
-          "sigma": { "type": "number" },
-          "ucl_1s": { "type": "number" },
-          "ucl_2s": { "type": "number" },
-          "ucl_3s": { "type": "number" },
-          "lcl_1s": { "type": "number" },
-          "lcl_2s": { "type": "number" },
-          "lcl_3s": { "type": "number" }
-        }
-      },
+      "mean": { "type": "number" },
+      "sigma": { "type": "number" },
+      "ucl_1s": { "type": "number" },
+      "ucl_2s": { "type": "number" },
+      "ucl_3s": { "type": "number" },
+      "lcl_1s": { "type": "number" },
+      "lcl_2s": { "type": "number" },
+      "lcl_3s": { "type": "number" },
       "westgard_violations": {
         "type": "array",
         "items": {
@@ -61,8 +54,7 @@
             "severity": { "type": "string", "enum": ["warning", "reject"] }
           }
         }
-      },
-      "n_points": { "type": "integer" }
+      }
     }
   }
 }

@@ -2,117 +2,85 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "qaqc.calculate.v1",
   "title": "QAQC Calculate",
-  "description": "Calculate QAQC flags and metrics for an entire dataset",
+  "description": "Combines analyze_blanks/analyze_duplicates/analyze_crm into one payload via analysis/qaqc/report.py::build_qaqc_report — the panel needs all three simultaneously on first paint. 'available: false' is a valid response (dataset has no sample-type mapping), not a JSON-RPC error. Supersedes the earlier draft of this contract, written before analysis/qaqc/{blanks,duplicates,crm}.py existed — the response shape now mirrors those dataclasses exactly (asdict(BlankFlag)/asdict(DuplicatePair)/asdict(CRMResult)) instead of the previously-assumed nested sample_flags/metrics shape.",
   "version": "v1",
   "method": "qaqc.calculate",
   "request": {
     "type": "object",
-    "required": ["dataset_id", "sample_type_column"],
+    "required": ["dataset_id", "variables"],
     "properties": {
       "dataset_id": { "type": "string" },
-      "sample_type_column": { "type": "string", "description": "Column name containing sample type codes" },
-      "original_id_column": {
-        "type": "string",
-        "description": "Column linking duplicates to their original sample. If null, uses positional pairing."
-      },
-      "crm_values": {
-        "type": "object",
-        "description": "Map of CRM name -> {variable -> certified_value}",
-        "additionalProperties": {
-          "type": "object",
-          "additionalProperties": { "type": "number" }
-        }
-      },
-      "thresholds": {
-        "type": "object",
-        "properties": {
-          "blank_factor": { "type": "number", "default": 0.20, "description": "Fraction of p10 of regular samples" },
-          "fd_rpd_pct": { "type": "number", "default": 20.0, "description": "Max %RPD for field duplicates" },
-          "ld_rpd_pct": { "type": "number", "default": 15.0, "description": "Max %RPD for lab duplicates" },
-          "crm_warning_pct": { "type": "number", "default": 15.0, "description": "Recovery outside [100-x, 100+x]% = warning" },
-          "crm_failure_pct": { "type": "number", "default": 25.0, "description": "Recovery outside [100-x, 100+x]% = failure" }
-        }
-      }
+      "variables": { "type": "array", "items": { "type": "string" } },
+      "blank_factor": { "type": "number", "default": 0.20, "description": "Fraction of p10 of regular samples" },
+      "fd_threshold": { "type": "number", "default": 20.0, "description": "Max %RPD for field duplicates" },
+      "ld_threshold": { "type": "number", "default": 15.0, "description": "Max %RPD for lab duplicates" },
+      "crm_warning_pct": { "type": "number", "default": 15.0, "description": "Recovery outside [100-x, 100+x]% = warning" },
+      "crm_failure_pct": { "type": "number", "default": 25.0, "description": "Recovery outside [100-x, 100+x]% = failure" }
     }
   },
   "response": {
     "type": "object",
-    "required": ["sample_flags", "metrics", "summary"],
+    "required": ["available"],
     "properties": {
-      "sample_flags": {
+      "available": { "type": "boolean" },
+      "reason": { "type": "string", "description": "Populated when available=false, e.g. no sample-type mapping" },
+      "dataset_id": { "type": "string" },
+      "generated_at": { "type": "string" },
+      "summary": {
+        "type": "object",
+        "properties": {
+          "n_samples_by_type": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "n_flags_by_severity": { "type": "object", "additionalProperties": { "type": "integer" } },
+          "n_blank_flags": { "type": "integer" },
+          "n_duplicate_pairs": { "type": "integer" },
+          "n_duplicate_failures": { "type": "integer" },
+          "n_crm_results": { "type": "integer" },
+          "n_crm_failures": { "type": "integer" }
+        }
+      },
+      "blank_flags": {
         "type": "array",
-        "description": "One entry per QAQC sample with flags",
         "items": {
           "type": "object",
-          "required": ["sample_id", "sample_type", "flags", "status"],
           "properties": {
             "sample_id": { "type": "string" },
-            "sample_type": { "type": "string", "enum": ["FB", "LB", "FD", "LD", "CRM"] },
-            "flags": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "type": { "type": "string", "enum": ["BLANK_CONTAMINATION", "PRECISION_FAILURE", "ACCURACY_FAILURE", "ACCURACY_WARNING"] },
-                  "variable": { "type": "string" },
-                  "value": { "type": "number" },
-                  "threshold": { "type": "number" },
-                  "severity": { "type": "string", "enum": ["critical", "warning"] }
-                }
-              }
-            },
+            "sample_type": { "type": "string", "enum": ["FB", "LB"] },
+            "variable": { "type": "string" },
+            "measured_value": { "type": "number" },
+            "threshold": { "type": "number" },
+            "severity": { "type": "string", "enum": ["critical", "warning"] }
+          }
+        }
+      },
+      "duplicate_pairs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "original_id": { "type": "string" },
+            "duplicate_id": { "type": "string" },
+            "dup_type": { "type": "string", "enum": ["FD", "LD"] },
+            "rpd_by_variable": { "type": "object", "additionalProperties": { "type": "number" } },
+            "failed_variables": { "type": "array", "items": { "type": "string" } },
             "status": { "type": "string", "enum": ["pass", "warning", "fail"] }
           }
         }
       },
-      "metrics": {
-        "type": "object",
-        "properties": {
-          "blanks": {
-            "type": "object",
-            "description": "Per-variable blank results"
-          },
-          "duplicates": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "original_id": { "type": "string" },
-                "duplicate_id": { "type": "string" },
-                "dup_type": { "type": "string", "enum": ["FD", "LD"] },
-                "rpd_by_variable": {
-                  "type": "object",
-                  "additionalProperties": { "type": "number" }
-                }
-              }
-            }
-          },
-          "crm": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "crm_name": { "type": "string" },
-                "sample_id": { "type": "string" },
-                "recovery_by_variable": {
-                  "type": "object",
-                  "additionalProperties": { "type": "number" }
-                }
-              }
-            }
+      "crm_results": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "sample_id": { "type": "string" },
+            "crm_name": { "type": "string" },
+            "recovery_by_variable": { "type": "object", "additionalProperties": { "type": "number" } },
+            "warning_variables": { "type": "array", "items": { "type": "string" } },
+            "failed_variables": { "type": "array", "items": { "type": "string" } },
+            "status": { "type": "string", "enum": ["pass", "warning", "fail"] }
           }
         }
       },
-      "summary": {
-        "type": "object",
-        "properties": {
-          "n_total_qaqc": { "type": "integer" },
-          "n_pass": { "type": "integer" },
-          "n_warning": { "type": "integer" },
-          "n_fail": { "type": "integer" },
-          "n_regular_excluded": { "type": "integer", "description": "Regular samples flagged due to contaminated blank in same batch" }
-        }
-      }
+      "warnings": { "type": "array", "items": { "type": "string" } }
     }
   }
 }

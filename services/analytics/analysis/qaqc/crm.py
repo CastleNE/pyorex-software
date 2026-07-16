@@ -6,6 +6,8 @@ from __future__ import annotations
 import polars as pl
 from dataclasses import dataclass
 
+from analysis.qaqc.common import infer_sample_id_column
+
 
 @dataclass
 class CRMResult:
@@ -40,7 +42,7 @@ def analyze_crm(
     failure_threshold_pct: Recovery outside [100-x, 100+x]% = failure
     """
     results: list[CRMResult] = []
-    sample_id_col = _infer_sample_id_column(df)
+    sample_id_col = infer_sample_id_column(df)
     crm_name_col = _infer_crm_name_column(df)
 
     crm_mask = df[sample_type_col] == "CRM"
@@ -107,15 +109,6 @@ def analyze_crm(
         )
 
     return results
-
-
-def _infer_sample_id_column(df: pl.DataFrame) -> str:
-    candidates = ["sample_id", "sampleid", "id", "sample", "muestra", "codigo"]
-    lower_cols = {c.lower(): c for c in df.columns}
-    for c in candidates:
-        if c in lower_cols:
-            return lower_cols[c]
-    return df.columns[0]
 
 
 def _infer_crm_name_column(df: pl.DataFrame) -> str | None:
