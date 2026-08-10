@@ -5,9 +5,11 @@ import { applyOperation, getOperations, redoOperation, saveChanges, undoOperatio
 interface ViewState {
   filters: RowFilter[];
   sort: RowSort | null;
+  /** Conditional-formatting heatmap on numeric cells, toggled from the toolbar. */
+  heatmap: boolean;
 }
 
-const EMPTY_VIEW: ViewState = { filters: [], sort: null };
+const EMPTY_VIEW: ViewState = { filters: [], sort: null, heatmap: false };
 
 interface DataOpsState {
   viewByDataset: Record<string, ViewState>;
@@ -26,6 +28,7 @@ interface DataOpsState {
   setSort: (datasetId: string, sort: RowSort | null) => void;
   clearFilters: (datasetId: string) => void;
   openFilterColumnFor: (column: string | null) => void;
+  toggleHeatmap: (datasetId: string) => void;
 
   loadOverlay: (datasetId: string) => Promise<void>;
   applyOp: (datasetId: string, operation: ColumnOperation) => Promise<void>;
@@ -59,6 +62,14 @@ export const useDataOpsStore = create<DataOpsState>((set, get) => ({
     set((s) => ({ viewByDataset: { ...s.viewByDataset, [datasetId]: { ...(s.viewByDataset[datasetId] ?? EMPTY_VIEW), filters: [] } } })),
 
   openFilterColumnFor: (column) => set({ openFilterColumn: column }),
+
+  toggleHeatmap: (datasetId) =>
+    set((s) => ({
+      viewByDataset: {
+        ...s.viewByDataset,
+        [datasetId]: { ...(s.viewByDataset[datasetId] ?? EMPTY_VIEW), heatmap: !(s.viewByDataset[datasetId]?.heatmap ?? false) },
+      },
+    })),
 
   loadOverlay: async (datasetId) => {
     const overlay = await getOperations(datasetId);

@@ -10,16 +10,20 @@ import { toDatasetInfo } from "@/lib/dataset-mapping";
 import ImportWizard from "@/components/ImportWizard";
 import FileScreen from "@/components/FileScreen";
 import DataScreen from "@/components/DataScreen";
-import ModulosScreen from "@/components/ModulosScreen";
+import ModuleGroupScreen from "@/components/ModuleGroupScreen";
 import ViewScreen from "@/components/ViewScreen";
 import PyOrexLogo from "@/components/PyOrexLogo";
+import { MODULE_GROUPS } from "@/lib/modules-registry";
 
 // ── Nav config ─────────────────────────────────────────────────────────────────
+// Module groups (Geochemistry / Espectrometría / Petrofísica / …) are top-level
+// tabs, sandwiched between Data and View — new groups added to
+// modules-registry.ts show up here automatically.
 
 const NAV_ITEMS: { id: AppNav; label: string }[] = [
   { id: "file", label: "File" },
   { id: "data", label: "Data" },
-  { id: "modulos", label: "Módulos" },
+  ...MODULE_GROUPS.map((g) => ({ id: g.id as AppNav, label: g.label })),
   { id: "view", label: "View" },
 ];
 
@@ -130,7 +134,10 @@ export default function App() {
         </div>
       )}
       {activeNav === "data" && <DataScreen onOpenData={handleOpenData} />}
-      {activeNav === "modulos" && <ModulosScreen onOpenData={handleOpenData} />}
+      {MODULE_GROUPS.map(
+        (group) =>
+          activeNav === group.id && <ModuleGroupScreen key={group.id} group={group} onOpenData={handleOpenData} />
+      )}
       {activeNav === "view" && (
         <ViewScreen
           onOpenData={handleOpenData}

@@ -1,6 +1,6 @@
 ﻿# Estado del Proyecto — PyOrex
 
-> Última actualización: 2026-07-14
+> Última actualización: 2026-08-10
 > Actualizar este archivo cuando cambie el estado significativo del proyecto.
 
 ## Fase Actual
@@ -158,6 +158,22 @@
 
 **HITO ALCANZADO**: Primer pase funcional completo del módulo Spectrometry — modelo de datos, 3 lectores, preprocesamiento no-destructivo, QC, extracción de rasgos, índices, interpretación en 3 modos, mica blanca/clorita, spectral log, export a DATA — con 180 tests backend y E2E real, siguiendo los mismos patrones arquitectónicos que DATA/DATA ANALYSIS y QAQC (reutilización deliberada de `overlay.py`, `formula.py`, `WorkspaceArea`/`react-rnd`, el patrón de catálogo `status:"active"|"planned"`).
 
+### Completado en sesión 2026-08-10 — DATA como workspace de ventanas + Módulos como pestañas de nivel superior
+
+- [x] **Navegación de grupos de módulos**: la pestaña única "Módulos" se eliminó; cada grupo (Geochemistry / Espectrometría / Petrofísica) es ahora su propia pestaña de nivel superior en `App.tsx`, generada automáticamente desde `MODULE_GROUPS` (`modules-registry.ts`) — agregar un grupo nuevo ya no toca `App.tsx`. `ModulosScreen.tsx` (eliminado) → `ModuleGroupScreen.tsx` (un solo componente reusado por los 3 grupos, recibe `group` como prop). `AppNav` en `app-store.ts` ganó los 3 IDs de grupo en vez de `"modulos"`.
+- [x] **DATA rediseñada como área de ventanas flotantes de verdad**: la grilla (`DataGrid`) dejó de ser un panel fijo en la mitad inferior — ahora es una ventana más dentro de `WorkspaceArea` (se abre automáticamente al activarse un dataset, pero se puede mover/redimensionar/minimizar/cerrar como cualquier otra). `WorkspaceArea` ganó una prop `banner` (franja fija arriba de la capa de ventanas, siempre visible sin importar cuántas ventanas haya abiertas).
+- [x] **`SummaryTilesBar.tsx`** — franja de KPIs estilo Power BI pineada arriba del canvas de DATA: filas×columnas, % completitud (barra + color por umbral), distribución de tipos de columna (barra segmentada), resumen de calidad de datos (fetch a `data.quality_report`, cuenta hallazgos). Dos tiles son clicables (abren la grilla / el reporte de calidad completo).
+- [x] **Heatmap condicional en `DataGrid`**: toggle "🎨 Conditional formatting" en `DataToolbar` (antes deshabilitado/"Coming soon") — colorea celdas numéricas con una rampa secuencial azul según su posición min/max, calculada sobre las filas ya cargadas (no el dataset completo, recalcula a medida que se cargan más).
+- [x] **Quick chart pineado al canvas desde `DataGrid`**: right-click en un header de columna → menú contextual → Histograma/Box plot (numéricas) o Top valores en barras (categóricas/texto) → abre `ColumnQuickChartWindow.tsx` como ventana flotante nueva (fetch propio de hasta 50k filas vía `getRows`, Plotly). Permite armar un dashboard liviano explorando la grilla, sin pasar por Data Analysis.
+- [x] **`VizWorkspace` rediseñado a canvas multi-ventana**: dejó de ser tabs de un solo gráfico a la vez — ahora es un `WorkspaceArea` propio donde cada tipo de gráfico (Scatter Plot, Data Table; Spider/Radar y Sample Map siguen "Fase 2/3") se clava como su propia ventana, permitiendo varios Scatter Plots abiertos en paralelo para comparar pares de variables.
+- [x] **`ImportWizard` — gráfico de composición de columnas**: nuevo `ColumnCompositionChart` en el paso de validación, barra segmentada por `role` (mismo patrón visual que la distribución de tipos de `SummaryTilesBar`), con orden de roles fijo (no por conteo) para que el color de cada rol sea estable entre datasets distintos.
+- [x] **`FileScreen`**: "New Project" y "Open Project…" (.orex) deshabilitados con tooltip explicando que aún no están implementados (antes llamaban a `onClick={() => {}}` silenciosamente); "Import Data…" pasó a ser la acción primaria (botón azul) ya que es el único flujo real hoy.
+- [x] TypeScript typecheck: 0 errores. Verificado visualmente con `vite:dev` + Edge headless: nav de 6 pestañas (File/Data/Geochemistry/Espectrometría/Petrofísica/View) renderiza bien, File con New/Open Project deshabilitados e Import Data primario, Geochemistry (`ModuleGroupScreen`) lista sus 6 herramientas y el árbol de datasets vacío correctamente, Visualization y Data muestran sus empty-states correctos.
+- [ ] **Pendiente**: como esta sesión no cambió ningún endpoint/RPC de backend, no fue necesario volver a correr los 180 tests de Python — pero **no se verificó con datos reales** el SummaryTilesBar/heatmap/quick-chart-pin/multi-ventana de VizWorkspace, porque `rpc.ts` llama `invoke()` de Tauri sin fallback HTTP, así que Edge headless contra `vite:dev` no puede cargar filas reales (mismo límite ya documentado en sesiones previas). Falta el click-through dentro de la app Tauri nativa (`pnpm dev`) con un dataset importado de verdad — sigue siendo el mismo pendiente #1 de "Prioridades Actuales" abajo, ahora con más superficie nueva por probar (heatmap, right-click → pin chart, ventanas de VizWorkspace).
+- [ ] Sin commitear todavía al cierre de esta sesión — 13 archivos modificados + 3 nuevos (`ModuleGroupScreen.tsx`, `SummaryTilesBar.tsx`, `tool-windows/ColumnQuickChartWindow.tsx`) en el working tree.
+
+**HITO ALCANZADO**: DATA pasó de "grilla fija + panel de ventanas separado arriba" a un solo workspace de ventanas coherente con KPIs siempre visibles, y los 3 grupos de módulos (Geochemistry/Espectrometría/Petrofísica) ya son ciudadanos de primera clase en la navegación en vez de vivir agrupados bajo una pestaña genérica "Módulos" — cierra la brecha de IA que quedaba abierta desde ADR-0005.
+
 ## Pendiente en Fase 0
 - [ ] Plugin Core: registry, lifecycle, event bus básico (packages/plugin-sdk)
 - [ ] Pipeline CI/CD base (GitHub Actions)
@@ -181,7 +197,7 @@
 
 ## Prioridades Actuales
 
-1. **Verificación E2E real dentro de la app Tauri nativa** (`pnpm dev` completo, Rust+Python+React) — todo lo construido hasta ahora (DATA, DATA ANALYSIS, QAQC, Spectrometry) solo se verificó vía HTTP directo al servicio Python + UI con fixtures en browser; falta el click-through real con el IPC bridge de Rust y probar drag/resize/minimize interactivo de las ventanas flotantes
+1. **Verificación E2E real dentro de la app Tauri nativa** (`pnpm dev` completo, Rust+Python+React) — todo lo construido hasta ahora (DATA, DATA ANALYSIS, QAQC, Spectrometry, y el rediseño de DATA/VizWorkspace de 2026-08-10) solo se verificó vía HTTP directo al servicio Python + UI con fixtures/empty-states en browser; falta el click-through real con el IPC bridge de Rust — incluye probar drag/resize/minimize interactivo de las ventanas flotantes, el heatmap condicional y el right-click "pin chart to canvas" con datos reales
 2. **Validar los lectores ASD/SED con archivos reales de instrumento** en cuanto estén disponibles — hoy son "Experimental" por diseño (best-effort desde documentación de terceros no verificada, sin archivos reales para probar)
 3. **Petrofísica** (KT-10): sigue en `modules-registry.ts` como placeholder — investigar el formato KT-10 antes de extender `services/analytics/analysis/data/importer.py`
 4. Spectrometry follow-ups: Clay Mineral Analysis (discriminación multi-doblete), Mineral Assemblages (constructor de combinaciones libres), Saved Analyses (persistencia)

@@ -178,6 +178,31 @@ const ALL_ROLES: ColumnRole[] = [
 
 const ASSAY_ROLES = new Set<ColumnRole>(["assay_element","assay_oxide","assay_compound"]);
 
+// Solid fill variant of ROLE_COLORS — same hue/shade, used for bar segments instead of badges.
+const ROLE_BAR_COLORS: Record<string, string> = {
+  sample_identifier:  "bg-purple-400",
+  coordinate_x:       "bg-blue-400",
+  coordinate_y:       "bg-blue-400",
+  coordinate_z:       "bg-blue-300",
+  longitude_wgs84:    "bg-cyan-400",
+  latitude_wgs84:     "bg-cyan-400",
+  datetime:           "bg-sky-400",
+  sample_type_qaqc:   "bg-orange-400",
+  assay_element:      "bg-emerald-400",
+  assay_oxide:        "bg-teal-400",
+  assay_compound:     "bg-teal-300",
+  calculated_numeric: "bg-yellow-400",
+  ratio_numeric:      "bg-yellow-300",
+  index_numeric:      "bg-amber-400",
+  physical_numeric:   "bg-orange-300",
+  text_attribute:     "bg-zinc-400",
+  date_attribute:     "bg-sky-300",
+  qaqc_attribute:     "bg-orange-400",
+  metadata:           "bg-zinc-500",
+  ignored:            "bg-zinc-600",
+  unknown:            "bg-red-400",
+};
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -1221,6 +1246,9 @@ function ValidateStep({
         </div>
       </div>
 
+      {/* Column composition bar */}
+      <ColumnCompositionChart imported={imported} />
+
       {/* Spatial / Geometry Source */}
       <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3">
         <h4 className="text-xs font-semibold text-zinc-400 mb-2 uppercase tracking-wide">Coordenadas</h4>
@@ -1316,6 +1344,47 @@ function ValidateStep({
           ✓ Todo listo para importar.
         </div>
       )}
+    </div>
+  );
+}
+
+function ColumnCompositionChart({ imported }: { imported: ImportedColumnProfile[] }) {
+  if (imported.length === 0) return null;
+
+  const counts = new Map<ColumnRole, number>();
+  imported.forEach(p => counts.set(p.role, (counts.get(p.role) ?? 0) + 1));
+  // Fixed role order (ALL_ROLES) rather than sort-by-count, so a role's color/position
+  // stays stable across different datasets.
+  const segments = ALL_ROLES
+    .filter(r => counts.has(r))
+    .map(r => ({ role: r, count: counts.get(r)! }));
+
+  return (
+    <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg px-4 py-3">
+      <h4 className="text-xs font-semibold text-zinc-400 mb-2.5 uppercase tracking-wide">
+        Composición de columnas
+      </h4>
+      <div className="flex h-3 rounded-full overflow-hidden bg-zinc-900">
+        {segments.map(({ role, count }, i) => {
+          const pct = (count / imported.length) * 100;
+          return (
+            <div
+              key={role}
+              className={`h-full ${ROLE_BAR_COLORS[role] ?? "bg-zinc-500"} ${i > 0 ? "border-l border-zinc-900" : ""}`}
+              style={{ width: `${pct}%` }}
+              title={`${ROLE_LABELS[role]}: ${count} col. (${pct.toFixed(0)}%)`}
+            />
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2.5">
+        {segments.map(({ role, count }) => (
+          <div key={role} className="flex items-center gap-1.5 text-xs text-zinc-400">
+            <span className={`w-2 h-2 rounded-full shrink-0 ${ROLE_BAR_COLORS[role] ?? "bg-zinc-500"}`} />
+            {ROLE_LABELS[role]} <span className="text-zinc-600 font-mono">{count}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

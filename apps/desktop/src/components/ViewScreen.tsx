@@ -17,7 +17,7 @@ interface Props {
 
 // Workspace de datos: barra de acciones + split view (datasets/columnas a la
 // izquierda, visualización a la derecha). Es el split-view que existía antes
-// de separar las pantallas Data y Módulos — se mueve aquí sin cambios de
+// de separar las pantallas Data y los grupos de módulos — se mueve aquí sin cambios de
 // comportamiento porque semánticamente es "ver y trabajar el dataset activo".
 export default function ViewScreen({
   onOpenData,

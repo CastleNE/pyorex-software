@@ -83,14 +83,16 @@ export default function FileScreen({ onOpenProject, onImportData }: FileScreenPr
           label="New Project"
           shortcut="Ctrl+N"
           onClick={() => {}}
+          disabled
+          title="New Project — Coming soon (.orex project creation not implemented yet)"
         />
         <FileAction
           icon={<IconOpen />}
           label="Open Project…"
           shortcut="Ctrl+O"
-          onClick={onOpenProject}
-          primary
-          hint=".orex"
+          onClick={() => {}}
+          disabled
+          title="Open Project — Coming soon (.orex loading not implemented yet). Use Import Data for CSV/Excel files."
         />
         <div className="h-px bg-zinc-700 my-2" />
         <FileAction icon={<IconSave />} label="Save" shortcut="Ctrl+S" onClick={() => {}} disabled />
@@ -105,6 +107,7 @@ export default function FileScreen({ onOpenProject, onImportData }: FileScreenPr
           icon={<IconImport />}
           label="Import Data…"
           onClick={onImportData}
+          primary
           hint="CSV · Excel"
         />
         <FileAction icon={<IconExport />} label="Export…" onClick={() => {}} disabled />
@@ -129,7 +132,7 @@ export default function FileScreen({ onOpenProject, onImportData }: FileScreenPr
         </div>
 
         {recents.length === 0 ? (
-          <EmptyRecents onOpenProject={onOpenProject} onImportData={onImportData} />
+          <EmptyRecents onImportData={onImportData} />
         ) : (
           <div className="flex flex-col gap-1 overflow-y-auto">
             {recents.map((project) => (
@@ -157,6 +160,7 @@ function FileAction({
   onClick,
   primary = false,
   disabled = false,
+  title,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -165,11 +169,13 @@ function FileAction({
   onClick: () => void;
   primary?: boolean;
   disabled?: boolean;
+  title?: string;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors text-left w-full
         ${primary
           ? "bg-blue-600 hover:bg-blue-500 text-white font-medium"
@@ -264,10 +270,8 @@ function RecentItem({
 }
 
 function EmptyRecents({
-  onOpenProject,
   onImportData,
 }: {
-  onOpenProject: () => void;
   onImportData: () => void;
 }) {
   return (
@@ -285,16 +289,17 @@ function EmptyRecents({
       </div>
       <div className="flex gap-3">
         <button
-          onClick={onOpenProject}
+          onClick={onImportData}
           className="px-4 py-2 text-sm rounded-md bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
         >
-          Open Project (.orex)
+          Import Data…
         </button>
         <button
-          onClick={onImportData}
-          className="px-4 py-2 text-sm rounded-md bg-zinc-700 hover:bg-zinc-600 text-zinc-200 font-medium transition-colors"
+          disabled
+          title="Open Project — Coming soon (.orex loading not implemented yet)"
+          className="px-4 py-2 text-sm rounded-md bg-zinc-800 text-zinc-600 font-medium cursor-not-allowed"
         >
-          Import Data…
+          Open Project (.orex)
         </button>
       </div>
     </div>

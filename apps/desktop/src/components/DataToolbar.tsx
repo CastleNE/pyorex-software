@@ -8,17 +8,19 @@ import { toDatasetInfo } from "@/lib/dataset-mapping";
 
 interface Props {
   workspaceRef: RefObject<WorkspaceAreaHandle | null>;
+  onOpenGrid: () => void;
 }
 
 type Popover = "rename" | "dtype" | null;
 
-export default function DataToolbar({ workspaceRef }: Props) {
+export default function DataToolbar({ workspaceRef, onOpenGrid }: Props) {
   const { dataset, selectedColumn, setDataset } = useDatasetStore();
-  const view = useDataOpsStore((s) => (dataset ? s.getView(dataset.id) : { filters: [], sort: null }));
+  const view = useDataOpsStore((s) => (dataset ? s.getView(dataset.id) : { filters: [], sort: null, heatmap: false }));
   const overlay = useDataOpsStore((s) => (dataset ? s.getOverlay(dataset.id) : undefined));
   const setSort = useDataOpsStore((s) => s.setSort);
   const clearFilters = useDataOpsStore((s) => s.clearFilters);
   const openFilterColumnFor = useDataOpsStore((s) => s.openFilterColumnFor);
+  const toggleHeatmap = useDataOpsStore((s) => s.toggleHeatmap);
   const applyOp = useDataOpsStore((s) => s.applyOp);
   const undo = useDataOpsStore((s) => s.undo);
   const redo = useDataOpsStore((s) => s.redo);
@@ -101,6 +103,8 @@ export default function DataToolbar({ workspaceRef }: Props) {
       <IconButton icon="💾" title="Save changes" disabled={!canUndo || saving} onClick={handleSave} />
       <IconButton icon="⟳" title="Refresh data" onClick={() => refresh(datasetId)} />
       <Divider />
+      <IconButton icon="📋" title="Show Data Grid" onClick={onOpenGrid} />
+      <Divider />
       <IconButton
         icon="▲"
         title="Sort ascending"
@@ -161,7 +165,12 @@ export default function DataToolbar({ workspaceRef }: Props) {
       <Divider />
       <IconButton icon="🔎" title="Find and replace — Coming soon" disabled />
       <IconButton icon="≡" title="Remove duplicates — Coming soon" disabled />
-      <IconButton icon="🎨" title="Conditional formatting — Coming soon" disabled />
+      <IconButton
+        icon="🎨"
+        title={view.heatmap ? "Conditional formatting: on (loaded rows)" : "Conditional formatting — heatmap on numeric columns"}
+        active={view.heatmap}
+        onClick={() => toggleHeatmap(datasetId)}
+      />
       <IconButton icon="⊞" title="Group by — Coming soon" disabled />
       <IconButton icon="Σ+" title="Aggregate — Coming soon" disabled />
       <IconButton icon="⇩" title="Export data — Coming soon" disabled />
@@ -173,11 +182,13 @@ function IconButton({
   icon,
   title,
   disabled,
+  active,
   onClick,
 }: {
   icon: string;
   title: string;
   disabled?: boolean;
+  active?: boolean;
   onClick?: () => void;
 }) {
   return (
@@ -185,7 +196,9 @@ function IconButton({
       title={title}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-7 w-7 items-center justify-center rounded text-sm text-zinc-300 transition-colors enabled:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-30"
+      className={`flex h-7 w-7 items-center justify-center rounded text-sm transition-colors enabled:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-30 ${
+        active ? "bg-blue-500/20 text-blue-400" : "text-zinc-300"
+      }`}
     >
       {icon}
     </button>

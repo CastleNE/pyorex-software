@@ -1,7 +1,8 @@
-// Registro estático de grupos de módulos para la pantalla "Módulos".
+// Registro estático de grupos de módulos — cada uno es su propia pestaña de
+// nivel superior en App.tsx (ver ModuleGroupScreen.tsx).
 // Seam de migración: cuando el Plugin Core (Fase 0 pendiente) exista, este
 // array se reemplaza por grupos derivados de PluginManifest[] sin tocar
-// ModulosScreen.tsx.
+// ModuleGroupScreen.tsx.
 
 export interface ModuleTool {
   id: string;

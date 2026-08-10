@@ -13,6 +13,8 @@ interface OpenWindowState extends ToolWindowDescriptor {
 
 interface Props {
   emptyState: ReactNode;
+  /** Optional strip pinned above the windows layer, always visible regardless of open-window count. */
+  banner?: ReactNode;
 }
 
 const DEFAULT_POS = { x: 24, y: 24, width: 480, height: 360 };
@@ -25,7 +27,7 @@ const CASCADE_OFFSET = 28;
  * Analysis, and vice versa).
  */
 const WorkspaceArea = forwardRef<WorkspaceAreaHandle, Props>(function WorkspaceArea(
-  { emptyState },
+  { emptyState, banner },
   ref
 ) {
   const [windows, setWindows] = useState<OpenWindowState[]>([]);
@@ -71,34 +73,37 @@ const WorkspaceArea = forwardRef<WorkspaceAreaHandle, Props>(function WorkspaceA
   }));
 
   return (
-    <div className="relative flex-1 overflow-hidden bg-zinc-900">
-      {windows.length === 0 && emptyState}
-      {windows.map((w) => (
-        <FloatingWindow
-          key={w.id}
-          title={w.title}
-          icon={w.icon}
-          x={w.x}
-          y={w.y}
-          width={w.width}
-          height={w.height}
-          zIndex={w.zIndex}
-          minimized={w.minimized}
-          onFocus={() => bringToFront(w.id)}
-          onClose={() => setWindows((prev) => prev.filter((win) => win.id !== w.id))}
-          onMinimizeToggle={() =>
-            setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, minimized: !win.minimized } : win)))
-          }
-          onDragStop={(x, y) =>
-            setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, x, y } : win)))
-          }
-          onResizeStop={(width, height, x, y) =>
-            setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, width, height, x, y } : win)))
-          }
-        >
-          {w.render()}
-        </FloatingWindow>
-      ))}
+    <div className="flex flex-1 flex-col overflow-hidden bg-zinc-900">
+      {banner}
+      <div className="relative flex-1 overflow-hidden">
+        {windows.length === 0 && emptyState}
+        {windows.map((w) => (
+          <FloatingWindow
+            key={w.id}
+            title={w.title}
+            icon={w.icon}
+            x={w.x}
+            y={w.y}
+            width={w.width}
+            height={w.height}
+            zIndex={w.zIndex}
+            minimized={w.minimized}
+            onFocus={() => bringToFront(w.id)}
+            onClose={() => setWindows((prev) => prev.filter((win) => win.id !== w.id))}
+            onMinimizeToggle={() =>
+              setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, minimized: !win.minimized } : win)))
+            }
+            onDragStop={(x, y) =>
+              setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, x, y } : win)))
+            }
+            onResizeStop={(width, height, x, y) =>
+              setWindows((prev) => prev.map((win) => (win.id === w.id ? { ...win, width, height, x, y } : win)))
+            }
+          >
+            {w.render()}
+          </FloatingWindow>
+        ))}
+      </div>
     </div>
   );
 });

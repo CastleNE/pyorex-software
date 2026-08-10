@@ -1,9 +1,11 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useDatasetStore } from "@/stores/dataset-store";
 import ActionButton from "@/components/ActionButton";
 import DataToolbar from "@/components/DataToolbar";
 import DataGrid from "@/components/DataGrid";
 import PyOrexLogo from "@/components/PyOrexLogo";
+import SummaryTilesBar from "@/components/SummaryTilesBar";
+import DataQualityWindow from "@/components/tool-windows/DataQualityWindow";
 import WorkspaceArea from "@/components/window-manager/WorkspaceArea";
 import type { WorkspaceAreaHandle } from "@/components/window-manager/types";
 
@@ -12,11 +14,43 @@ interface Props {
 }
 
 // Pantalla "Data": espacio de preparación/exploración estilo Excel/Power BI.
-// Mitad superior = área de trabajo con ventanas flotantes (logo + resumen del
-// dataset cuando no hay ninguna abierta), mitad inferior = grilla de datos.
+// Una sola área de trabajo con ventanas flotantes (drag/resize/minimize) —
+// la grilla de datos es una ventana más, no un panel fijo — con una barra de
+// KPIs (SummaryTilesBar) siempre visible arriba, sin importar qué ventanas
+// estén abiertas.
 export default function DataScreen({ onOpenData }: Props) {
   const { dataset, hasData } = useDatasetStore();
   const workspaceRef = useRef<WorkspaceAreaHandle>(null);
+
+  function openDataGridWindow() {
+    if (!dataset) return;
+    workspaceRef.current?.openWindow({
+      id: "data-grid",
+      title: `${dataset.name} — Data Grid`,
+      icon: "📋",
+      defaultPos: { x: 16, y: 16, width: 1040, height: 560 },
+      render: () => <DataGrid workspaceRef={workspaceRef} />,
+    });
+  }
+
+  function openDataQuality() {
+    if (!dataset) return;
+    workspaceRef.current?.openWindow({
+      id: "data-quality",
+      title: "Data Quality",
+      icon: "🩺",
+      defaultPos: { x: 60, y: 40, width: 640, height: 460 },
+      render: () => <DataQualityWindow datasetId={dataset.id} />,
+    });
+  }
+
+  // Auto-open the grid the first time a dataset becomes active, so the
+  // primary content is visible immediately — same as before, but now it's a
+  // regular floating window the user can move/resize/minimize/close.
+  useEffect(() => {
+    if (dataset) openDataGridWindow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataset?.id]);
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
@@ -28,24 +62,20 @@ export default function DataScreen({ onOpenData }: Props) {
 
       {hasData && dataset ? (
         <>
-          <DataToolbar workspaceRef={workspaceRef} />
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <div className="min-h-0 flex-1 basis-0 overflow-hidden border-b border-zinc-700">
-              <WorkspaceArea
-                ref={workspaceRef}
-                emptyState={
-                  <DataEmptyState
-                    datasetName={dataset.name}
-                    rowCount={dataset.rowCount}
-                    columnCount={dataset.columnCount}
-                    importedAt={dataset.importedAt}
-                  />
-                }
-              />
-            </div>
-            <div className="min-h-0 flex-1 basis-0 overflow-hidden">
-              <DataGrid />
-            </div>
+          <DataToolbar workspaceRef={workspaceRef} onOpenGrid={openDataGridWindow} />
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <WorkspaceArea
+              ref={workspaceRef}
+              banner={<SummaryTilesBar dataset={dataset} onOpenQuality={openDataQuality} onOpenGrid={openDataGridWindow} />}
+              emptyState={
+                <DataEmptyState
+                  datasetName={dataset.name}
+                  rowCount={dataset.rowCount}
+                  columnCount={dataset.columnCount}
+                  importedAt={dataset.importedAt}
+                />
+              }
+            />
           </div>
         </>
       ) : (
