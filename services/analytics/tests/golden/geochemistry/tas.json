@@ -1,0 +1,1198 @@
+{
+ "default": {
+  "tool": "tas",
+  "title": "TAS · clasificación volcánica",
+  "rows": [
+   {
+    "sample_id": "OX01",
+    "row_index": 0,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 50.0,
+    "y": 3.0,
+    "z": null,
+    "values": null,
+    "classification": "Basalt"
+   },
+   {
+    "sample_id": "OX02",
+    "row_index": 1,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 60.0,
+    "y": 4.0,
+    "z": null,
+    "values": null,
+    "classification": "Andesite"
+   },
+   {
+    "sample_id": "OX03",
+    "row_index": 2,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 75.0,
+    "y": 8.0,
+    "z": null,
+    "values": null,
+    "classification": "Rhyolite"
+   },
+   {
+    "sample_id": "OX04",
+    "row_index": 3,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 52.0,
+    "y": 3.0,
+    "z": null,
+    "values": null,
+    "classification": "Boundary: Basalt / Basaltic Andesite"
+   },
+   {
+    "sample_id": "OX05",
+    "row_index": 4,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 55.0,
+    "y": 0.0,
+    "z": null,
+    "values": null,
+    "classification": "Boundary: Basaltic Andesite"
+   },
+   {
+    "sample_id": "OX06",
+    "row_index": 5,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 70.0,
+    "y": 6.0,
+    "z": null,
+    "values": null,
+    "classification": "Dacite"
+   },
+   {
+    "sample_id": "OX07",
+    "row_index": 6,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Concentración o componente negativo",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX08",
+    "row_index": 7,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX09",
+    "row_index": 8,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX10",
+    "row_index": 9,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX11",
+    "row_index": 10,
+    "group": "Muestras",
+    "status": "excluded",
+    "reason": "Muestra de control QAQC",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX12",
+    "row_index": 11,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "SiO2 + álcalis supera 100 wt%",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX13",
+    "row_index": 12,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 45.0,
+    "y": 10.0,
+    "z": null,
+    "values": null,
+    "classification": "Foidite"
+   },
+   {
+    "sample_id": "OX14",
+    "row_index": 13,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 20.0,
+    "y": 2.0,
+    "z": null,
+    "values": null,
+    "classification": "Outside reference fields"
+   }
+  ],
+  "quality": {
+   "total": 14,
+   "used": 8,
+   "invalid": 5,
+   "excluded_qaqc": 1
+  },
+  "warnings": [
+   "Le Maitre (2002), doi:10.1017/CBO9780511535581. Polígonos combinados pyrolite; T1/T2 y tefrita/basanita requieren criterios adicionales.",
+   "Usa óxidos en base anhidra. No se renormaliza automáticamente ni se corrige alteración.",
+   "5 muestra(s) no graficables; motivos en tabla. No se imputaron valores."
+  ],
+  "formula": "Na2O + K2O frente a SiO2 (wt% anhidro).",
+  "reference": "Le Maitre (2002), doi:10.1017/CBO9780511535581. Polígonos combinados pyrolite; T1/T2 y tefrita/basanita requieren criterios adicionales.",
+  "plot": {
+   "kind": "scatter",
+   "x_label": "SiO2 (wt%)",
+   "y_label": "Na2O + K2O (wt%)",
+   "z_label": "K2O",
+   "log_x": false,
+   "log_y": false,
+   "fields": [
+    {
+     "id": "B",
+     "name": "Basalt",
+     "points": [
+      [
+       45,
+       0
+      ],
+      [
+       45,
+       5
+      ],
+      [
+       52,
+       5
+      ],
+      [
+       52,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "F",
+     "name": "Foidite",
+     "points": [
+      [
+       35,
+       9
+      ],
+      [
+       37,
+       14
+      ],
+      [
+       52.5,
+       18
+      ],
+      [
+       52.5,
+       14
+      ],
+      [
+       48.4,
+       11.5
+      ],
+      [
+       45,
+       9.4
+      ],
+      [
+       41,
+       7
+      ],
+      [
+       41,
+       3
+      ],
+      [
+       37,
+       3
+      ]
+     ]
+    },
+    {
+     "id": "O1",
+     "name": "Basaltic Andesite",
+     "points": [
+      [
+       52,
+       0
+      ],
+      [
+       52,
+       5
+      ],
+      [
+       57,
+       5.9
+      ],
+      [
+       57,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "O2",
+     "name": "Andesite",
+     "points": [
+      [
+       57,
+       0
+      ],
+      [
+       57,
+       5.9
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       63,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "O3",
+     "name": "Dacite",
+     "points": [
+      [
+       63,
+       0
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       69,
+       8
+      ],
+      [
+       77.3,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "Pc",
+     "name": "Picrite",
+     "points": [
+      [
+       41,
+       3
+      ],
+      [
+       45,
+       3
+      ],
+      [
+       45,
+       2
+      ],
+      [
+       45,
+       0
+      ],
+      [
+       41,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "Ph",
+     "name": "Phonolite",
+     "points": [
+      [
+       52.5,
+       14
+      ],
+      [
+       52.5,
+       18
+      ],
+      [
+       57,
+       18
+      ],
+      [
+       63,
+       16.2
+      ],
+      [
+       61,
+       13.5
+      ],
+      [
+       57.6,
+       11.7
+      ]
+     ]
+    },
+    {
+     "id": "R",
+     "name": "Rhyolite",
+     "points": [
+      [
+       69,
+       8
+      ],
+      [
+       69,
+       13
+      ],
+      [
+       85.9,
+       6.8
+      ],
+      [
+       87.5,
+       4.7
+      ],
+      [
+       77.3,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "S1",
+     "name": "Trachybasalt",
+     "points": [
+      [
+       45,
+       5
+      ],
+      [
+       49.4,
+       7.3
+      ],
+      [
+       52,
+       5
+      ]
+     ]
+    },
+    {
+     "id": "S2",
+     "name": "Basaltic  Trachyandesite",
+     "points": [
+      [
+       49.4,
+       7.3
+      ],
+      [
+       53,
+       9.3
+      ],
+      [
+       57,
+       5.9
+      ],
+      [
+       52,
+       5
+      ]
+     ]
+    },
+    {
+     "id": "S3",
+     "name": "Trachyandesite",
+     "points": [
+      [
+       53,
+       9.3
+      ],
+      [
+       57.6,
+       11.7
+      ],
+      [
+       61,
+       8.6
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       57,
+       5.9
+      ]
+     ]
+    },
+    {
+     "id": "T1T2",
+     "name": "Trachyte-Trachydacite",
+     "points": [
+      [
+       57.6,
+       11.7
+      ],
+      [
+       61,
+       13.5
+      ],
+      [
+       63,
+       16.2
+      ],
+      [
+       69,
+       13
+      ],
+      [
+       69,
+       8
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       61,
+       8.6
+      ]
+     ]
+    },
+    {
+     "id": "U1",
+     "name": "Tephrite / Basanite",
+     "points": [
+      [
+       41,
+       3
+      ],
+      [
+       41,
+       7
+      ],
+      [
+       45,
+       9.4
+      ],
+      [
+       49.4,
+       7.3
+      ],
+      [
+       45,
+       5
+      ],
+      [
+       45,
+       3
+      ]
+     ]
+    },
+    {
+     "id": "U2",
+     "name": "Phonotephrite",
+     "points": [
+      [
+       45,
+       9.4
+      ],
+      [
+       48.4,
+       11.5
+      ],
+      [
+       53,
+       9.3
+      ],
+      [
+       49.4,
+       7.3
+      ]
+     ]
+    },
+    {
+     "id": "U3",
+     "name": "Tephriphonolite",
+     "points": [
+      [
+       48.4,
+       11.5
+      ],
+      [
+       52.5,
+       14
+      ],
+      [
+       57.6,
+       11.7
+      ],
+      [
+       53,
+       9.3
+      ]
+     ]
+    }
+   ]
+  },
+  "pipeline": {
+   "units": {
+    "SiO2": "pct",
+    "Na2O": "pct",
+    "K2O": "pct"
+   },
+   "iron_basis": "FeOT",
+   "include_qaqc": false,
+   "log_x": false,
+   "log_y": false,
+   "group_column": null,
+   "missing_policy": "exclude_without_imputation",
+   "reference_version": "pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca",
+   "engine_version": "1.0.0"
+  }
+ },
+ "mixed_units": {
+  "tool": "tas",
+  "title": "TAS · clasificación volcánica",
+  "rows": [
+   {
+    "sample_id": "OX01",
+    "row_index": 0,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 50.0,
+    "y": 3.0,
+    "z": null,
+    "values": null,
+    "classification": "Basalt"
+   },
+   {
+    "sample_id": "OX02",
+    "row_index": 1,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 60.0,
+    "y": 4.0,
+    "z": null,
+    "values": null,
+    "classification": "Andesite"
+   },
+   {
+    "sample_id": "OX03",
+    "row_index": 2,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 75.0,
+    "y": 8.0,
+    "z": null,
+    "values": null,
+    "classification": "Rhyolite"
+   },
+   {
+    "sample_id": "OX04",
+    "row_index": 3,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 52.0,
+    "y": 3.0,
+    "z": null,
+    "values": null,
+    "classification": "Boundary: Basalt / Basaltic Andesite"
+   },
+   {
+    "sample_id": "OX05",
+    "row_index": 4,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 55.0,
+    "y": 0.0,
+    "z": null,
+    "values": null,
+    "classification": "Boundary: Basaltic Andesite"
+   },
+   {
+    "sample_id": "OX06",
+    "row_index": 5,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 70.0,
+    "y": 6.0,
+    "z": null,
+    "values": null,
+    "classification": "Dacite"
+   },
+   {
+    "sample_id": "OX07",
+    "row_index": 6,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Concentración o componente negativo",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX08",
+    "row_index": 7,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX09",
+    "row_index": 8,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX10",
+    "row_index": 9,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX11",
+    "row_index": 10,
+    "group": "Muestras",
+    "status": "excluded",
+    "reason": "Muestra de control QAQC",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX12",
+    "row_index": 11,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "SiO2 + álcalis supera 100 wt%",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX13",
+    "row_index": 12,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 45.0,
+    "y": 10.0,
+    "z": null,
+    "values": null,
+    "classification": "Foidite"
+   },
+   {
+    "sample_id": "OX14",
+    "row_index": 13,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 20.0,
+    "y": 2.0,
+    "z": null,
+    "values": null,
+    "classification": "Outside reference fields"
+   }
+  ],
+  "quality": {
+   "total": 14,
+   "used": 8,
+   "invalid": 5,
+   "excluded_qaqc": 1
+  },
+  "warnings": [
+   "Le Maitre (2002), doi:10.1017/CBO9780511535581. Polígonos combinados pyrolite; T1/T2 y tefrita/basanita requieren criterios adicionales.",
+   "Usa óxidos en base anhidra. No se renormaliza automáticamente ni se corrige alteración.",
+   "5 muestra(s) no graficables; motivos en tabla. No se imputaron valores."
+  ],
+  "formula": "Na2O + K2O frente a SiO2 (wt% anhidro).",
+  "reference": "Le Maitre (2002), doi:10.1017/CBO9780511535581. Polígonos combinados pyrolite; T1/T2 y tefrita/basanita requieren criterios adicionales.",
+  "plot": {
+   "kind": "scatter",
+   "x_label": "SiO2 (wt%)",
+   "y_label": "Na2O + K2O (wt%)",
+   "z_label": "K2O",
+   "log_x": false,
+   "log_y": false,
+   "fields": [
+    {
+     "id": "B",
+     "name": "Basalt",
+     "points": [
+      [
+       45,
+       0
+      ],
+      [
+       45,
+       5
+      ],
+      [
+       52,
+       5
+      ],
+      [
+       52,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "F",
+     "name": "Foidite",
+     "points": [
+      [
+       35,
+       9
+      ],
+      [
+       37,
+       14
+      ],
+      [
+       52.5,
+       18
+      ],
+      [
+       52.5,
+       14
+      ],
+      [
+       48.4,
+       11.5
+      ],
+      [
+       45,
+       9.4
+      ],
+      [
+       41,
+       7
+      ],
+      [
+       41,
+       3
+      ],
+      [
+       37,
+       3
+      ]
+     ]
+    },
+    {
+     "id": "O1",
+     "name": "Basaltic Andesite",
+     "points": [
+      [
+       52,
+       0
+      ],
+      [
+       52,
+       5
+      ],
+      [
+       57,
+       5.9
+      ],
+      [
+       57,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "O2",
+     "name": "Andesite",
+     "points": [
+      [
+       57,
+       0
+      ],
+      [
+       57,
+       5.9
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       63,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "O3",
+     "name": "Dacite",
+     "points": [
+      [
+       63,
+       0
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       69,
+       8
+      ],
+      [
+       77.3,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "Pc",
+     "name": "Picrite",
+     "points": [
+      [
+       41,
+       3
+      ],
+      [
+       45,
+       3
+      ],
+      [
+       45,
+       2
+      ],
+      [
+       45,
+       0
+      ],
+      [
+       41,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "Ph",
+     "name": "Phonolite",
+     "points": [
+      [
+       52.5,
+       14
+      ],
+      [
+       52.5,
+       18
+      ],
+      [
+       57,
+       18
+      ],
+      [
+       63,
+       16.2
+      ],
+      [
+       61,
+       13.5
+      ],
+      [
+       57.6,
+       11.7
+      ]
+     ]
+    },
+    {
+     "id": "R",
+     "name": "Rhyolite",
+     "points": [
+      [
+       69,
+       8
+      ],
+      [
+       69,
+       13
+      ],
+      [
+       85.9,
+       6.8
+      ],
+      [
+       87.5,
+       4.7
+      ],
+      [
+       77.3,
+       0
+      ]
+     ]
+    },
+    {
+     "id": "S1",
+     "name": "Trachybasalt",
+     "points": [
+      [
+       45,
+       5
+      ],
+      [
+       49.4,
+       7.3
+      ],
+      [
+       52,
+       5
+      ]
+     ]
+    },
+    {
+     "id": "S2",
+     "name": "Basaltic  Trachyandesite",
+     "points": [
+      [
+       49.4,
+       7.3
+      ],
+      [
+       53,
+       9.3
+      ],
+      [
+       57,
+       5.9
+      ],
+      [
+       52,
+       5
+      ]
+     ]
+    },
+    {
+     "id": "S3",
+     "name": "Trachyandesite",
+     "points": [
+      [
+       53,
+       9.3
+      ],
+      [
+       57.6,
+       11.7
+      ],
+      [
+       61,
+       8.6
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       57,
+       5.9
+      ]
+     ]
+    },
+    {
+     "id": "T1T2",
+     "name": "Trachyte-Trachydacite",
+     "points": [
+      [
+       57.6,
+       11.7
+      ],
+      [
+       61,
+       13.5
+      ],
+      [
+       63,
+       16.2
+      ],
+      [
+       69,
+       13
+      ],
+      [
+       69,
+       8
+      ],
+      [
+       63,
+       7
+      ],
+      [
+       61,
+       8.6
+      ]
+     ]
+    },
+    {
+     "id": "U1",
+     "name": "Tephrite / Basanite",
+     "points": [
+      [
+       41,
+       3
+      ],
+      [
+       41,
+       7
+      ],
+      [
+       45,
+       9.4
+      ],
+      [
+       49.4,
+       7.3
+      ],
+      [
+       45,
+       5
+      ],
+      [
+       45,
+       3
+      ]
+     ]
+    },
+    {
+     "id": "U2",
+     "name": "Phonotephrite",
+     "points": [
+      [
+       45,
+       9.4
+      ],
+      [
+       48.4,
+       11.5
+      ],
+      [
+       53,
+       9.3
+      ],
+      [
+       49.4,
+       7.3
+      ]
+     ]
+    },
+    {
+     "id": "U3",
+     "name": "Tephriphonolite",
+     "points": [
+      [
+       48.4,
+       11.5
+      ],
+      [
+       52.5,
+       14
+      ],
+      [
+       57.6,
+       11.7
+      ],
+      [
+       53,
+       9.3
+      ]
+     ]
+    }
+   ]
+  },
+  "pipeline": {
+   "units": {
+    "SiO2": "pct",
+    "Na2O": "ppm",
+    "K2O": "ppb"
+   },
+   "iron_basis": "FeOT",
+   "include_qaqc": false,
+   "log_x": false,
+   "log_y": false,
+   "group_column": null,
+   "missing_policy": "exclude_without_imputation",
+   "reference_version": "pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca",
+   "engine_version": "1.0.0"
+  }
+ }
+}

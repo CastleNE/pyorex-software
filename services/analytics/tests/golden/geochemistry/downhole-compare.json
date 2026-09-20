@@ -1,0 +1,164 @@
+{
+ "by_hole": {
+  "tool": "downhole-compare",
+  "title": "Downhole · comparar ensayes",
+  "rows": [
+   {
+    "sample_id": "DH01",
+    "row_index": 0,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 30.0,
+    "y": 3.0,
+    "z": 31.0,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH02",
+    "row_index": 1,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 10.0,
+    "y": 1.0,
+    "z": 11.0,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH03",
+    "row_index": 2,
+    "group": "A",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": 2.0,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH04",
+    "row_index": 3,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 40.0,
+    "y": 4.0,
+    "z": 41.0,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH05",
+    "row_index": 4,
+    "group": "B",
+    "status": "valid",
+    "reason": null,
+    "x": 50.0,
+    "y": 5.0,
+    "z": 51.0,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH06",
+    "row_index": 5,
+    "group": "B",
+    "status": "invalid",
+    "reason": "Profundidad negativa",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH07",
+    "row_index": 6,
+    "group": "None",
+    "status": "invalid",
+    "reason": "Falta identificador de sondaje",
+    "x": null,
+    "y": 6.0,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH08",
+    "row_index": 7,
+    "group": "",
+    "status": "invalid",
+    "reason": "Falta identificador de sondaje",
+    "x": null,
+    "y": 7.0,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH09",
+    "row_index": 8,
+    "group": "B",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DH10",
+    "row_index": 9,
+    "group": "B",
+    "status": "excluded",
+    "reason": "Muestra de control QAQC",
+    "x": null,
+    "y": 8.0,
+    "z": null,
+    "values": null,
+    "classification": null
+   }
+  ],
+  "quality": {
+   "total": 10,
+   "used": 4,
+   "invalid": 5,
+   "excluded_qaqc": 1
+  },
+  "warnings": [
+   "Profundidad medida 1D; no representa coordenadas 3D ni corrige desviaciones del sondaje. Verifica unidades y correspondencia de intervalos.",
+   "5 muestra(s) no graficables; motivos en tabla. No se imputaron valores."
+  ],
+  "formula": "Dos ensayes por fila a la misma profundidad; perfiles separados por sondaje. Confirmar unidades comparables.",
+  "reference": "Dos ensayes por fila a la misma profundidad; perfiles separados por sondaje. Confirmar unidades comparables.",
+  "plot": {
+   "kind": "downhole",
+   "x_label": "Assay1",
+   "y_label": "Profundidad: Depth",
+   "z_label": "Assay2",
+   "log_x": false,
+   "log_y": false,
+   "fields": []
+  },
+  "pipeline": {
+   "units": {
+    "Depth": "raw",
+    "Assay1": "raw",
+    "Assay2": "raw"
+   },
+   "iron_basis": "FeOT",
+   "include_qaqc": false,
+   "log_x": false,
+   "log_y": false,
+   "group_column": "Hole",
+   "missing_policy": "exclude_without_imputation",
+   "reference_version": "pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca",
+   "engine_version": "1.0.0"
+  }
+ }
+}

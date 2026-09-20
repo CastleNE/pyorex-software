@@ -1,0 +1,392 @@
+{
+ "single_group": {
+  "tool": "probability",
+  "title": "Probabilidad normal",
+  "rows": [
+   {
+    "sample_id": "DS01",
+    "row_index": 0,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 3.0,
+    "y": -0.12566134685507402,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS02",
+    "row_index": 1,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 1.0,
+    "y": -1.0364333894937898,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS03",
+    "row_index": 2,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 2.0,
+    "y": -0.6744897501960817,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS04",
+    "row_index": 3,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 2.0,
+    "y": -0.38532046640756773,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS05",
+    "row_index": 4,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 4.0,
+    "y": 0.12566134685507416,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS06",
+    "row_index": 5,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 10.0,
+    "y": 0.6744897501960817,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS07",
+    "row_index": 6,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 20.0,
+    "y": 1.0364333894937898,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS08",
+    "row_index": 7,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 30.0,
+    "y": 1.6448536269514722,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS09",
+    "row_index": 8,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 7.0,
+    "y": 0.38532046640756773,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS10",
+    "row_index": 9,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS11",
+    "row_index": 10,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS12",
+    "row_index": 11,
+    "group": "Muestras",
+    "status": "excluded",
+    "reason": "Muestra de control QAQC",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS13",
+    "row_index": 12,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": -5.0,
+    "y": -1.6448536269514729,
+    "z": null,
+    "values": null,
+    "classification": null
+   }
+  ],
+  "quality": {
+   "total": 13,
+   "used": 10,
+   "invalid": 2,
+   "excluded_qaqc": 1
+  },
+  "warnings": [
+   "2 muestra(s) no graficables; motivos en tabla. No se imputaron valores."
+  ],
+  "formula": "Valor observado frente al cuantil normal de (i−0.5)/n; eje de probabilidad no lineal.",
+  "reference": "Valor observado frente al cuantil normal de (i−0.5)/n; eje de probabilidad no lineal.",
+  "plot": {
+   "kind": "probability",
+   "x_label": "X",
+   "y_label": "Probabilidad acumulada (%)",
+   "z_label": "",
+   "log_x": false,
+   "log_y": false,
+   "fields": []
+  },
+  "pipeline": {
+   "units": {
+    "X": "raw"
+   },
+   "iron_basis": "FeOT",
+   "include_qaqc": false,
+   "log_x": false,
+   "log_y": false,
+   "group_column": null,
+   "missing_policy": "exclude_without_imputation",
+   "reference_version": "pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca",
+   "engine_version": "1.0.0"
+  }
+ },
+ "by_group": {
+  "tool": "probability",
+  "title": "Probabilidad normal",
+  "rows": [
+   {
+    "sample_id": "DS01",
+    "row_index": 0,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 3.0,
+    "y": 0.6744897501960817,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS02",
+    "row_index": 1,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 1.0,
+    "y": -0.6744897501960817,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS03",
+    "row_index": 2,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 2.0,
+    "y": -0.2104283942479247,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS04",
+    "row_index": 3,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 2.0,
+    "y": 0.21042839424792484,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS05",
+    "row_index": 4,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": 4.0,
+    "y": 1.382994127100638,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS06",
+    "row_index": 5,
+    "group": "B",
+    "status": "valid",
+    "reason": null,
+    "x": 10.0,
+    "y": -0.967421566101701,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS07",
+    "row_index": 6,
+    "group": "B",
+    "status": "valid",
+    "reason": null,
+    "x": 20.0,
+    "y": 0.0,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS08",
+    "row_index": 7,
+    "group": "B",
+    "status": "valid",
+    "reason": null,
+    "x": 30.0,
+    "y": 0.967421566101701,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS09",
+    "row_index": 8,
+    "group": "C",
+    "status": "valid",
+    "reason": null,
+    "x": 7.0,
+    "y": 0.0,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS10",
+    "row_index": 9,
+    "group": "A",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS11",
+    "row_index": 10,
+    "group": "A",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS12",
+    "row_index": 11,
+    "group": "A",
+    "status": "excluded",
+    "reason": "Muestra de control QAQC",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "DS13",
+    "row_index": 12,
+    "group": "A",
+    "status": "valid",
+    "reason": null,
+    "x": -5.0,
+    "y": -1.382994127100638,
+    "z": null,
+    "values": null,
+    "classification": null
+   }
+  ],
+  "quality": {
+   "total": 13,
+   "used": 10,
+   "invalid": 2,
+   "excluded_qaqc": 1
+  },
+  "warnings": [
+   "2 muestra(s) no graficables; motivos en tabla. No se imputaron valores."
+  ],
+  "formula": "Valor observado frente al cuantil normal de (i−0.5)/n; eje de probabilidad no lineal.",
+  "reference": "Valor observado frente al cuantil normal de (i−0.5)/n; eje de probabilidad no lineal.",
+  "plot": {
+   "kind": "probability",
+   "x_label": "X",
+   "y_label": "Probabilidad acumulada (%)",
+   "z_label": "",
+   "log_x": false,
+   "log_y": false,
+   "fields": []
+  },
+  "pipeline": {
+   "units": {
+    "X": "raw"
+   },
+   "iron_basis": "FeOT",
+   "include_qaqc": false,
+   "log_x": false,
+   "log_y": false,
+   "group_column": "G",
+   "missing_policy": "exclude_without_imputation",
+   "reference_version": "pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca",
+   "engine_version": "1.0.0"
+  }
+ }
+}

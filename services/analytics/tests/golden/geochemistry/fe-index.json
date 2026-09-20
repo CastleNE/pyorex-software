@@ -1,0 +1,420 @@
+{
+ "default": {
+  "tool": "fe-index",
+  "title": "Fe-index",
+  "rows": [
+   {
+    "sample_id": "OX01",
+    "row_index": 0,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 50.0,
+    "y": 0.5294117647058824,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX02",
+    "row_index": 1,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 60.0,
+    "y": 0.6666666666666666,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX03",
+    "row_index": 2,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 75.0,
+    "y": 0.9090909090909091,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX04",
+    "row_index": 3,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 52.0,
+    "y": 0.5714285714285714,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX05",
+    "row_index": 4,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 55.0,
+    "y": 0.5833333333333334,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX06",
+    "row_index": 5,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Denominador no positivo",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX07",
+    "row_index": 6,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 58.0,
+    "y": 0.6,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX08",
+    "row_index": 7,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX09",
+    "row_index": 8,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 60.0,
+    "y": 0.6,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX10",
+    "row_index": 9,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 62.0,
+    "y": 0.625,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX11",
+    "row_index": 10,
+    "group": "Muestras",
+    "status": "excluded",
+    "reason": "Muestra de control QAQC",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX12",
+    "row_index": 11,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 99.0,
+    "y": 0.6666666666666666,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX13",
+    "row_index": 12,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 45.0,
+    "y": 0.6428571428571429,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX14",
+    "row_index": 13,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 20.0,
+    "y": 0.5,
+    "z": null,
+    "values": null,
+    "classification": null
+   }
+  ],
+  "quality": {
+   "total": 14,
+   "used": 11,
+   "invalid": 2,
+   "excluded_qaqc": 1
+  },
+  "warnings": [
+   "2 muestra(s) no graficables; motivos en tabla. No se imputaron valores."
+  ],
+  "formula": "FeOT / (FeOT + MgO) vs SiO2. Fe2O3T → FeOT: × 0.8998.",
+  "reference": "Frost et al. (2001), doi:10.1093/petrology/42.11.2033. Índices; sin campos discriminantes automáticos.",
+  "plot": {
+   "kind": "scatter",
+   "x_label": "SiO2 (wt%)",
+   "y_label": "FeOT / (FeOT + MgO)",
+   "z_label": "MgO",
+   "log_x": false,
+   "log_y": false,
+   "fields": []
+  },
+  "pipeline": {
+   "units": {
+    "SiO2": "pct",
+    "MgO": "pct",
+    "FeTotal": "pct"
+   },
+   "iron_basis": "FeOT",
+   "include_qaqc": false,
+   "log_x": false,
+   "log_y": false,
+   "group_column": null,
+   "missing_policy": "exclude_without_imputation",
+   "reference_version": "pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca",
+   "engine_version": "1.0.0"
+  }
+ },
+ "fe2o3t": {
+  "tool": "fe-index",
+  "title": "Fe-index",
+  "rows": [
+   {
+    "sample_id": "OX01",
+    "row_index": 0,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 50.0,
+    "y": 0.5030500304381857,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX02",
+    "row_index": 1,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 60.0,
+    "y": 0.6428061151593084,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX03",
+    "row_index": 2,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 75.0,
+    "y": 0.8999799959991999,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX04",
+    "row_index": 3,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 52.0,
+    "y": 0.5453994423566494,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX05",
+    "row_index": 4,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 55.0,
+    "y": 0.557467296833236,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX06",
+    "row_index": 5,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Denominador no positivo",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX07",
+    "row_index": 6,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 58.0,
+    "y": 0.5744137549474401,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX08",
+    "row_index": 7,
+    "group": "Muestras",
+    "status": "invalid",
+    "reason": "Dato faltante, censurado o no finito",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX09",
+    "row_index": 8,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 60.0,
+    "y": 0.5744137549474401,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX10",
+    "row_index": 9,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 62.0,
+    "y": 0.5999466595546074,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX11",
+    "row_index": 10,
+    "group": "Muestras",
+    "status": "excluded",
+    "reason": "Muestra de control QAQC",
+    "x": null,
+    "y": null,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX12",
+    "row_index": 11,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 99.0,
+    "y": 0.6428061151593085,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX13",
+    "row_index": 12,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 45.0,
+    "y": 0.6182681589836772,
+    "z": null,
+    "values": null,
+    "classification": null
+   },
+   {
+    "sample_id": "OX14",
+    "row_index": 13,
+    "group": "Muestras",
+    "status": "valid",
+    "reason": null,
+    "x": 20.0,
+    "y": 0.47362880303189814,
+    "z": null,
+    "values": null,
+    "classification": null
+   }
+  ],
+  "quality": {
+   "total": 14,
+   "used": 11,
+   "invalid": 2,
+   "excluded_qaqc": 1
+  },
+  "warnings": [
+   "2 muestra(s) no graficables; motivos en tabla. No se imputaron valores."
+  ],
+  "formula": "FeOT / (FeOT + MgO) vs SiO2. Fe2O3T → FeOT: × 0.8998.",
+  "reference": "Frost et al. (2001), doi:10.1093/petrology/42.11.2033. Índices; sin campos discriminantes automáticos.",
+  "plot": {
+   "kind": "scatter",
+   "x_label": "SiO2 (wt%)",
+   "y_label": "FeOT / (FeOT + MgO)",
+   "z_label": "MgO",
+   "log_x": false,
+   "log_y": false,
+   "fields": []
+  },
+  "pipeline": {
+   "units": {
+    "SiO2": "pct",
+    "MgO": "pct",
+    "FeTotal": "pct"
+   },
+   "iron_basis": "Fe2O3T",
+   "include_qaqc": false,
+   "log_x": false,
+   "log_y": false,
+   "group_column": null,
+   "missing_policy": "exclude_without_imputation",
+   "reference_version": "pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca",
+   "engine_version": "1.0.0"
+  }
+ }
+}

@@ -1,0 +1,487 @@
+[
+ {
+  "id": "line",
+  "label": "Líneas XY",
+  "group": "diagrams",
+  "inputs": [
+   "X",
+   "Y"
+  ],
+  "kind": "line",
+  "unit": "raw",
+  "formula": "Observaciones ordenadas por X dentro de cada grupo; no se conectan grupos distintos.",
+  "reference": "Observaciones ordenadas por X dentro de cada grupo; no se conectan grupos distintos.",
+  "optional_inputs": false
+ },
+ {
+  "id": "qq-normal",
+  "label": "Q–Q normal",
+  "group": "diagrams",
+  "inputs": [
+   "X"
+  ],
+  "kind": "qq",
+  "unit": "raw",
+  "formula": "Valores ordenados frente a Φ⁻¹((i−0.5)/n), por grupo. No constituye por sí solo una prueba de normalidad.",
+  "reference": "Valores ordenados frente a Φ⁻¹((i−0.5)/n), por grupo. No constituye por sí solo una prueba de normalidad.",
+  "optional_inputs": false
+ },
+ {
+  "id": "probability",
+  "label": "Probabilidad normal",
+  "group": "diagrams",
+  "inputs": [
+   "X"
+  ],
+  "kind": "probability",
+  "unit": "raw",
+  "formula": "Valor observado frente al cuantil normal de (i−0.5)/n; eje de probabilidad no lineal.",
+  "reference": "Valor observado frente al cuantil normal de (i−0.5)/n; eje de probabilidad no lineal.",
+  "optional_inputs": false
+ },
+ {
+  "id": "ecdf",
+  "label": "Probabilidad acumulada (ECDF)",
+  "group": "diagrams",
+  "inputs": [
+   "X"
+  ],
+  "kind": "ecdf",
+  "unit": "raw",
+  "formula": "F(x)=número de observaciones ≤x / n; los empates comparten probabilidad.",
+  "reference": "F(x)=número de observaciones ≤x / n; los empates comparten probabilidad.",
+  "optional_inputs": false
+ },
+ {
+  "id": "assay-compare",
+  "label": "Comparación de ensayes XY",
+  "group": "diagrams",
+  "inputs": [
+   "X",
+   "Y"
+  ],
+  "kind": "assay",
+  "unit": "raw",
+  "formula": "Pares de ensayes de la misma muestra e intervalo, en la misma unidad; línea de identidad 1:1.",
+  "reference": "Pares de ensayes de la misma muestra e intervalo, en la misma unidad; línea de identidad 1:1.",
+  "optional_inputs": false
+ },
+ {
+  "id": "assay-difference",
+  "label": "Diferencias de ensayes",
+  "group": "diagrams",
+  "inputs": [
+   "X",
+   "Y"
+  ],
+  "kind": "difference",
+  "unit": "raw",
+  "formula": "Diferencia Y−X frente a media (X+Y)/2. Cada fila debe representar la misma muestra e intervalo.",
+  "reference": "Diferencia Y−X frente a media (X+Y)/2. Cada fila debe representar la misma muestra e intervalo.",
+  "optional_inputs": false
+ },
+ {
+  "id": "downhole",
+  "label": "Downhole · perfil por sondaje",
+  "group": "diagrams",
+  "inputs": [
+   "Depth",
+   "Value"
+  ],
+  "kind": "downhole",
+  "unit": "raw",
+  "formula": "Valor frente a profundidad medida, creciente hacia abajo. Selecciona el ID del sondaje como grupo. No desurvey ni compositado.",
+  "reference": "Valor frente a profundidad medida, creciente hacia abajo. Selecciona el ID del sondaje como grupo. No desurvey ni compositado.",
+  "optional_inputs": false
+ },
+ {
+  "id": "downhole-compare",
+  "label": "Downhole · comparar ensayes",
+  "group": "diagrams",
+  "inputs": [
+   "Depth",
+   "Assay1",
+   "Assay2"
+  ],
+  "kind": "downhole",
+  "unit": "raw",
+  "formula": "Dos ensayes por fila a la misma profundidad; perfiles separados por sondaje. Confirmar unidades comparables.",
+  "reference": "Dos ensayes por fila a la misma profundidad; perfiles separados por sondaje. Confirmar unidades comparables.",
+  "optional_inputs": false
+ },
+ {
+  "id": "scatter",
+  "label": "Dispersión XY",
+  "group": "diagrams",
+  "inputs": [
+   "X",
+   "Y"
+  ],
+  "kind": "scatter",
+  "unit": "raw",
+  "formula": "Pares de observaciones X e Y; sin imputación.",
+  "reference": "Pares de observaciones X e Y; sin imputación.",
+  "optional_inputs": false
+ },
+ {
+  "id": "histogram",
+  "label": "Histograma",
+  "group": "diagrams",
+  "inputs": [
+   "X"
+  ],
+  "kind": "histogram",
+  "unit": "raw",
+  "formula": "Frecuencias de observaciones válidas; intervalos calculados por Plotly.",
+  "reference": "Frecuencias de observaciones válidas; intervalos calculados por Plotly.",
+  "optional_inputs": false
+ },
+ {
+  "id": "boxplot",
+  "label": "Tukey · cajas y bigotes",
+  "group": "diagrams",
+  "inputs": [
+   "X"
+  ],
+  "kind": "box",
+  "unit": "raw",
+  "formula": "Cuartiles lineales; bigotes hasta 1.5 IQR, mediana y puntos originales. Los valores extremos no se eliminanan.",
+  "reference": "Cuartiles lineales; bigotes hasta 1.5 IQR, mediana y puntos originales. Los valores extremos no se eliminanan.",
+  "optional_inputs": false
+ },
+ {
+  "id": "ternary",
+  "label": "Ternario ABC",
+  "group": "diagrams",
+  "inputs": [
+   "A",
+   "B",
+   "C"
+  ],
+  "kind": "ternary",
+  "unit": "raw",
+  "formula": "100 × componente / (A+B+C). Componentes no negativos y de la misma unidad.",
+  "reference": "100 × componente / (A+B+C). Componentes no negativos y de la misma unidad.",
+  "optional_inputs": false
+ },
+ {
+  "id": "harker",
+  "label": "Harker · SiO2 vs óxido",
+  "group": "diagrams",
+  "inputs": [
+   "SiO2",
+   "Oxide"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "Óxido mayor (wt%) frente a SiO2 (wt%).",
+  "reference": "Óxido mayor (wt%) frente a SiO2 (wt%).",
+  "optional_inputs": false
+ },
+ {
+  "id": "tas",
+  "label": "TAS · clasificación volcánica",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "SiO2",
+   "Na2O",
+   "K2O"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "Na2O + K2O frente a SiO2 (wt% anhidro).",
+  "reference": "Le Maitre (2002), doi:10.1017/CBO9780511535581. Polígonos combinados pyrolite; T1/T2 y tefrita/basanita requieren criterios adicionales.",
+  "optional_inputs": false
+ },
+ {
+  "id": "qapf",
+  "label": "QAPF · proyección modal",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Q",
+   "A",
+   "P",
+   "F"
+  ],
+  "kind": "qapf",
+  "unit": "pct",
+  "formula": "Normalización de Q-A-P o F-A-P al 100%. Proporciones modales; NO calcula norma CIPW ni asigna nombres de roca.",
+  "reference": "Streckeisen (1974), doi:10.1007/BF01820841. Proyección modal, aplicable solo con M < 90%; verificar petrográficamente.",
+  "optional_inputs": false
+ },
+ {
+  "id": "afm",
+  "label": "AFM · proyección",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Na2O",
+   "K2O",
+   "FeTotal",
+   "MgO"
+  ],
+  "kind": "ternary",
+  "unit": "pct",
+  "formula": "A=Na2O+K2O, F=FeO total, M=MgO; cierre al 100%. Sin frontera tectónica.",
+  "reference": "A=Na2O+K2O, F=FeO total, M=MgO; cierre al 100%. Sin frontera tectónica.",
+  "optional_inputs": false
+ },
+ {
+  "id": "k2o-sio2",
+  "label": "K2O–SiO2",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "SiO2",
+   "K2O"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "K2O vs SiO2 (wt%); sin clasificación de series potásicas.",
+  "reference": "K2O vs SiO2 (wt%); sin clasificación de series potásicas.",
+  "optional_inputs": false
+ },
+ {
+  "id": "mali",
+  "label": "MALI",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "SiO2",
+   "Na2O",
+   "K2O",
+   "CaO"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "Na2O + K2O − CaO (wt%) vs SiO2.",
+  "reference": "Frost et al. (2001), doi:10.1093/petrology/42.11.2033. Índices; sin campos discriminantes automáticos.",
+  "optional_inputs": false
+ },
+ {
+  "id": "fe-index",
+  "label": "Fe-index",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "SiO2",
+   "FeTotal",
+   "MgO"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "FeOT / (FeOT + MgO) vs SiO2. Fe2O3T → FeOT: × 0.8998.",
+  "reference": "Frost et al. (2001), doi:10.1093/petrology/42.11.2033. Índices; sin campos discriminantes automáticos.",
+  "optional_inputs": false
+ },
+ {
+  "id": "shand-index",
+  "label": "Shand · A/CNK vs A/NK",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Al2O3",
+   "CaO",
+   "Na2O",
+   "K2O"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "Cocientes molares de óxidos A/CNK y A/NK; sin corrección de apatita.",
+  "reference": "Shand: Al2O3/(CaO+Na2O+K2O) y Al2O3/(Na2O+K2O), en moles de óxido; no equivale al ASI corregido por P.",
+  "optional_inputs": false
+ },
+ {
+  "id": "a-cnk",
+  "label": "A/CNK",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Al2O3",
+   "CaO",
+   "Na2O",
+   "K2O"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "(Al2O3/101.9613) / (CaO/56.0774 + Na2O/61.9789 + K2O/94.196).",
+  "reference": "(Al2O3/101.9613) / (CaO/56.0774 + Na2O/61.9789 + K2O/94.196).",
+  "optional_inputs": false
+ },
+ {
+  "id": "a-nk",
+  "label": "A/NK",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Al2O3",
+   "Na2O",
+   "K2O"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "(Al2O3/101.9613) / (Na2O/61.9789 + K2O/94.196).",
+  "reference": "(Al2O3/101.9613) / (Na2O/61.9789 + K2O/94.196).",
+  "optional_inputs": false
+ },
+ {
+  "id": "ree-normalization",
+  "label": "REE · condrito SM89",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "La",
+   "Ce",
+   "Pr",
+   "Nd",
+   "Sm",
+   "Eu",
+   "Gd",
+   "Tb",
+   "Dy",
+   "Ho",
+   "Er",
+   "Tm",
+   "Yb",
+   "Lu"
+  ],
+  "kind": "spider",
+  "unit": "ppm",
+  "formula": "Concentración / condrito SM89. Sin Pm; al menos dos elementos.",
+  "reference": "Sun & McDonough (1989), doi:10.1144/GSL.SP.1989.042.01.19. Referencias ppm incluidas mediante pyrolite.",
+  "optional_inputs": true
+ },
+ {
+  "id": "primitive-mantle",
+  "label": "Multielementos · manto primitivo SM89",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Cs",
+   "Rb",
+   "Ba",
+   "Th",
+   "U",
+   "Nb",
+   "Ta",
+   "La",
+   "Ce",
+   "Pb",
+   "Pr",
+   "Sr",
+   "Nd",
+   "Zr",
+   "Hf",
+   "Sm",
+   "Eu",
+   "Gd",
+   "Tb",
+   "Dy",
+   "Y",
+   "Ho",
+   "Er",
+   "Tm",
+   "Yb",
+   "Lu"
+  ],
+  "kind": "spider",
+  "unit": "ppm",
+  "formula": "Concentración / manto primitivo SM89. Al menos dos elementos.",
+  "reference": "Sun & McDonough (1989), doi:10.1144/GSL.SP.1989.042.01.19. Referencias ppm incluidas mediante pyrolite.",
+  "optional_inputs": true
+ },
+ {
+  "id": "element-ratios",
+  "label": "Razón elemental",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "numerator",
+   "denominator"
+  ],
+  "kind": "scatter",
+  "unit": "ppm",
+  "formula": "Numerador / denominador, tras convertir ambos a ppm.",
+  "reference": "Numerador / denominador, tras convertir ambos a ppm.",
+  "optional_inputs": false
+ },
+ {
+  "id": "fertility-sr-y",
+  "label": "Sr/Y",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Sr",
+   "Y"
+  ],
+  "kind": "scatter",
+  "unit": "ppm",
+  "formula": "Sr/Y. Cociente bruto; no diagnostica fertilidad por sí solo.",
+  "reference": "Sr/Y. Cociente bruto; no diagnostica fertilidad por sí solo.",
+  "optional_inputs": false
+ },
+ {
+  "id": "fertility-la-yb",
+  "label": "La/Yb",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "La",
+   "Yb"
+  ],
+  "kind": "scatter",
+  "unit": "ppm",
+  "formula": "La/Yb. Cociente bruto; no normalizado.",
+  "reference": "La/Yb. Cociente bruto; no normalizado.",
+  "optional_inputs": false
+ },
+ {
+  "id": "fertility-dy-yb",
+  "label": "Dy/Yb",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Dy",
+   "Yb"
+  ],
+  "kind": "scatter",
+  "unit": "ppm",
+  "formula": "Dy/Yb. Cociente bruto; no normalizado.",
+  "reference": "Dy/Yb. Cociente bruto; no normalizado.",
+  "optional_inputs": false
+ },
+ {
+  "id": "fertility-eu-eu",
+  "label": "Eu/Eu*",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "Sm",
+   "Eu",
+   "Gd"
+  ],
+  "kind": "scatter",
+  "unit": "ppm",
+  "formula": "Eu_N / √(Sm_N × Gd_N), N = condrito SM89.",
+  "reference": "Sun & McDonough (1989), doi:10.1144/GSL.SP.1989.042.01.19. Referencias ppm incluidas mediante pyrolite.",
+  "optional_inputs": false
+ },
+ {
+  "id": "fertility-ce-ce",
+  "label": "Ce/Ce*",
+  "group": "lithogeochemistry",
+  "inputs": [
+   "La",
+   "Ce",
+   "Pr"
+  ],
+  "kind": "scatter",
+  "unit": "ppm",
+  "formula": "Ce_N / √(La_N × Pr_N), N = condrito SM89. Interpolación geométrica explícita.",
+  "reference": "Sun & McDonough (1989), doi:10.1144/GSL.SP.1989.042.01.19. Referencias ppm incluidas mediante pyrolite.",
+  "optional_inputs": false
+ },
+ {
+  "id": "alteration",
+  "label": "Alteración · AI–CCPI",
+  "group": "mineral-exploration",
+  "inputs": [
+   "MgO",
+   "K2O",
+   "Na2O",
+   "CaO",
+   "FeTotal"
+  ],
+  "kind": "scatter",
+  "unit": "pct",
+  "formula": "AI=100(MgO+K2O)/(MgO+K2O+Na2O+CaO); CCPI=100(MgO+FeOT)/(MgO+FeOT+Na2O+K2O).",
+  "reference": "Large et al. (2001), doi:10.2113/gsecongeo.96.5.957. Índices; sin diagnóstico automático ni campos minerales.",
+  "optional_inputs": false
+ }
+]
