@@ -248,7 +248,10 @@ class ReferenceSpec:
 
 @dataclass(frozen=True, slots=True)
 class CalculationSpec:
-    handler_id: str                # CURRENT legacy branch; metadata only, nothing dispatches through it
+    # Dotted path of the core function that calculates the tool (Phase 2A: ratios, simple/molecular and alteration
+    # indices) or a ``legacy.*`` label for tools still computed inline by ``engine._coordinates``.
+    # Metadata only: the engine does not resolve or dispatch through it.
+    handler_id: str
     kind: CalculationKind
 
 
@@ -476,18 +479,18 @@ REGISTRY: tuple[ToolSpec, ...] = (
     _tool(id='mali', label='MALI', module=_M.LITHOGEOCHEMISTRY, family=_F.MAGMATIC_SERIES,
           inputs=_inputs(['SiO2', 'Na2O', 'K2O', 'CaO'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X}),
           capabilities=_XY, outputs=_out(x='SiO2 (wt%)', y='MALI (wt%)'),
-          calculation=CalculationSpec('legacy.coordinates.mali', _K.PER_ROW), renderer=_R.SCATTER,
+          calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_mali', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_frost(), formula='Na2O + K2O − CaO (wt%) vs SiO2.', legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='fe-index', label='Fe-index', module=_M.LITHOGEOCHEMISTRY, family=_F.MAGMATIC_SERIES,
           inputs=_inputs(['SiO2', 'FeTotal', 'MgO'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X}),
           capabilities=_XY, outputs=_out(x='SiO2 (wt%)', y='FeOT / (FeOT + MgO)'), parameters=(_IRON,),
-          calculation=CalculationSpec('legacy.coordinates.fe_index', _K.PER_ROW), renderer=_R.SCATTER,
+          calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_fe_index', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_frost(), formula='FeOT / (FeOT + MgO) vs SiO2. Fe2O3T → FeOT: × 0.8998.',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='shand-index', label='Shand · A/CNK vs A/NK', module=_M.LITHOGEOCHEMISTRY, family=_F.CALCULATIONS,
           inputs=_inputs(['Al2O3', 'CaO', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT),
           capabilities=_XY, outputs=_out(x='A/CNK (molar)', y='A/NK (molar)'),
-          calculation=CalculationSpec('legacy.coordinates.shand', _K.PER_ROW), renderer=_R.SCATTER,
+          calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_shand_indices', _K.PER_ROW), renderer=_R.SCATTER,
           reference=ReferenceSpec(
               kind=ReferenceKind.PUBLISHED_METHOD, authors=('Shand',),  # year / citation / title absent in the repo
               limitations='Sin corrección de apatita; no equivale al ASI corregido por P.',
@@ -497,13 +500,13 @@ REGISTRY: tuple[ToolSpec, ...] = (
     _tool(id='a-cnk', label='A/CNK', module=_M.LITHOGEOCHEMISTRY, family=_F.CALCULATIONS,
           inputs=_inputs(['Al2O3', 'CaO', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT),
           capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='A/CNK'),
-          calculation=CalculationSpec('legacy.coordinates.shand', _K.PER_ROW), renderer=_R.SCATTER,
+          calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_a_cnk', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_DERIVED, formula='(Al2O3/101.9613) / (CaO/56.0774 + Na2O/61.9789 + K2O/94.196).',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='a-nk', label='A/NK', module=_M.LITHOGEOCHEMISTRY, family=_F.CALCULATIONS,
           inputs=_inputs(['Al2O3', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT),
           capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='A/NK'),
-          calculation=CalculationSpec('legacy.coordinates.shand', _K.PER_ROW), renderer=_R.SCATTER,
+          calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_a_nk', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_DERIVED, formula='(Al2O3/101.9613) / (Na2O/61.9789 + K2O/94.196).',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='ree-normalization', label='REE · condrito SM89', module=_M.LITHOGEOCHEMISTRY, family=_F.NORMALIZATION,
@@ -524,20 +527,20 @@ REGISTRY: tuple[ToolSpec, ...] = (
     _tool(id='element-ratios', label='Razón elemental', module=_M.DATA_ANALYSIS, family=_F.GEOCHEMISTRY,
           inputs=_inputs(['numerator', 'denominator'], _T.NUMERIC, _U.PPM),
           capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='Razón elemental'),
-          calculation=CalculationSpec('legacy.coordinates.ratio', _K.PER_ROW), renderer=_R.SCATTER,
+          calculation=CalculationSpec('analysis.geochemistry.core.ratios.calculate_ratio', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_GENERIC, formula='Numerador / denominador, tras convertir ambos a ppm.',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='fertility-sr-y', label='Sr/Y', module=_M.EXPLORATION, family=_F.FERTILITY,
           inputs=_inputs(['Sr', 'Y'], _T.ELEMENT, _U.PPM), capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='Sr/Y'),
-          calculation=CalculationSpec('legacy.coordinates.ratio', _K.PER_ROW), renderer=_R.SCATTER, reference=_DERIVED,
+          calculation=CalculationSpec('analysis.geochemistry.core.ratios.calculate_ratio', _K.PER_ROW), renderer=_R.SCATTER, reference=_DERIVED,
           formula='Sr/Y. Cociente bruto; no diagnostica fertilidad por sí solo.', legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='fertility-la-yb', label='La/Yb', module=_M.EXPLORATION, family=_F.FERTILITY,
           inputs=_inputs(['La', 'Yb'], _T.ELEMENT, _U.PPM), capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='La/Yb'),
-          calculation=CalculationSpec('legacy.coordinates.ratio', _K.PER_ROW), renderer=_R.SCATTER, reference=_DERIVED,
+          calculation=CalculationSpec('analysis.geochemistry.core.ratios.calculate_ratio', _K.PER_ROW), renderer=_R.SCATTER, reference=_DERIVED,
           formula='La/Yb. Cociente bruto; no normalizado.', legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='fertility-dy-yb', label='Dy/Yb', module=_M.EXPLORATION, family=_F.FERTILITY,
           inputs=_inputs(['Dy', 'Yb'], _T.ELEMENT, _U.PPM), capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='Dy/Yb'),
-          calculation=CalculationSpec('legacy.coordinates.ratio', _K.PER_ROW), renderer=_R.SCATTER, reference=_DERIVED,
+          calculation=CalculationSpec('analysis.geochemistry.core.ratios.calculate_ratio', _K.PER_ROW), renderer=_R.SCATTER, reference=_DERIVED,
           formula='Dy/Yb. Cociente bruto; no normalizado.', legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='fertility-eu-eu', label='Eu/Eu*', module=_M.LITHOGEOCHEMISTRY, family=_F.NORMALIZATION,
           inputs=_inputs(['Sm', 'Eu', 'Gd'], _T.ELEMENT, _U.PPM), capabilities=_ORDINAL_X,
@@ -556,7 +559,7 @@ REGISTRY: tuple[ToolSpec, ...] = (
     _tool(id='alteration', label='Alteración · AI–CCPI', module=_M.EXPLORATION, family=_F.ALTERATION,
           inputs=_inputs(['MgO', 'K2O', 'Na2O', 'CaO', 'FeTotal'], _T.OXIDE, _U.PCT),
           capabilities=_XY, outputs=_out(x='AI', y='CCPI'), parameters=(_IRON,),
-          calculation=CalculationSpec('legacy.coordinates.alteration', _K.PER_ROW), renderer=_R.SCATTER,
+          calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_alteration_indices', _K.PER_ROW), renderer=_R.SCATTER,
           reference=ReferenceSpec(
               kind=ReferenceKind.PUBLISHED_METHOD, authors=('Large et al.',), year=2001,
               citation='Large et al. (2001), doi:10.2113/gsecongeo.96.5.957', doi='10.2113/gsecongeo.96.5.957',

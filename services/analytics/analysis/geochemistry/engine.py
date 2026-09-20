@@ -10,12 +10,18 @@ import polars as pl
 from scipy.stats import norm, rankdata
 
 from analysis.geochemistry.catalog import BY_ID
+from analysis.geochemistry.core.indices import (
+    MOLAR_MASSES, calculate_a_cnk, calculate_a_nk, calculate_alteration_indices, calculate_fe_index, calculate_mali,
+    calculate_shand_indices, convert_fe2o3t_to_feot,
+)
+from analysis.geochemistry.core.ratios import calculate_ratio
 from analysis.geochemistry.models import ComputeRequest
 from analysis.qaqc.common import infer_sample_id_column
 
 REFERENCES = Path(__file__).with_name('references')
 QAQC = {'FB','LB','QB','FD','LD','QD','CRM','STD'}
-MOLAR = {'Al2O3':101.9613,'CaO':56.0774,'Na2O':61.9789,'K2O':94.196}
+# Compatibility alias: the molar-mass table now lives in core.indices (single source); this is the same object.
+MOLAR = MOLAR_MASSES
 
 
 @lru_cache
@@ -63,10 +69,8 @@ def _number(raw):
         return None
 
 
-def _divide(a, b):
-    if b <= 0:
-        raise ValueError('Denominador no positivo')
-    return a / b
+# Legacy name kept for the branches not migrated yet (ternary, qapf, Eu/Eu*, Ce/Ce*): the same function as the core's.
+_divide = calculate_ratio
 
 
 def _coordinates(tool, v, ordinal):
@@ -105,24 +109,28 @@ def _coordinates(tool, v, ordinal):
         name = 'Boundary: ' + ' / '.join(boundary) if boundary else ' / '.join(interior) or 'Outside reference fields'
         return {'x':x,'y':y,'classification':name}
     if tool == 'mali':
-        return {'x':v['SiO2'],'y':v['Na2O']+v['K2O']-v['CaO']}
+        return {'x':v['SiO2'],'y':calculate_mali(v['Na2O'],v['K2O'],v['CaO'])}
     if tool == 'fe-index':
-        return {'x':v['SiO2'],'y':_divide(v['FeTotal'],v['FeTotal']+v['MgO'])}
+        return {'x':v['SiO2'],'y':calculate_fe_index(v['FeTotal'],v['MgO'])}
     if tool in {'shand-index','a-cnk','a-nk'}:
-        m = {key:value/MOLAR[key] for key,value in v.items()}
-        ank = _divide(m['Al2O3'],m['Na2O']+m['K2O'])
-        acnk = _divide(m['Al2O3'],m.get('CaO',0)+m['Na2O']+m['K2O'])
-        return {'x':acnk if tool == 'shand-index' else ordinal, 'y':acnk if tool == 'a-cnk' else ank}
+        if tool == 'a-nk':
+            return {'x':ordinal,'y':calculate_a_nk(v['Al2O3'],v['Na2O'],v['K2O'])}
+        if tool == 'a-cnk':
+            # CURRENT BEHAVIOR — characterization only: the legacy branch also evaluates A/NK for the A/CNK tool, so a
+            # zero Na2O + K2O invalidates the row even though A/CNK alone is computable. Reproduced on purpose.
+            calculate_a_nk(v['Al2O3'],v['Na2O'],v['K2O'])
+            return {'x':ordinal,'y':calculate_a_cnk(v['Al2O3'],v['CaO'],v['Na2O'],v['K2O'])}
+        acnk,ank = calculate_shand_indices(v['Al2O3'],v['CaO'],v['Na2O'],v['K2O'])
+        return {'x':acnk,'y':ank}
     if tool in {'fertility-eu-eu','fertility-ce-ce'}:
         a,b,c = ('Sm','Eu','Gd') if tool == 'fertility-eu-eu' else ('La','Ce','Pr')
         ref = reference_values('chondrite')
         return {'x':ordinal, 'y':_divide(v[b]/ref[b],math.sqrt(v[a]/ref[a])*math.sqrt(v[c]/ref[c]))}
     if tool == 'alteration':
-        ai = _divide(100*(v['MgO']+v['K2O']),v['MgO']+v['K2O']+v['Na2O']+v['CaO'])
-        ccpi = _divide(100*(v['MgO']+v['FeTotal']),v['MgO']+v['FeTotal']+v['Na2O']+v['K2O'])
+        ai,ccpi = calculate_alteration_indices(v['MgO'],v['K2O'],v['Na2O'],v['CaO'],v['FeTotal'])
         return {'x':ai,'y':ccpi}
     keys = BY_ID[tool]['inputs']
-    return {'x':ordinal,'y':_divide(v[keys[0]],v[keys[1]])}
+    return {'x':ordinal,'y':calculate_ratio(v[keys[0]],v[keys[1]])}
 
 
 def calculate(df: pl.DataFrame, request: dict, roles=None):
@@ -233,7 +241,7 @@ def calculate(df: pl.DataFrame, request: dict, roles=None):
                 if (spec['unit'] != 'raw' or config.tool == 'ternary') and any(v<0 for v in values.values()):
                     raise ValueError('Concentración o componente negativo')
                 if 'FeTotal' in values and config.iron_basis == 'Fe2O3T':
-                    values['FeTotal'] *= .8998
+                    values['FeTotal'] = convert_fe2o3t_to_feot(values['FeTotal'])
                 row.update(_coordinates(config.tool,values,index+1))
                 if any(row[k] is not None and not math.isfinite(row[k]) for k in ['x','y','z']):
                     raise ValueError('Resultado no finito')

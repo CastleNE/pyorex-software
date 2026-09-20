@@ -130,7 +130,17 @@ def test_renderer_is_the_current_plot_kind():
     assert len(RendererId) == 13
 
 
+CORE = 'analysis.geochemistry.core.'
 EXPECTED_HANDLERS = {
+    # Phase 2A: these ten tools delegate their mathematics to core/ (real dotted paths).
+    CORE + 'ratios.calculate_ratio': ['element-ratios', 'fertility-sr-y', 'fertility-la-yb', 'fertility-dy-yb'],
+    CORE + 'indices.calculate_mali': ['mali'],
+    CORE + 'indices.calculate_fe_index': ['fe-index'],
+    CORE + 'indices.calculate_shand_indices': ['shand-index'],
+    CORE + 'indices.calculate_a_cnk': ['a-cnk'],
+    CORE + 'indices.calculate_a_nk': ['a-nk'],
+    CORE + 'indices.calculate_alteration_indices': ['alteration'],
+    # Everything else is still computed inline by engine._coordinates / calculate (legacy labels).
     'legacy.coordinates.xy': ['line', 'assay-compare'],
     'legacy.post.qq': ['qq-normal'], 'legacy.post.probability': ['probability'], 'legacy.post.ecdf': ['ecdf'],
     'legacy.coordinates.assay_difference': ['assay-difference'],
@@ -138,11 +148,8 @@ EXPECTED_HANDLERS = {
     'legacy.coordinates.scatter': ['scatter', 'harker', 'k2o-sio2'],
     'legacy.coordinates.univariate': ['histogram', 'boxplot'],
     'legacy.coordinates.ternary': ['ternary', 'afm'],
-    'legacy.coordinates.tas': ['tas'], 'legacy.coordinates.qapf': ['qapf'], 'legacy.coordinates.mali': ['mali'],
-    'legacy.coordinates.fe_index': ['fe-index'], 'legacy.coordinates.shand': ['shand-index', 'a-cnk', 'a-nk'],
+    'legacy.coordinates.tas': ['tas'], 'legacy.coordinates.qapf': ['qapf'],
     'legacy.coordinates.anomaly': ['fertility-eu-eu', 'fertility-ce-ce'],
-    'legacy.coordinates.alteration': ['alteration'],
-    'legacy.coordinates.ratio': ['element-ratios', 'fertility-sr-y', 'fertility-la-yb', 'fertility-dy-yb'],
     'legacy.spider.normalization': ['ree-normalization', 'primitive-mantle'],
 }
 
@@ -152,7 +159,7 @@ def test_calculation_handlers_describe_the_current_engine_branches():
     for s in REGISTRY:
         grouped.setdefault(s.calculation.handler_id, []).append(s.id)
     assert grouped == EXPECTED_HANDLERS
-    assert all(h.startswith('legacy.') for h in grouped)
+    assert all(h.startswith(('legacy.', CORE)) for h in grouped)
     kinds = {}
     for s in REGISTRY:
         kinds.setdefault(s.calculation.kind, []).append(s.id)
@@ -166,12 +173,39 @@ def test_handler_metadata_matches_how_engine_coordinates_groups_the_tools():
     """Read-only check against engine._coordinates: tools sharing a handler share one branch (or the fallthrough)."""
     source = inspect.getsource(engine._coordinates)
     for handler, tools in EXPECTED_HANDLERS.items():
-        if handler.startswith('legacy.post.') or handler == 'legacy.spider.normalization' or handler.endswith('.ratio'):
+        if handler.startswith(('legacy.post.', CORE)) or handler == 'legacy.spider.normalization':
             continue
         quoted = [f"'{t}'" for t in tools]
         assert any(all(q in line for q in quoted) for line in source.splitlines()), handler
-    for ratio_tool in EXPECTED_HANDLERS['legacy.coordinates.ratio']:
+    for ratio_tool in EXPECTED_HANDLERS[CORE + 'ratios.calculate_ratio']:
         assert f"'{ratio_tool}'" not in source  # the ratio branch is the fallthrough at the end of _coordinates
+
+
+MIGRATED_2A = ['element-ratios', 'fertility-sr-y', 'fertility-la-yb', 'fertility-dy-yb', 'mali', 'fe-index',
+               'shand-index', 'a-cnk', 'a-nk', 'alteration']
+
+
+def test_migrated_handlers_are_real_core_functions_that_the_engine_calls():
+    """Metadata says where the mathematics lives; the engine still dispatches with its own if-chain."""
+    import importlib
+    migrated = []
+    for handler, tools in EXPECTED_HANDLERS.items():
+        if not handler.startswith(CORE):
+            continue
+        module_path, function = handler.rsplit('.', 1)
+        assert callable(getattr(importlib.import_module(module_path), function)), handler
+        assert hasattr(engine, function), f'engine does not import {function}'
+        assert function in inspect.getsource(engine._coordinates), f'{function} is not called from _coordinates'
+        migrated += tools
+    assert sorted(migrated) == sorted(MIGRATED_2A)
+    assert [s.id for s in REGISTRY if s.calculation.handler_id.startswith(CORE)] == [s.id for s in REGISTRY if s.id in MIGRATED_2A]
+    assert all(s.calculation.handler_id.startswith('legacy.') for s in REGISTRY if s.id not in MIGRATED_2A)
+
+
+def test_engine_does_not_resolve_registry_handler_ids():
+    engine_source = inspect.getsource(engine)
+    assert 'handler_id' not in engine_source and 'importlib' not in engine_source
+    assert 'registry' not in engine_source
 
 
 def test_registry_does_not_drive_or_import_the_engine():
