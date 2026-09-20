@@ -1,8 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDatasetStore } from "@/stores/dataset-store";
-import ActionButton from "@/components/ActionButton";
-import DataToolbar from "@/components/DataToolbar";
-import DataGrid from "@/components/DataGrid";
+import { useDataPreviewStore } from "@/stores/data-preview-store";
+import QuickToolsRibbon from "@/components/QuickToolsRibbon";
+import DataPreviewPanel from "@/components/DataPreviewPanel";
 import PyOrexLogo from "@/components/PyOrexLogo";
 import SummaryTilesBar from "@/components/SummaryTilesBar";
 import DataQualityWindow from "@/components/tool-windows/DataQualityWindow";
@@ -14,24 +14,19 @@ interface Props {
 }
 
 // Pantalla "Data": espacio de preparación/exploración estilo Excel/Power BI.
-// Una sola área de trabajo con ventanas flotantes (drag/resize/minimize) —
-// la grilla de datos es una ventana más, no un panel fijo — con una barra de
-// KPIs (SummaryTilesBar) siempre visible arriba, sin importar qué ventanas
-// estén abiertas.
+// El canvas superior (WorkspaceArea) sigue siendo ventanas flotantes
+// ad-hoc (Calculated Column, Data Quality, quick-charts clavados desde la
+// grilla) con una barra de KPIs (SummaryTilesBar) siempre visible arriba.
+// La grilla en sí ya NO es una de esas ventanas — es "Data Preview", un
+// panel acoplable/flotante independiente (ver DataPreviewPanel.tsx) anclado
+// abajo por defecto, estilo VS Code/QGIS.
 export default function DataScreen({ onOpenData }: Props) {
   const { dataset, hasData } = useDatasetStore();
+  const resetPreviewForNewDataset = useDataPreviewStore((s) => s.resetForNewDataset);
+  const openPreview = useDataPreviewStore((s) => s.open);
   const workspaceRef = useRef<WorkspaceAreaHandle>(null);
-
-  function openDataGridWindow() {
-    if (!dataset) return;
-    workspaceRef.current?.openWindow({
-      id: "data-grid",
-      title: `${dataset.name} — Data Grid`,
-      icon: "📋",
-      defaultPos: { x: 16, y: 16, width: 1040, height: 560 },
-      render: () => <DataGrid workspaceRef={workspaceRef} />,
-    });
-  }
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dockZoneActive, setDockZoneActive] = useState(false);
 
   function openDataQuality() {
     if (!dataset) return;
@@ -44,38 +39,41 @@ export default function DataScreen({ onOpenData }: Props) {
     });
   }
 
-  // Auto-open the grid the first time a dataset becomes active, so the
-  // primary content is visible immediately — same as before, but now it's a
-  // regular floating window the user can move/resize/minimize/close.
+  // Show Data Preview docked-at-bottom the first time a dataset becomes
+  // active, so the primary content is visible immediately.
   useEffect(() => {
-    if (dataset) openDataGridWindow();
+    if (dataset) resetPreviewForNewDataset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataset?.id]);
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2 bg-zinc-850 border-b border-zinc-700 shrink-0">
-        <ActionButton label="Load Files" icon="📂" onClick={onOpenData} />
-        <ActionButton label="Cloud repository" icon="☁" disabled title="Próximamente — OneDrive, Google Drive" />
-        <ActionButton label="Online server" icon="🗄" disabled title="Próximamente" />
-      </div>
+
 
       {hasData && dataset ? (
         <>
-          <DataToolbar workspaceRef={workspaceRef} onOpenGrid={openDataGridWindow} />
-          <div className="min-h-0 flex-1 overflow-hidden">
-            <WorkspaceArea
-              ref={workspaceRef}
-              banner={<SummaryTilesBar dataset={dataset} onOpenQuality={openDataQuality} onOpenGrid={openDataGridWindow} />}
-              emptyState={
-                <DataEmptyState
-                  datasetName={dataset.name}
-                  rowCount={dataset.rowCount}
-                  columnCount={dataset.columnCount}
-                  importedAt={dataset.importedAt}
-                />
-              }
+          <QuickToolsRibbon workspaceRef={workspaceRef} />
+          <div ref={containerRef} className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <WorkspaceArea
+                ref={workspaceRef}
+                banner={<SummaryTilesBar dataset={dataset} onOpenQuality={openDataQuality} onOpenGrid={openPreview} />}
+                emptyState={
+                  <DataEmptyState
+                    datasetName={dataset.name}
+                    rowCount={dataset.rowCount}
+                    columnCount={dataset.columnCount}
+                    importedAt={dataset.importedAt}
+                  />
+                }
+              />
+            </div>
+            <DataPreviewPanel
+              containerRef={containerRef}
+              workspaceRef={workspaceRef}
+              onDockZoneChange={setDockZoneActive}
             />
+            {dockZoneActive && <DockZoneIndicator />}
           </div>
         </>
       ) : (
@@ -114,5 +112,18 @@ function DataEmptyState({
       </p>
       <p className="mt-2 text-[11px] text-zinc-700">Open a tool from the toolbar to work here</p>
     </div>
+  );
+}
+
+// Bottom-band highlight shown while dragging the floating Data Preview panel
+// near the dock zone — matches the panel's last docked height so the user
+// sees exactly where it'll land.
+function DockZoneIndicator() {
+  const dockedHeight = useDataPreviewStore((s) => s.dockedHeight);
+  return (
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-[90] border-2 border-dashed border-blue-400 bg-blue-500/10"
+      style={{ height: dockedHeight }}
+    />
   );
 }

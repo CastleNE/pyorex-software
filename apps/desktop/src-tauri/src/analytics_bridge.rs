@@ -62,11 +62,45 @@ pub async fn check_analytics_service() -> Result<bool, AnalyticsBridgeError> {
     Ok(response.status().is_success())
 }
 
+// Debe reflejar exactamente las claves de METHOD_REGISTRY en
+// services/analytics/app/routers/rpc.py + spectrometry_rpc.py — actualizar
+// esta lista cada vez que se agregue un método RPC nuevo del lado Python,
+// o el bridge lo rechaza con -32601 aunque el backend lo implemente.
 const ALLOWED_RPC_METHODS: &[&str] = &[
     "health.ping",
+    // data.*
     "data.preview", "data.import", "data.list", "data.rows", "data.delete", "data.export_kml",
-    "analytics.pca", "analytics.descriptive", "analytics.clustering",
-    "qaqc.report",
+    "data.quality_report", "data.preview_formula", "data.apply_operation",
+    "data.undo_operation", "data.redo_operation", "data.get_operations", "data.save_changes",
+    // analytics.*
+    "analytics.descriptive", "analytics.pca",
+    // qaqc.*
+    "qaqc.calculate", "qaqc.control_chart", "qaqc.report",
+    "qaqc.crm_library.list", "qaqc.crm_library.upsert",
+    // spectrometry.*
+    "spectrometry.project.create", "spectrometry.project.get", "spectrometry.project.list", "spectrometry.project.delete",
+    "spectrometry.samples.list",
+    "spectrometry.spectra.get", "spectrometry.spectra.list_for_sample",
+    "spectrometry.import.preview_file", "spectrometry.import.native_spectra",
+    "spectrometry.import.processed_table_preview", "spectrometry.import.processed_table",
+    "spectrometry.import.mapping_presets.list", "spectrometry.import.mapping_presets.upsert",
+    "spectrometry.preprocessing.preview", "spectrometry.preprocessing.apply_operation",
+    "spectrometry.preprocessing.undo_operation", "spectrometry.preprocessing.redo_operation",
+    "spectrometry.preprocessing.get_operations",
+    "spectrometry.preprocessing.pipeline_presets.list", "spectrometry.preprocessing.pipeline_presets.save",
+    "spectrometry.preprocessing.pipeline_presets.apply",
+    "spectrometry.quality.report", "spectrometry.quality.set_status",
+    "spectrometry.features.extract", "spectrometry.features.list", "spectrometry.features.presets.list",
+    "spectrometry.indices.compute", "spectrometry.indices.list", "spectrometry.indices.preview_formula",
+    "spectrometry.indices.presets.list", "spectrometry.indices.presets.save",
+    "spectrometry.interpretation.create_manual", "spectrometry.interpretation.apply_rules",
+    "spectrometry.interpretation.library_match", "spectrometry.interpretation.accept_match",
+    "spectrometry.interpretation.confirm", "spectrometry.interpretation.list", "spectrometry.interpretation.history",
+    "spectrometry.interpretation.rules.list", "spectrometry.interpretation.rules.upsert",
+    "spectrometry.interpretation.library.list", "spectrometry.interpretation.library.upsert",
+    "spectrometry.white_mica.analyze", "spectrometry.chlorite.analyze",
+    "spectrometry.log.data",
+    "spectrometry.export.to_dataset", "spectrometry.export.table",
 ];
 
 /// Send a JSON-RPC 2.0 request to the Python analytics service.

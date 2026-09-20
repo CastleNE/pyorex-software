@@ -1,37 +1,7 @@
 import { useState } from "react";
 import type { FilterOp, RowFilter } from "@/lib/data-api";
+import { needsValue as opNeedsValue, needsValue2 as opNeedsValue2, opsForDtype } from "@/lib/filter-ops";
 import type { ColumnMeta } from "@/stores/dataset-store";
-
-const NUMERIC_OPS: { value: FilterOp; label: string }[] = [
-  { value: "eq", label: "igual a" },
-  { value: "neq", label: "diferente de" },
-  { value: "gt", label: "mayor que" },
-  { value: "lt", label: "menor que" },
-  { value: "gte", label: "mayor o igual" },
-  { value: "lte", label: "menor o igual" },
-  { value: "between", label: "entre" },
-  { value: "is_null", label: "valores nulos" },
-  { value: "not_null", label: "valores no nulos" },
-];
-
-const TEXT_OPS: { value: FilterOp; label: string }[] = [
-  { value: "contains", label: "contiene" },
-  { value: "not_contains", label: "no contiene" },
-  { value: "starts_with", label: "comienza con" },
-  { value: "ends_with", label: "termina con" },
-  { value: "is_null", label: "valores nulos" },
-  { value: "not_null", label: "valores no nulos" },
-];
-
-const DATE_OPS: { value: FilterOp; label: string }[] = [
-  { value: "before", label: "antes de" },
-  { value: "after", label: "después de" },
-  { value: "between", label: "entre fechas" },
-  { value: "year", label: "año" },
-  { value: "month", label: "mes" },
-  { value: "is_null", label: "valores nulos" },
-  { value: "not_null", label: "valores no nulos" },
-];
 
 interface Props {
   column: string;
@@ -43,13 +13,13 @@ interface Props {
 
 export default function ColumnFilterMenu({ column, dtype, current, onApply, onClose }: Props) {
   const isNumeric = dtype === "numeric";
-  const ops = isNumeric ? NUMERIC_OPS : dtype === "datetime" ? DATE_OPS : TEXT_OPS;
+  const ops = opsForDtype(dtype);
   const [op, setOp] = useState<FilterOp>(current?.op ?? ops[0].value);
   const [value, setValue] = useState<string>(current?.value != null ? String(current.value) : "");
   const [value2, setValue2] = useState<string>(current?.value2 != null ? String(current.value2) : "");
 
-  const needsValue = op !== "is_null" && op !== "not_null";
-  const needsValue2 = op === "between";
+  const needsValue = opNeedsValue(op);
+  const needsValue2 = opNeedsValue2(op);
 
   function handleApply() {
     if (!needsValue) {

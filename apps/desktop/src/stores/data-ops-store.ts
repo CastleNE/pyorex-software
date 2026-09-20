@@ -1,15 +1,17 @@
 import { create } from "zustand";
-import type { ColumnOperation, ImportedDatasetMeta, OverlayState, RowFilter, RowSort } from "@/lib/data-api";
+import type { ColumnOperation, FilterCombinator, ImportedDatasetMeta, OverlayState, RowFilter, RowSort } from "@/lib/data-api";
 import { applyOperation, getOperations, redoOperation, saveChanges, undoOperation } from "@/lib/data-api";
 
 interface ViewState {
   filters: RowFilter[];
+  /** How `filters` combine — see FilterBuilderWindow. */
+  filterCombinator: FilterCombinator;
   sort: RowSort | null;
   /** Conditional-formatting heatmap on numeric cells, toggled from the toolbar. */
   heatmap: boolean;
 }
 
-const EMPTY_VIEW: ViewState = { filters: [], sort: null, heatmap: false };
+const EMPTY_VIEW: ViewState = { filters: [], filterCombinator: "and", sort: null, heatmap: false };
 
 interface DataOpsState {
   viewByDataset: Record<string, ViewState>;
@@ -25,6 +27,7 @@ interface DataOpsState {
   getVersion: (datasetId: string) => number;
 
   setFilters: (datasetId: string, filters: RowFilter[]) => void;
+  setFilterCombinator: (datasetId: string, combinator: FilterCombinator) => void;
   setSort: (datasetId: string, sort: RowSort | null) => void;
   clearFilters: (datasetId: string) => void;
   openFilterColumnFor: (column: string | null) => void;
@@ -54,6 +57,9 @@ export const useDataOpsStore = create<DataOpsState>((set, get) => ({
 
   setFilters: (datasetId, filters) =>
     set((s) => ({ viewByDataset: { ...s.viewByDataset, [datasetId]: { ...(s.viewByDataset[datasetId] ?? EMPTY_VIEW), filters } } })),
+
+  setFilterCombinator: (datasetId, filterCombinator) =>
+    set((s) => ({ viewByDataset: { ...s.viewByDataset, [datasetId]: { ...(s.viewByDataset[datasetId] ?? EMPTY_VIEW), filterCombinator } } })),
 
   setSort: (datasetId, sort) =>
     set((s) => ({ viewByDataset: { ...s.viewByDataset, [datasetId]: { ...(s.viewByDataset[datasetId] ?? EMPTY_VIEW), sort } } })),

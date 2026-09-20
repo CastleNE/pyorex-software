@@ -64,7 +64,7 @@ export default function VizWorkspace({ hasData, onOpenData }: Props) {
           </button>
         ))}
       </div>
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         <WorkspaceArea ref={workspaceRef} emptyState={<VizCanvasEmptyState onPick={openChart} />} />
       </div>
     </div>

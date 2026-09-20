@@ -1164,7 +1164,7 @@ function SpatialStep({
               const selected = p.epsg === specialCols.projection;
               return (
                 <button
-                  key={p.epsg}
+                  key={`${p.category}-${p.epsg}`}
                   onClick={() => onProjectionChange(p.epsg)}
                   className={`w-full text-left px-4 py-2 flex items-center justify-between transition-colors text-xs ${
                     selected

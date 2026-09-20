@@ -24,7 +24,7 @@ interface Props {
 export default function DataGrid({ workspaceRef }: Props) {
   const { dataset, selectedColumn, setSelectedColumn } = useDatasetStore();
   const datasetId = dataset?.id;
-  const view = useDataOpsStore((s) => (datasetId ? s.getView(datasetId) : { filters: [], sort: null, heatmap: false }));
+  const view = useDataOpsStore((s) => (datasetId ? s.getView(datasetId) : { filters: [], filterCombinator: "and" as const, sort: null, heatmap: false }));
   const version = useDataOpsStore((s) => (datasetId ? s.getVersion(datasetId) : 0));
   const setSort = useDataOpsStore((s) => s.setSort);
   const setFilters = useDataOpsStore((s) => s.setFilters);
@@ -55,6 +55,7 @@ export default function DataGrid({ workspaceRef }: Props) {
           offset,
           limit: PAGE_SIZE,
           filters: view.filters,
+          combinator: view.filterCombinator,
           sort: view.sort,
         });
         if (reset) {
@@ -73,7 +74,7 @@ export default function DataGrid({ workspaceRef }: Props) {
         setLoading(false);
       }
     },
-    [datasetId, loading, totalRows, view.filters, view.sort]
+    [datasetId, loading, totalRows, view.filters, view.filterCombinator, view.sort]
   );
 
   useEffect(() => {
@@ -82,7 +83,7 @@ export default function DataGrid({ workspaceRef }: Props) {
       loadPage(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasetId, view.filters, view.sort, version]);
+  }, [datasetId, view.filters, view.filterCombinator, view.sort, version]);
 
   function handleScroll(e: React.UIEvent<HTMLDivElement>) {
     const el = e.currentTarget;

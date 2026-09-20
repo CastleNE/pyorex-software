@@ -44,6 +44,18 @@ def test_multiple_filters_are_conjunctive():
     assert out.height == 2
 
 
+def test_multiple_filters_or_combinator():
+    out = apply_filters(
+        _df(),
+        [
+            {"column": "Cu_ppm", "op": "gt", "value": 15},
+            {"column": "name", "op": "starts_with", "value": "al"},
+        ],
+        combinator="or",
+    )
+    assert sorted(out["name"].to_list()) == ["alpha", "beta"]
+
+
 def test_invalid_operator_for_dtype_rejected():
     with pytest.raises(QueryError):
         apply_filters(_df(), [{"column": "name", "op": "gt", "value": 1}])

@@ -171,7 +171,7 @@ def _rpc_data_rows(params: dict) -> dict:
     df, hidden = overlay.get_effective_dataframe(dataset_id)
     total_rows_unfiltered = df.height
 
-    df = query_mod.apply_filters(df, params.get("filters"))
+    df = query_mod.apply_filters(df, params.get("filters"), params.get("filter_combinator", "and"))
     df = query_mod.apply_sort(df, params.get("sort"))
 
     visible_columns = [c for c in df.columns if include_hidden or c not in hidden]

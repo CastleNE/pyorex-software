@@ -92,11 +92,11 @@ function AnalysisCatalog({ onOpenTool }: { onOpenTool: (tool: AnalysisTool) => v
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mx-auto max-w-4xl">
-        {ANALYSIS_CATEGORIES.map((category) => (
+        {ANALYSIS_CATEGORIES.filter(category => toolsByCategory(category).some(tool => ACTIVE_ANALYSIS_TOOL_IDS.has(tool.id) || tool.id === "analysis-history")).map((category) => (
           <div key={category} className="mb-6">
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">{category}</h3>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-              {toolsByCategory(category).map((tool) => (
+              {toolsByCategory(category).filter(tool => ACTIVE_ANALYSIS_TOOL_IDS.has(tool.id) || tool.id === "analysis-history").map((tool) => (
                 <button
                   key={tool.id}
                   onClick={() => onOpenTool(tool)}

@@ -173,6 +173,10 @@ export interface RowFilter {
   value2?: unknown;
 }
 
+/** How multiple RowFilters combine — a single global setting for the whole
+ * list (not nested groups), see data-preview Quick Tools plan. */
+export type FilterCombinator = "and" | "or";
+
 export interface RowSort {
   column: string;
   direction: "asc" | "desc";
@@ -280,6 +284,7 @@ export function getRows(
     offset?: number;
     limit?: number;
     filters?: RowFilter[];
+    combinator?: FilterCombinator;
     sort?: RowSort | null;
     includeHidden?: boolean;
   } = {}
@@ -289,6 +294,7 @@ export function getRows(
     offset: opts.offset ?? 0,
     limit: opts.limit ?? 200,
     filters: opts.filters ?? [],
+    filter_combinator: opts.combinator ?? "and",
     sort: opts.sort ?? null,
     include_hidden: opts.includeHidden ?? false,
   });

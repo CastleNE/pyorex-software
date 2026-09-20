@@ -42,6 +42,9 @@ include = ["app*", "analysis*"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 
+[tool.setuptools.package-data]
+"analysis.geochemistry" = ["references/*.json", "references/*.csv", "references/*.txt", "references/*.md"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"

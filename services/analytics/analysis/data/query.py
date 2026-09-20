@@ -88,13 +88,18 @@ def _filter_expr(df: pl.DataFrame, f: dict) -> pl.Expr:
     raise QueryError(f"Unsupported operator '{op}' for column family '{family}'")
 
 
-def apply_filters(df: pl.DataFrame, filters: list[dict] | None) -> pl.DataFrame:
+def apply_filters(df: pl.DataFrame, filters: list[dict] | None, combinator: str = "and") -> pl.DataFrame:
     if not filters:
         return df
     expr = None
     for f in filters:
         e = _filter_expr(df, f)
-        expr = e if expr is None else (expr & e)
+        if expr is None:
+            expr = e
+        elif combinator == "or":
+            expr = expr | e
+        else:
+            expr = expr & e
     return df.filter(expr) if expr is not None else df
 
 

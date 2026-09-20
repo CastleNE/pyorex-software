@@ -1,4 +1,4 @@
 declare module "plotly.js-dist-min" {
-  import type Plotly from "plotly.js";
+  import * as Plotly from "plotly.js";
   export = Plotly;
 }
