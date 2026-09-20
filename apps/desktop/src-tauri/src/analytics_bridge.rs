@@ -67,6 +67,7 @@ pub async fn check_analytics_service() -> Result<bool, AnalyticsBridgeError> {
 // esta lista cada vez que se agregue un método RPC nuevo del lado Python,
 // o el bridge lo rechaza con -32601 aunque el backend lo implemente.
 const ALLOWED_RPC_METHODS: &[&str] = &[
+    "geochemistry.catalog", "geochemistry.compute", "geochemistry.explore",
     "health.ping",
     // data.*
     "data.preview", "data.import", "data.list", "data.rows", "data.delete", "data.export_kml",
@@ -101,6 +102,8 @@ const ALLOWED_RPC_METHODS: &[&str] = &[
     "spectrometry.white_mica.analyze", "spectrometry.chlorite.analyze",
     "spectrometry.log.data",
     "spectrometry.export.to_dataset", "spectrometry.export.table",
+    // lithogeochemistry.*
+    "lithogeochemistry.tas.classify",
 ];
 
 /// Send a JSON-RPC 2.0 request to the Python analytics service.

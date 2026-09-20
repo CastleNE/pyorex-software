@@ -1,0 +1,426 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "geochemistry.explore.v1",
+  "version": "v1",
+  "method": "geochemistry.explore",
+  "request": {
+    "additionalProperties": false,
+    "properties": {
+      "tool": {
+        "enum": [
+          "anomalies",
+          "kmeans",
+          "isovalues"
+        ],
+        "title": "Tool",
+        "type": "string"
+      },
+      "variables": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 30,
+        "minItems": 1,
+        "title": "Variables",
+        "type": "array"
+      },
+      "include_qaqc": {
+        "default": false,
+        "title": "Include Qaqc",
+        "type": "boolean"
+      },
+      "label_column": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Label Column"
+      },
+      "method": {
+        "default": "manual",
+        "enum": [
+          "manual",
+          "percentile"
+        ],
+        "title": "Method",
+        "type": "string"
+      },
+      "breaks": {
+        "items": {
+          "type": "number"
+        },
+        "maxItems": 9,
+        "minItems": 1,
+        "title": "Breaks",
+        "type": "array"
+      },
+      "labels": {
+        "items": {
+          "type": "string"
+        },
+        "title": "Labels",
+        "type": "array"
+      },
+      "k": {
+        "default": 3,
+        "maximum": 20,
+        "minimum": 2,
+        "title": "K",
+        "type": "integer"
+      },
+      "seed": {
+        "default": 42,
+        "maximum": 2147483647,
+        "minimum": 0,
+        "title": "Seed",
+        "type": "integer"
+      },
+      "transform": {
+        "default": "none",
+        "enum": [
+          "none",
+          "log10"
+        ],
+        "title": "Transform",
+        "type": "string"
+      },
+      "east": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "East"
+      },
+      "north": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "North"
+      },
+      "epsg": {
+        "anyOf": [
+          {
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Epsg"
+      },
+      "resolution": {
+        "default": 60,
+        "maximum": 200,
+        "minimum": 11,
+        "title": "Resolution",
+        "type": "integer"
+      },
+      "power": {
+        "default": 2.0,
+        "maximum": 5.0,
+        "minimum": 0.5,
+        "title": "Power",
+        "type": "number"
+      },
+      "neighbors": {
+        "default": 12,
+        "maximum": 64,
+        "minimum": 3,
+        "title": "Neighbors",
+        "type": "integer"
+      },
+      "radius": {
+        "anyOf": [
+          {
+            "exclusiveMinimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Radius"
+      },
+      "dataset_id": {
+        "title": "Dataset Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "tool",
+      "variables",
+      "dataset_id"
+    ],
+    "title": "ExplorationDatasetRequest",
+    "type": "object"
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "tool",
+      "title",
+      "rows",
+      "plot",
+      "quality",
+      "warnings",
+      "formula",
+      "reference",
+      "pipeline",
+      "created_at",
+      "metrics",
+      "grid"
+    ],
+    "properties": {
+      "tool": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "rows": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "sample_id",
+            "row_index",
+            "group",
+            "status",
+            "reason",
+            "x",
+            "y",
+            "z",
+            "values",
+            "classification"
+          ],
+          "properties": {
+            "sample_id": {
+              "type": "string"
+            },
+            "row_index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "group": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "valid",
+                "invalid",
+                "excluded"
+              ]
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "x": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "y": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "z": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "values": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "classification": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "plot": {
+        "type": "object",
+        "required": [
+          "kind",
+          "x_label",
+          "y_label",
+          "z_label",
+          "log_x",
+          "log_y",
+          "fields"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "scatter",
+              "histogram",
+              "box",
+              "ternary",
+              "qapf",
+              "spider",
+              "contour"
+            ]
+          },
+          "x_label": {
+            "type": "string"
+          },
+          "y_label": {
+            "type": "string"
+          },
+          "z_label": {
+            "type": "string"
+          },
+          "log_x": {
+            "type": "boolean"
+          },
+          "log_y": {
+            "type": "boolean"
+          },
+          "fields": {
+            "type": "array"
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "quality": {
+        "type": "object",
+        "required": [
+          "total",
+          "used",
+          "invalid",
+          "excluded_qaqc"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "used": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "invalid": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "excluded_qaqc": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "warnings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "formula": {
+        "type": "string"
+      },
+      "reference": {
+        "type": "string"
+      },
+      "pipeline": {
+        "type": "object"
+      },
+      "created_at": {
+        "type": "string"
+      },
+      "metrics": {
+        "type": "object",
+        "description": "Tool-specific counts, thresholds, centroids, clustering and interpolation metrics."
+      },
+      "grid": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "object",
+            "required": [
+              "x",
+              "y",
+              "z",
+              "epsg",
+              "coordinate_unit"
+            ],
+            "properties": {
+              "x": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "y": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "z": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              "epsg": {
+                "type": "integer"
+              },
+              "coordinate_unit": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

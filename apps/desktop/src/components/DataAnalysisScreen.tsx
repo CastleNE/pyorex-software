@@ -46,7 +46,7 @@ export default function DataAnalysisScreen({ onOpenData }: Props) {
           <AnalysisToolWindow
             toolId={tool.id as "descriptive-statistics" | "correlation-analysis" | "principal-component-analysis"}
             toolLabel={tool.label}
-            onOpenVisualization={() => setActiveModuleId("visualization")}
+            onOpenVisualization={() => setActiveModuleId("diagrams")}
           />
         ),
       });

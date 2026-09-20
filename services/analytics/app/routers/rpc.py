@@ -23,6 +23,7 @@ from analysis.qaqc.control_charts import build_shewhart_chart
 from analysis.qaqc.crm import analyze_crm
 from analysis.qaqc.report import build_qaqc_report
 from app.routers.spectrometry_rpc import SPECTROMETRY_METHODS
+from app.routers.lithogeochemistry_rpc import LITHOGEOCHEMISTRY_METHODS
 
 router = APIRouter()
 
@@ -274,7 +275,10 @@ def _rpc_qaqc_control_chart(params: dict) -> dict:
     return {"available": True, **asdict(chart)}
 
 
+from app.routers.geochemistry_rpc import GEOCHEMISTRY_METHODS
+
 METHOD_REGISTRY: dict[str, Any] = {
+    **GEOCHEMISTRY_METHODS,
     "health.ping": lambda _: {"pong": True, "service": "pyorex-analytics"},
 
     # Data import / export (RF-02)
@@ -309,6 +313,9 @@ METHOD_REGISTRY: dict[str, Any] = {
 
     # Spectrometry (TSG-like spectral interpretation module)
     **SPECTROMETRY_METHODS,
+
+    # Lithogeochemistry (TAS classification)
+    **LITHOGEOCHEMISTRY_METHODS,
 }
 
 

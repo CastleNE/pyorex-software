@@ -116,7 +116,7 @@ Mínimo obligatorio: contract tests para todos los IPC contracts + 80% coverage 
 ## Comandos de Desarrollo
 
 ```bash
-pnpm dev              # Stack completo
+pnpm dev              # Tauri/Vite; iniciar Python aparte (ver handoff)
 pnpm test             # Suite completa
 pnpm build:tauri      # Build producción
 pnpm typecheck        # TypeScript strict
@@ -127,3 +127,7 @@ pnpm typecheck        # TypeScript strict
 - `main` → producción | `develop` → integración | `feature/*` → features | `fix/*` → fixes
 - Conventional Commits: feat, fix, docs, refactor, test
 - Releases: semantic-release automático
+
+## Continuación de Geoquímica
+
+Antes de modificar este módulo, leer `docs/GEOCHEMISTRY_HANDOFF.md`: estado, arquitectura, arranque, datos a preservar y criterios de aceptación.

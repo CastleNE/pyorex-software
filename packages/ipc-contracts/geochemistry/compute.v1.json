@@ -1,0 +1,332 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "geochemistry.compute.v1",
+  "version": "v1",
+  "method": "geochemistry.compute",
+  "request": {
+    "additionalProperties": false,
+    "properties": {
+      "tool": {
+        "title": "Tool",
+        "type": "string"
+      },
+      "columns": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Columns",
+        "type": "object"
+      },
+      "units": {
+        "additionalProperties": {
+          "enum": [
+            "pct",
+            "ppm",
+            "ppb",
+            "raw"
+          ],
+          "type": "string"
+        },
+        "title": "Units",
+        "type": "object"
+      },
+      "iron_basis": {
+        "default": "FeOT",
+        "enum": [
+          "FeOT",
+          "Fe2O3T"
+        ],
+        "title": "Iron Basis",
+        "type": "string"
+      },
+      "include_qaqc": {
+        "default": false,
+        "title": "Include Qaqc",
+        "type": "boolean"
+      },
+      "log_x": {
+        "default": false,
+        "title": "Log X",
+        "type": "boolean"
+      },
+      "log_y": {
+        "default": false,
+        "title": "Log Y",
+        "type": "boolean"
+      },
+      "group_column": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Group Column"
+      },
+      "label_column": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Label Column"
+      },
+      "size_column": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Size Column"
+      },
+      "color_column": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Color Column"
+      },
+      "dataset_id": {
+        "title": "Dataset Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "tool",
+      "columns",
+      "dataset_id"
+    ],
+    "title": "DatasetRequest",
+    "type": "object"
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "tool",
+      "title",
+      "rows",
+      "plot",
+      "quality",
+      "warnings",
+      "formula",
+      "reference",
+      "pipeline",
+      "created_at"
+    ],
+    "properties": {
+      "tool": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "rows": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "sample_id",
+            "row_index",
+            "group",
+            "status",
+            "reason",
+            "x",
+            "y",
+            "z",
+            "values",
+            "classification"
+          ],
+          "properties": {
+            "sample_id": {
+              "type": "string"
+            },
+            "row_index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "group": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "valid",
+                "invalid",
+                "excluded"
+              ]
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "x": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "y": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "z": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "values": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "classification": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "size_value": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "color_value": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          }
+        }
+      },
+      "plot": {
+        "type": "object",
+        "required": [
+          "kind",
+          "x_label",
+          "y_label",
+          "z_label",
+          "log_x",
+          "log_y",
+          "fields"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "scatter",
+              "histogram",
+              "box",
+              "ternary",
+              "qapf",
+              "spider",
+              "line",
+              "qq",
+              "probability",
+              "ecdf",
+              "assay",
+              "difference",
+              "downhole"
+            ]
+          },
+          "x_label": {
+            "type": "string"
+          },
+          "y_label": {
+            "type": "string"
+          },
+          "z_label": {
+            "type": "string"
+          },
+          "log_x": {
+            "type": "boolean"
+          },
+          "log_y": {
+            "type": "boolean"
+          },
+          "fields": {
+            "type": "array"
+          },
+          "elements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "quality": {
+        "type": "object",
+        "required": [
+          "total",
+          "used",
+          "invalid",
+          "excluded_qaqc"
+        ],
+        "properties": {
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "used": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "invalid": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "excluded_qaqc": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "warnings": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "formula": {
+        "type": "string"
+      },
+      "reference": {
+        "type": "string"
+      },
+      "pipeline": {
+        "type": "object"
+      },
+      "created_at": {
+        "type": "string"
+      }
+    }
+  }
+}

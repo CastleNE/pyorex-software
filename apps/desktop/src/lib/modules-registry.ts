@@ -18,15 +18,14 @@ export interface ModuleGroup {
 
 export const MODULE_GROUPS: ModuleGroup[] = [
   {
+    // Tools list unused — Geochemistry has its own dedicated screen
+    // (GeochemistryScreen.tsx, ribbon of 4 groups + Editor panel) instead of
+    // the generic sidebar-tree ModuleGroupScreen.tsx uses for the other
+    // groups below. Kept as an entry (empty tools) only so NAV_ITEMS still
+    // generates the "Geochemistry" top-nav tab from this registry.
     id: "geochemistry",
     label: "Geochemistry",
-    tools: [
-      { id: "data-analysis", label: "Data Analysis", status: "active" },
-      { id: "visualization", label: "Visualization", status: "active" },
-      { id: "qaqc", label: "QAQC", status: "active" },
-      { id: "litogeochemistry", label: "Litogeochemistry", status: "planned" },
-      { id: "mineral-exploration", label: "Mineral Exploration", status: "planned" },
-    ],
+    tools: [],
   },
   {
     // Un solo entry point, como "Data Analysis" — Spectrometry tiene su

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "lithogeochemistry.tas.classify.v1",
+  "title": "TAS Classify",
+  "description": "SiO2-series classification (Le Maitre ultrabasic/basic/intermediate/acid bounds) via analysis/lithogeochemistry/tas.py::classify_dataframe. Reduced scope by design — the full Le Bas et al. (1986) 15-field IUGS TAS diagram needs verified digitized field-boundary coordinates not yet sourced; see the module docstring. total_alkali (Na2O+K2O) is still returned per sample for plotting.",
+  "version": "v1",
+  "method": "lithogeochemistry.tas.classify",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id", "sio2_column", "na2o_column", "k2o_column"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "sio2_column": { "type": "string" },
+      "na2o_column": { "type": "string" },
+      "k2o_column": { "type": "string" }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["samples", "counts_by_series", "series_boundaries"],
+    "properties": {
+      "samples": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "sample_id": { "type": "string" },
+            "sio2": { "type": ["number", "null"] },
+            "total_alkali": { "type": ["number", "null"] },
+            "series": { "type": "string", "enum": ["Ultrabasic", "Basic", "Intermediate", "Acid", "Invalid"] }
+          }
+        }
+      },
+      "counts_by_series": { "type": "object", "additionalProperties": { "type": "integer" } },
+      "series_boundaries": { "type": "array", "items": { "type": "number" }, "description": "[45.0, 52.0, 63.0] SiO2 wt% cutoffs" }
+    }
+  }
+}

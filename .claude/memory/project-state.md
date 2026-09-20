@@ -1,4 +1,18 @@
-﻿# Estado del Proyecto — PyOrex
+# Estado vigente — 20 de septiembre de 2026
+
+La continuación actual está en `docs/GEOCHEMISTRY_HANDOFF.md` y ADR-0006.
+La navegación principal es GEOQUÍMICA, ESPECTROMETRÍA y PETROFÍSICA.
+Geoquímica: DATA ANALYSIS (preparación + estadística), DIAGRAMS, Litogeoquímica y Exploración.
+Implementados diagramas y editor ampliados, anomalías configurables, K-means e IDW; PCA reutiliza el motor existente.
+Validación: 231 tests Python y 28 frontend; TypeScript comprobado. Ver handoff para build y evidencia visual.
+No confundir la validación web con aceptación completa de Tauri: queda comprobar archivos PNG/JPG/SVG exportados en la aplicación nativa.
+21 sep 2026: guardado nativo de exportaciones y persistencia por dataset/herramienta implementados (39 tests frontend, typecheck y vite:build OK); ambos SIN verificar en la ventana Tauri. Ver handoff pendientes 1–2.
+Hay datos reales del usuario en el directorio de sesión llamado geochemistry-test-data. PRESERVARLOS.
+No descartar cambios previos sin commit ni restaurar Hub/View/Data como navegación principal.
+
+## Estado histórico anterior (no sustituye al handoff vigente)
+
+# Estado del Proyecto — PyOrex
 
 > Última actualización: 2026-08-10
 > Actualizar este archivo cuando cambie el estado significativo del proyecto.

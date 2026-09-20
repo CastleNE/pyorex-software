@@ -3,7 +3,7 @@ import { create } from "zustand";
 // Each module group (see modules-registry.ts) is its own top-level nav tab —
 // "geochemistry" | "espectrometria" | "petrofisica" — alongside file/data/view.
 // Extend this union when a new module group ships.
-export type AppNav = "file" | "data" | "geochemistry" | "espectrometria" | "petrofisica" | "view";
+export type AppNav = "hub" | "file" | "data" | "geochemistry" | "espectrometria" | "petrofisica" | "view";
 
 interface AppState {
   activeNav: AppNav;
@@ -18,10 +18,14 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  activeNav: "file",
+  activeNav: "geochemistry",
   analyticsServiceStatus: "unknown",
   activeModuleId: null,
-  setActiveNav: (nav) => set({ activeNav: nav }),
+  setActiveNav: (nav) => set(nav === "data" || nav === "file"
+    ? { activeNav: "geochemistry", activeModuleId: "data" }
+    : nav === "hub" || nav === "view"
+      ? { activeNav: "geochemistry", activeModuleId: "diagrams" }
+      : { activeNav: nav }),
   setAnalyticsServiceStatus: (status) =>
     set({ analyticsServiceStatus: status }),
   setActiveModuleId: (id) => set({ activeModuleId: id }),

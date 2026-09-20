@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "geochemistry.catalog.v1",
+  "version": "v1",
+  "method": "geochemistry.catalog",
+  "request": {
+    "additionalProperties": false,
+    "properties": {
+      "dataset_id": {
+        "title": "Dataset Id",
+        "type": "string"
+      }
+    },
+    "required": [
+      "dataset_id"
+    ],
+    "title": "CatalogRequest",
+    "type": "object"
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "tools",
+      "columns",
+      "dataset_id",
+      "dataset_name"
+    ],
+    "properties": {
+      "tools": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "label",
+            "group",
+            "inputs",
+            "kind",
+            "unit",
+            "formula",
+            "reference",
+            "optional_inputs"
+          ]
+        }
+      },
+      "columns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "name",
+            "numeric"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "numeric": {
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      "dataset_id": {
+        "type": "string"
+      },
+      "dataset_name": {
+        "type": "string"
+      }
+    }
+  }
+}

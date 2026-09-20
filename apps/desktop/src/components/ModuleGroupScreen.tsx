@@ -1,10 +1,7 @@
 import { useMemo } from "react";
-import { useDatasetStore } from "@/stores/dataset-store";
 import { useAppStore } from "@/stores/app-store";
 import DatasetPanel from "@/components/DatasetPanel";
-import VizWorkspace, { PlaceholderPanel } from "@/components/VizWorkspace";
-import DataAnalysisScreen from "@/components/DataAnalysisScreen";
-import QaqcScreen from "@/components/QaqcScreen";
+import { PlaceholderPanel } from "@/components/VizWorkspace";
 import SpectrometryScreen from "@/components/SpectrometryScreen";
 import type { ModuleGroup, ModuleTool } from "@/lib/modules-registry";
 
@@ -13,13 +10,11 @@ interface Props {
   onOpenData: () => void;
 }
 
-// Pantalla de un grupo de módulos (Geochemistry / Espectrometría / Petrofísica
-// — cada uno es su propia pestaña de nivel superior en App.tsx). Árbol lateral
-// con las herramientas de ESE grupo + workspace de la herramienta elegida.
-// Un solo componente reusado por los 3 grupos — agregar un módulo nuevo a un
-// grupo no requiere tocar este archivo, solo modules-registry.ts.
+// Pantalla de un grupo de módulos — Espectrometría y Petrofísica (Geochemistry
+// tiene su propia pantalla dedicada, GeochemistryScreen.tsx, desde que ganó
+// ribbon+Editor propios). Árbol lateral con las herramientas de ESE grupo +
+// workspace de la herramienta elegida.
 export default function ModuleGroupScreen({ group, onOpenData }: Props) {
-  const { hasData } = useDatasetStore();
   const { activeModuleId, setActiveModuleId } = useAppStore();
   const selected = useMemo<ModuleTool | null>(
     () => group.tools.find((t) => t.id === activeModuleId) ?? null,
@@ -65,11 +60,8 @@ export default function ModuleGroupScreen({ group, onOpenData }: Props) {
           <p className="text-sm text-zinc-600">Elige un módulo a la izquierda para empezar</p>
         </div>
       )}
-      {selected?.id === "visualization" && <VizWorkspace hasData={hasData} onOpenData={onOpenData} />}
-      {selected?.id === "data-analysis" && <DataAnalysisScreen onOpenData={onOpenData} />}
-      {selected?.id === "qaqc" && <QaqcScreen onOpenData={onOpenData} />}
       {selected?.id === "spectrometry" && <SpectrometryScreen />}
-      {selected && !["visualization", "data-analysis", "qaqc", "spectrometry"].includes(selected.id) && (
+      {selected && selected.id !== "spectrometry" && (
         <div className="flex flex-1 bg-zinc-900">
           <PlaceholderPanel label={`${selected.label} — Próximamente`} />
         </div>
