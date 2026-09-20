@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "hub.markets.v1",
+  "title": "hub.markets",
+  "version": "v1",
+  "method": "hub.markets",
+  "request": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "refresh": {
+        "type": "boolean",
+        "default": false
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "quotes",
+      "fetched_at",
+      "status",
+      "warning"
+    ],
+    "properties": {
+      "quotes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "series",
+            "metal",
+            "unit",
+            "value",
+            "observed_at",
+            "previous_at",
+            "change_pct",
+            "source",
+            "url",
+            "history"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "series": {
+              "type": "string"
+            },
+            "metal": {
+              "type": "string"
+            },
+            "unit": {
+              "enum": [
+                "US cents / lb",
+                "USD / troy oz"
+              ]
+            },
+            "value": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "observed_at": {
+              "type": "string"
+            },
+            "previous_at": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "change_pct": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "source": {
+              "type": "string"
+            },
+            "url": {
+              "type": "string"
+            },
+            "history": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "date",
+                  "value"
+                ],
+                "properties": {
+                  "date": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "fetched_at": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "status": {
+        "enum": [
+          "updated",
+          "cached",
+          "empty",
+          "unavailable"
+        ]
+      },
+      "warning": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  }
+}

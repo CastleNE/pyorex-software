@@ -68,6 +68,8 @@ pub async fn check_analytics_service() -> Result<bool, AnalyticsBridgeError> {
 // o el bridge lo rechaza con -32601 aunque el backend lo implemente.
 const ALLOWED_RPC_METHODS: &[&str] = &[
     "geochemistry.catalog", "geochemistry.compute", "geochemistry.explore",
+    // Andean Exploration Hub v0.1
+    "hub.catalog", "hub.markets", "hub.archive.list", "hub.archive.save", "hub.archive.remove",
     "health.ping",
     // data.*
     "data.preview", "data.import", "data.list", "data.rows", "data.delete", "data.export_kml",
