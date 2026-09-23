@@ -91,20 +91,23 @@ def test_does_not_mutate_the_legacy_catalog_or_data_endpoints(monkeypatch):
     assert len(TOOLS) == before
 
 
-# ── Tool Registry: allowed_roles for the four target tools, backward compat for everyone else ────
-MIGRATED_SEMANTIC_TOOLS = {'scatter', 'histogram', 'ternary', 'downhole'}
+# ── Tool Registry: allowed_roles for the migrated DIAGRAMS + Lithogeochemistry tools, backward compat elsewhere ──
+MIGRATED_SEMANTIC_TOOLS = {
+    'scatter', 'histogram', 'ternary', 'downhole',                                            # DIAGRAMS
+    'tas', 'k2o-sio2', 'mali', 'fe-index', 'shand-index', 'a-cnk', 'a-nk', 'harker',           # Lithogeochemistry
+}
 
 
-def test_only_the_four_target_tools_declare_role_restrictions():
+def test_only_the_migrated_tools_declare_role_restrictions():
     restricted = {s.id for s in REGISTRY if any(i.allowed_roles for i in s.inputs) or s.group_allowed_roles}
     assert restricted == MIGRATED_SEMANTIC_TOOLS
 
 
-def test_every_other_tool_keeps_empty_allowed_roles_backward_compat():
+def test_every_other_tool_keeps_empty_allowed_roles_and_analytes_backward_compat():
     for spec in REGISTRY:
         if spec.id in MIGRATED_SEMANTIC_TOOLS:
             continue
-        assert all(i.allowed_roles == () for i in spec.inputs)
+        assert all(i.allowed_roles == () and i.allowed_analytes == () for i in spec.inputs)
         assert spec.group_allowed_roles == ()
 
 

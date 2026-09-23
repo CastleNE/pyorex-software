@@ -72,15 +72,16 @@
               "type": "string"
             },
             "inputs": {
-              "description": "Semantic Variable System (v1): per-input role constraints. Empty allowed_roles = no restriction declared (CURRENT BEHAVIOR).",
+              "description": "Semantic Variable System (v1): per-input role/analyte constraints. Both empty = no restriction declared (CURRENT BEHAVIOR). allowed_analytes narrows allowed_roles to exact analyte symbols (e.g. 'SiO2'); it is meaningless when allowed_roles is empty.",
               "type": "array",
               "items": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": ["key", "allowed_roles"],
+                "required": ["key", "allowed_roles", "allowed_analytes"],
                 "properties": {
                   "key": { "type": "string" },
-                  "allowed_roles": { "type": "array", "items": { "type": "string" } }
+                  "allowed_roles": { "type": "array", "items": { "type": "string" } },
+                  "allowed_analytes": { "type": "array", "items": { "type": "string" } }
                 }
               }
             },

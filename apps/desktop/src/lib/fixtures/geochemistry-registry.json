@@ -20,11 +20,13 @@
    "inputs": [
     {
      "key": "numerator",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "denominator",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -49,11 +51,13 @@
    "inputs": [
     {
      "key": "X",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Y",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -78,11 +82,13 @@
    "inputs": [
     {
      "key": "X",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Y",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -106,15 +112,18 @@
    "inputs": [
     {
      "key": "Depth",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Assay1",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Assay2",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -147,7 +156,8 @@
       "longitude",
       "latitude",
       "numeric_generic"
-     ]
+     ],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -166,7 +176,8 @@
    "inputs": [
     {
      "key": "X",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -190,7 +201,8 @@
    "inputs": [
     {
      "key": "X",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -213,7 +225,8 @@
    "inputs": [
     {
      "key": "X",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -238,7 +251,8 @@
    "inputs": [
     {
      "key": "X",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -278,7 +292,8 @@
       "longitude",
       "latitude",
       "numeric_generic"
-     ]
+     ],
+     "allowed_analytes": []
     },
     {
      "key": "Y",
@@ -297,7 +312,8 @@
       "longitude",
       "latitude",
       "numeric_generic"
-     ]
+     ],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -322,11 +338,13 @@
    "inputs": [
     {
      "key": "X",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Y",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -354,7 +372,8 @@
       "ree",
       "assay",
       "ratio"
-     ]
+     ],
+     "allowed_analytes": []
     },
     {
      "key": "B",
@@ -364,7 +383,8 @@
       "ree",
       "assay",
       "ratio"
-     ]
+     ],
+     "allowed_analytes": []
     },
     {
      "key": "C",
@@ -374,7 +394,8 @@
       "ree",
       "assay",
       "ratio"
-     ]
+     ],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -402,7 +423,8 @@
       "depth",
       "depth_from",
       "depth_to"
-     ]
+     ],
+     "allowed_analytes": []
     },
     {
      "key": "Value",
@@ -413,7 +435,8 @@
       "major_oxide",
       "ratio",
       "numeric_generic"
-     ]
+     ],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": [
@@ -440,15 +463,30 @@
    "inputs": [
     {
      "key": "SiO2",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "SiO2"
+     ]
     },
     {
      "key": "Na2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Na2O"
+     ]
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "K2O"
+     ]
     }
    ],
    "group_allowed_roles": []
@@ -471,19 +509,23 @@
    "inputs": [
     {
      "key": "Q",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "A",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "P",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "F",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -505,19 +547,23 @@
    "inputs": [
     {
      "key": "Na2O",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "FeTotal",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "MgO",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -542,11 +588,21 @@
    "inputs": [
     {
      "key": "SiO2",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "SiO2"
+     ]
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "K2O"
+     ]
     }
    ],
    "group_allowed_roles": []
@@ -571,19 +627,39 @@
    "inputs": [
     {
      "key": "SiO2",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "SiO2"
+     ]
     },
     {
      "key": "Na2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Na2O"
+     ]
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "K2O"
+     ]
     },
     {
      "key": "CaO",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "CaO"
+     ]
     }
    ],
    "group_allowed_roles": []
@@ -608,15 +684,33 @@
    "inputs": [
     {
      "key": "SiO2",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "SiO2"
+     ]
     },
     {
      "key": "FeTotal",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Fe2O3",
+      "Fe2O3T",
+      "FeO",
+      "FeOT"
+     ]
     },
     {
      "key": "MgO",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "MgO"
+     ]
     }
    ],
    "group_allowed_roles": []
@@ -641,11 +735,19 @@
    "inputs": [
     {
      "key": "SiO2",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "SiO2"
+     ]
     },
     {
      "key": "Oxide",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -666,59 +768,73 @@
    "inputs": [
     {
      "key": "La",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Ce",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Pr",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Nd",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Sm",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Eu",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Gd",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Tb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Dy",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Ho",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Er",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Tm",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Yb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Lu",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -739,107 +855,133 @@
    "inputs": [
     {
      "key": "Cs",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Rb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Ba",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Th",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "U",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Nb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Ta",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "La",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Ce",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Pb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Pr",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Sr",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Nd",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Zr",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Hf",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Sm",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Eu",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Gd",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Tb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Dy",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Y",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Ho",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Er",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Tm",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Yb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Lu",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -863,15 +1005,18 @@
    "inputs": [
     {
      "key": "Sm",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Eu",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Gd",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -895,15 +1040,18 @@
    "inputs": [
     {
      "key": "La",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Ce",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Pr",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -928,19 +1076,39 @@
    "inputs": [
     {
      "key": "Al2O3",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Al2O3"
+     ]
     },
     {
      "key": "CaO",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "CaO"
+     ]
     },
     {
      "key": "Na2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Na2O"
+     ]
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "K2O"
+     ]
     }
    ],
    "group_allowed_roles": []
@@ -964,19 +1132,39 @@
    "inputs": [
     {
      "key": "Al2O3",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Al2O3"
+     ]
     },
     {
      "key": "CaO",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "CaO"
+     ]
     },
     {
      "key": "Na2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Na2O"
+     ]
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "K2O"
+     ]
     }
    ],
    "group_allowed_roles": []
@@ -1000,15 +1188,30 @@
    "inputs": [
     {
      "key": "Al2O3",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Al2O3"
+     ]
     },
     {
      "key": "Na2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "Na2O"
+     ]
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [
+      "major_oxide"
+     ],
+     "allowed_analytes": [
+      "K2O"
+     ]
     }
    ],
    "group_allowed_roles": []
@@ -1033,23 +1236,28 @@
    "inputs": [
     {
      "key": "MgO",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "K2O",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Na2O",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "CaO",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "FeTotal",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -1073,11 +1281,13 @@
    "inputs": [
     {
      "key": "Sr",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Y",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -1101,11 +1311,13 @@
    "inputs": [
     {
      "key": "La",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Yb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []
@@ -1129,11 +1341,13 @@
    "inputs": [
     {
      "key": "Dy",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     },
     {
      "key": "Yb",
-     "allowed_roles": []
+     "allowed_roles": [],
+     "allowed_analytes": []
     }
    ],
    "group_allowed_roles": []

@@ -89,7 +89,7 @@ def test_no_bibliographic_or_calculation_metadata_leaks(view):
     keys = {key for tool in view['tools'] for key in tool}
     assert not keys & {'handler_id', 'calculation', 'reference', 'formula', 'legacy_text', 'parameters', 'aliases'}
     for tool in view['tools']:
-        assert all(set(i) == {'key', 'allowed_roles'} for i in tool['inputs'])
+        assert all(set(i) == {'key', 'allowed_roles', 'allowed_analytes'} for i in tool['inputs'])
 
 
 def test_projection_matches_the_registry_field_by_field(view):
@@ -103,6 +103,7 @@ def test_projection_matches_the_registry_field_by_field(view):
         assert [i['key'] for i in tool['inputs']] == [i.key for i in spec.inputs]
         for projected_input, spec_input in zip(tool['inputs'], spec.inputs):
             assert projected_input['allowed_roles'] == [r.value for r in spec_input.allowed_roles]
+            assert projected_input['allowed_analytes'] == list(spec_input.allowed_analytes)
         assert tool['group_allowed_roles'] == [r.value for r in spec.group_allowed_roles]
 
 

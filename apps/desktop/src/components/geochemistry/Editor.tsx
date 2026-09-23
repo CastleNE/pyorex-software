@@ -3,7 +3,7 @@ import SessionControls from './SessionControls';
 import { useGeochemistryStore } from '../../stores/geochemistry-store';
 import { useGeoRegistryStore } from '../../stores/geochemistry-registry-store';
 import { inferUnit, type GeoUnit } from '../../lib/geochemistry-api';
-import { allowedRolesFor, compatibleGroupColumns, compatibleInputColumns } from '../../lib/semantic-roles';
+import { compatibleGroupColumns, compatibleInputColumns, inputConstraintFor } from '../../lib/semantic-roles';
 
 const selectClass='w-full rounded border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-xs text-zinc-200 focus:border-blue-400';
 export default function Editor() {
@@ -17,7 +17,7 @@ export default function Editor() {
     <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
       <details open className="space-y-3"><summary className="cursor-pointer text-sm font-medium text-zinc-200">Variables y unidades</summary>
       {tool.inputs.map(key=>{
-        const candidates=compatibleInputColumns(state.columns,state.columnRoles,allowedRolesFor(registryTool,key));
+        const candidates=compatibleInputColumns(state.columns,state.columnRoles,inputConstraintFor(registryTool,key));
         return <div key={key} className="space-y-1"><label className="block text-xs text-zinc-400" htmlFor={`geo-${key}`}>{key==='FeTotal'?'Hierro total':key}</label><select id={`geo-${key}`} value={config.columns[key]??''} onChange={e=>map(key,e.target.value)} className={selectClass}><option value="">{tool.optional_inputs?'No incluir':'Seleccionar columna…'}</option>{candidates.map(c=><option key={c.name} value={c.name}>{c.name}</option>)}</select>{candidates.length===0&&<p className="text-xs text-amber-400">No se detectaron columnas compatibles con este campo.</p>}{config.columns[key]&&tool.unit!=='raw'&&<select aria-label={`Unidad de ${key}`} value={config.units[key]??tool.unit} onChange={e=>state.configure({units:{...config.units,[key]:e.target.value as GeoUnit}})} className={selectClass}><option value="pct">wt% / porcentaje</option><option value="ppm">ppm</option><option value="ppb">ppb</option></select>}</div>;
       })}
       {tool.inputs.includes('FeTotal')&&<label className="block space-y-1 text-xs text-zinc-400"><span>Forma del hierro total</span><select aria-label="Forma del hierro total" value={config.iron_basis} onChange={e=>state.configure({iron_basis:e.target.value as 'FeOT'|'Fe2O3T'})} className={selectClass}><option value="FeOT">FeOT (todo el Fe como FeO)</option><option value="Fe2O3T">Fe2O3T (convertir × 0.8998)</option></select></label>}

@@ -216,6 +216,10 @@ class InputSpec:
     # may offer for this input. Empty = no restriction declared yet (CURRENT BEHAVIOR: any column of this input's
     # unit_kind, exactly as before this system existed) — backward compatible for every tool that doesn't opt in.
     allowed_roles: tuple[SemanticRole, ...] = ()
+    # Semantic Variable System (v1): which exact analytes (the canonical symbols classify_column() extracts, e.g.
+    # 'SiO2', 'Fe2O3T') this input accepts. Empty = no analyte restriction (any column matching allowed_roles) —
+    # backward compatible. Meaningless without allowed_roles also narrowing the role (validated below).
+    allowed_analytes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -339,12 +343,20 @@ _ROLES_COMPOSITIONAL = (_SR.MAJOR_OXIDE, _SR.TRACE_ELEMENT, _SR.REE, _SR.ASSAY, 
 _ROLES_DEPTH = (_SR.DEPTH, _SR.DEPTH_FROM, _SR.DEPTH_TO)
 _ROLES_DOWNHOLE_VALUE = (_SR.ASSAY, _SR.TRACE_ELEMENT, _SR.REE, _SR.MAJOR_OXIDE, _SR.RATIO, _SR.NUMERIC_GENERIC)
 _ROLES_HOLE_ID = (_SR.HOLE_ID,)
+# Lithogeochemistry major-oxide tools (tas, k2o-sio2, mali, fe-index, shand-index, a-cnk, a-nk, harker): every
+# input is a specific major oxide, so the role is uniform; allowed_analytes narrows each key to its exact oxide
+# where the calculation needs one (see per-tool `analytes=` maps below). 'FeTotal' is the exception: iron is
+# reported under any of these forms in real datasets, and the existing `iron_basis` parameter (not this system)
+# already tells the engine which one a mapped column represents (engine.py: convert_fe2o3t_to_feot).
+_ROLES_MAJOR_OXIDE = (_SR.MAJOR_OXIDE,)
+_ANALYTES_IRON_TOTAL = ('Fe2O3', 'Fe2O3T', 'FeO', 'FeOT')
 
 
-def _inputs(keys, type_, unit, axes=None, allowed_roles=()):
+def _inputs(keys, type_, unit, axes=None, allowed_roles=(), analytes=None):
     axes = axes or {}
-    return tuple(InputSpec(key=k, type=type_, unit_kind=unit, axis=axes.get(k), allowed_roles=allowed_roles)
-                for k in keys)
+    analytes = analytes or {}   # {key: (analyte, ...)} — a key absent from this map gets allowed_analytes=()
+    return tuple(InputSpec(key=k, type=type_, unit_kind=unit, axis=axes.get(k), allowed_roles=allowed_roles,
+                          allowed_analytes=analytes.get(k, ())) for k in keys)
 
 
 def _out(**fields):
@@ -465,13 +477,16 @@ REGISTRY: tuple[ToolSpec, ...] = (
           reference=_GENERIC, formula='100 × componente / (A+B+C). Componentes no negativos y de la misma unidad.',
           legacy_group=LegacyGroup.DIAGRAMS),
     _tool(id='harker', label='Harker · SiO2 vs óxido', module=_M.LITHOGEOCHEMISTRY, family=_F.VARIATION,
-          inputs=_inputs(['SiO2', 'Oxide'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X, 'Oxide': AxisRole.Y}),
+          inputs=_inputs(['SiO2', 'Oxide'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X, 'Oxide': AxisRole.Y},
+                        allowed_roles=_ROLES_MAJOR_OXIDE, analytes={'SiO2': ('SiO2',)}),  # 'Oxide': any major oxide, by design
           capabilities=_XY, outputs=_out(x='SiO2 (wt%)', y='Óxido (wt%)'),
           calculation=CalculationSpec('legacy.coordinates.scatter', _K.PASSTHROUGH), renderer=_R.SCATTER,
           reference=_DERIVED, formula='Óxido mayor (wt%) frente a SiO2 (wt%).', legacy_group=LegacyGroup.DIAGRAMS),
     # ── legacy group: lithogeochemistry ──────────────────────────────────────────────────────
     _tool(id='tas', label='TAS · clasificación volcánica', module=_M.LITHOGEOCHEMISTRY, family=_F.CLASSIFICATION,
-          inputs=_inputs(['SiO2', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X}),
+          inputs=_inputs(['SiO2', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X},
+                        allowed_roles=_ROLES_MAJOR_OXIDE,
+                        analytes={'SiO2': ('SiO2',), 'Na2O': ('Na2O',), 'K2O': ('K2O',)}),
           capabilities=_XY_LINES, outputs=_out(x='SiO2 (wt%)', y='Na2O + K2O (wt%)', classification='Campo TAS'),
           calculation=CalculationSpec('legacy.coordinates.tas', _K.PER_ROW), renderer=_R.SCATTER,
           reference=ReferenceSpec(
@@ -501,24 +516,30 @@ REGISTRY: tuple[ToolSpec, ...] = (
           reference=_DERIVED, formula='A=Na2O+K2O, F=FeO total, M=MgO; cierre al 100%. Sin frontera tectónica.',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='k2o-sio2', label='K2O–SiO2', module=_M.LITHOGEOCHEMISTRY, family=_F.MAGMATIC_SERIES,
-          inputs=_inputs(['SiO2', 'K2O'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X, 'K2O': AxisRole.Y}),
+          inputs=_inputs(['SiO2', 'K2O'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X, 'K2O': AxisRole.Y},
+                        allowed_roles=_ROLES_MAJOR_OXIDE, analytes={'SiO2': ('SiO2',), 'K2O': ('K2O',)}),
           capabilities=_XY, outputs=_out(x='SiO2 (wt%)', y='K2O (wt%)'),
           calculation=CalculationSpec('legacy.coordinates.scatter', _K.PASSTHROUGH), renderer=_R.SCATTER,
           reference=_DERIVED, formula='K2O vs SiO2 (wt%); sin clasificación de series potásicas.',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='mali', label='MALI', module=_M.LITHOGEOCHEMISTRY, family=_F.MAGMATIC_SERIES,
-          inputs=_inputs(['SiO2', 'Na2O', 'K2O', 'CaO'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X}),
+          inputs=_inputs(['SiO2', 'Na2O', 'K2O', 'CaO'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X},
+                        allowed_roles=_ROLES_MAJOR_OXIDE,
+                        analytes={'SiO2': ('SiO2',), 'Na2O': ('Na2O',), 'K2O': ('K2O',), 'CaO': ('CaO',)}),
           capabilities=_XY, outputs=_out(x='SiO2 (wt%)', y='MALI (wt%)'),
           calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_mali', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_frost(), formula='Na2O + K2O − CaO (wt%) vs SiO2.', legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='fe-index', label='Fe-index', module=_M.LITHOGEOCHEMISTRY, family=_F.MAGMATIC_SERIES,
-          inputs=_inputs(['SiO2', 'FeTotal', 'MgO'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X}),
+          inputs=_inputs(['SiO2', 'FeTotal', 'MgO'], _T.OXIDE, _U.PCT, {'SiO2': AxisRole.X},
+                        allowed_roles=_ROLES_MAJOR_OXIDE,
+                        analytes={'SiO2': ('SiO2',), 'FeTotal': _ANALYTES_IRON_TOTAL, 'MgO': ('MgO',)}),
           capabilities=_XY, outputs=_out(x='SiO2 (wt%)', y='FeOT / (FeOT + MgO)'), parameters=(_IRON,),
           calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_fe_index', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_frost(), formula='FeOT / (FeOT + MgO) vs SiO2. Fe2O3T → FeOT: × 0.8998.',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='shand-index', label='Shand · A/CNK vs A/NK', module=_M.LITHOGEOCHEMISTRY, family=_F.CALCULATIONS,
-          inputs=_inputs(['Al2O3', 'CaO', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT),
+          inputs=_inputs(['Al2O3', 'CaO', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT, allowed_roles=_ROLES_MAJOR_OXIDE,
+                        analytes={'Al2O3': ('Al2O3',), 'CaO': ('CaO',), 'Na2O': ('Na2O',), 'K2O': ('K2O',)}),
           capabilities=_XY, outputs=_out(x='A/CNK (molar)', y='A/NK (molar)'),
           calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_shand_indices', _K.PER_ROW), renderer=_R.SCATTER,
           reference=ReferenceSpec(
@@ -528,13 +549,15 @@ REGISTRY: tuple[ToolSpec, ...] = (
           formula='Cocientes molares de óxidos A/CNK y A/NK; sin corrección de apatita.',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='a-cnk', label='A/CNK', module=_M.LITHOGEOCHEMISTRY, family=_F.CALCULATIONS,
-          inputs=_inputs(['Al2O3', 'CaO', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT),
+          inputs=_inputs(['Al2O3', 'CaO', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT, allowed_roles=_ROLES_MAJOR_OXIDE,
+                        analytes={'Al2O3': ('Al2O3',), 'CaO': ('CaO',), 'Na2O': ('Na2O',), 'K2O': ('K2O',)}),
           capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='A/CNK'),
           calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_a_cnk', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_DERIVED, formula='(Al2O3/101.9613) / (CaO/56.0774 + Na2O/61.9789 + K2O/94.196).',
           legacy_group=LegacyGroup.LITHOGEOCHEMISTRY),
     _tool(id='a-nk', label='A/NK', module=_M.LITHOGEOCHEMISTRY, family=_F.CALCULATIONS,
-          inputs=_inputs(['Al2O3', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT),
+          inputs=_inputs(['Al2O3', 'Na2O', 'K2O'], _T.OXIDE, _U.PCT, allowed_roles=_ROLES_MAJOR_OXIDE,
+                        analytes={'Al2O3': ('Al2O3',), 'Na2O': ('Na2O',), 'K2O': ('K2O',)}),
           capabilities=_ORDINAL_X, outputs=_out(x='Orden de muestra', y='A/NK'),
           calculation=CalculationSpec('analysis.geochemistry.core.indices.calculate_a_nk', _K.PER_ROW), renderer=_R.SCATTER,
           reference=_DERIVED, formula='(Al2O3/101.9613) / (Na2O/61.9789 + K2O/94.196).',
@@ -653,6 +676,10 @@ def validate_registry(specs: tuple[ToolSpec, ...]) -> None:
             raise RegistryError(f'{where}: allowed_roles must be SemanticRole values')
         if any(not isinstance(r, SemanticRole) for r in s.group_allowed_roles):
             raise RegistryError(f'{where}: group_allowed_roles must be SemanticRole values')
+        if any(not isinstance(a, str) or not a for i in s.inputs for a in i.allowed_analytes):
+            raise RegistryError(f'{where}: allowed_analytes must be non-empty strings')
+        if any(i.allowed_analytes and not i.allowed_roles for i in s.inputs):
+            raise RegistryError(f'{where}: allowed_analytes without allowed_roles is not meaningful')
         if len({i.unit_kind for i in s.inputs}) != 1:
             raise RegistryError(f'{where}: the legacy contract has a single unit per tool')
         if s.input_rule.kind is InputRuleKind.AT_LEAST and not (s.input_rule.minimum and 1 <= s.input_rule.minimum <= len(keys)):

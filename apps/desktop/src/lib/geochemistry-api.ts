@@ -1,5 +1,6 @@
 import { callRpc } from './rpc';
 import { saveFile,type SaveOutcome } from './save-file';
+import { confidentColumn,inputConstraintFor } from './semantic-roles';
 
 export type GeoGroup = 'diagrams'|'lithogeochemistry'|'mineral-exploration';
 export type GeoUnit = 'pct'|'ppm'|'ppb'|'raw';
@@ -15,7 +16,7 @@ export interface GeoResult {
   warnings:string[]; formula:string; reference:string; pipeline:Record<string,unknown>;created_at:string;
 }
 /** Projection served by `geochemistry.registry` (Tool Registry). Tools arrive in canonical navigation order. */
-export interface GeoRegistryInput { key:string; allowed_roles:string[] }
+export interface GeoRegistryInput { key:string; allowed_roles:string[]; allowed_analytes:string[] }
 export interface GeoRegistryTool { id:string; label:string; module:string; family:string; status:string; capabilities:string[]; renderer:string; inputs:GeoRegistryInput[]; group_allowed_roles:string[] }
 export interface GeoRegistry { schema_version:number; tools:GeoRegistryTool[] }
 export interface GeoCatalog { tools:GeoTool[];columns:GeoColumn[];dataset_id:string;dataset_name:string }
@@ -33,37 +34,39 @@ function analyte(name:string) {
   return name.toLowerCase().replace(/(?:[_\s(\[]?(?:wt%|wtpct|pct|ppm|ppb|%)[)\]]?)$/,'').replace(/[^a-z0-9]/g,'');
 }
 /**
- * `registryTool`/`columnRoles` are optional (Semantic Variable System v1, see lib/semantic-roles.ts): when the tool
- * has no matching registry entry, or the registry declares no `allowed_roles` for a key, the raw X/Y/A/B/C
- * fallback below behaves exactly as before this system existed (first unused numeric column). Only tools that
- * declare `allowed_roles` get the stricter, confidence-gated pick — never a blind first-numeric-column guess.
+ * `registryTool`/`columnRoles` are optional (Semantic Variable System v1, see lib/semantic-roles.ts). A key with a
+ * declared `allowed_roles`/`allowed_analytes` constraint is matched ONLY from that semantic metadata — never by
+ * searching column names here — and only a "high" confidence match is auto-filled; a key with no constraint
+ * declared behaves exactly as before this system existed (fuzzy name match, then first unused numeric column for
+ * X/Y/A/B/C). This is what makes TAS map SiO2_pct/Na2O_pct/K2O_pct correctly while never guessing from `[Order]`.
  */
 export function guessMapping(tool:GeoTool,columns:GeoColumn[],registryTool?:GeoRegistryTool,columnRoles?:Record<string,GeoColumnRole>) {
   const result:Record<string,string>={};
   const numeric=columns.filter(c=>c.numeric);
+  const roles=columnRoles??{};
+  const used=new Set<string>();
   for(const key of tool.inputs){
+    const constraint=inputConstraintFor(registryTool,key);
+    if(constraint&&(constraint.allowed_roles.length||constraint.allowed_analytes.length)){
+      const match=confidentColumn(numeric.filter(c=>!used.has(c.name)),roles,constraint);
+      if(match){result[key]=match.name;used.add(match.name);}
+      continue;
+    }
     const match=numeric.find(c=>analyte(c.name)===analyte(key));
     if(match) result[key]=match.name;
   }
   if(tool.unit==='raw'){
-    const used=new Set(Object.values(result));
     for(const key of tool.inputs){
       if(!['X','Y','A','B','C'].includes(key)||result[key])continue;
-      const allowedRoles=registryTool?.inputs.find(i=>i.key===key)?.allowed_roles;
+      const constraint=inputConstraintFor(registryTool,key);
       const unused=numeric.filter(c=>!used.has(c.name));
-      const next=allowedRoles&&allowedRoles.length
-        ?confidentMatch(unused,columnRoles,allowedRoles)
+      const next=constraint&&(constraint.allowed_roles.length||constraint.allowed_analytes.length)
+        ?confidentColumn(unused,roles,constraint)
         :unused[0];
       if(next){result[key]=next.name;used.add(next.name);}
     }
   }
   return result;
-}
-function confidentMatch(candidates:GeoColumn[],columnRoles:Record<string,GeoColumnRole>|undefined,allowedRoles:string[]) {
-  return candidates.find(c=>{
-    const role=columnRoles?.[c.name];
-    return !!role&&allowedRoles.includes(role.semantic_role)&&role.confidence==='high';
-  });
 }
 export function initialConfig(tool:GeoTool,columns:GeoColumn[],registryTool?:GeoRegistryTool,columnRoles?:Record<string,GeoColumnRole>):GeoConfig {
   const mapping=guessMapping(tool,columns,registryTool,columnRoles);
