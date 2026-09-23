@@ -14,9 +14,13 @@ export interface GeoResult {
   plot:{kind:string;x_label:string;y_label:string;z_label:string;log_x:boolean;log_y:boolean;elements?:string[];fields:{id:string;name:string;points:number[][]}[]};
   warnings:string[]; formula:string; reference:string; pipeline:Record<string,unknown>;created_at:string;
 }
+/** Projection served by `geochemistry.registry` (Tool Registry). Tools arrive in canonical navigation order. */
+export interface GeoRegistryTool { id:string; label:string; module:string; family:string; status:string; capabilities:string[]; renderer:string }
+export interface GeoRegistry { schema_version:number; tools:GeoRegistryTool[] }
 export interface GeoCatalog { tools:GeoTool[];columns:GeoColumn[];dataset_id:string;dataset_name:string }
 export const geoApi={
   catalog:(datasetId:string)=>callRpc<GeoCatalog>('geochemistry.catalog',{dataset_id:datasetId}),
+  registry:()=>callRpc<GeoRegistry>('geochemistry.registry',{}),
   compute:(datasetId:string,config:GeoConfig)=>callRpc<GeoResult>('geochemistry.compute',{dataset_id:datasetId,...config}),
 };
 

@@ -1,0 +1,521 @@
+{
+ "schema_version": 1,
+ "tools": [
+  {
+   "id": "element-ratios",
+   "label": "Razón elemental",
+   "module": "data_analysis",
+   "family": "geochemistry",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "assay-compare",
+   "label": "Comparación de ensayes XY",
+   "module": "data_analysis",
+   "family": "qaqc",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reference_lines"
+   ],
+   "renderer": "assay"
+  },
+  {
+   "id": "assay-difference",
+   "label": "Diferencias de ensayes",
+   "module": "data_analysis",
+   "family": "qaqc",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reference_lines"
+   ],
+   "renderer": "difference"
+  },
+  {
+   "id": "downhole-compare",
+   "label": "Downhole · comparar ensayes",
+   "module": "data_analysis",
+   "family": "qaqc",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "depth"
+   ],
+   "renderer": "downhole"
+  },
+  {
+   "id": "histogram",
+   "label": "Histograma",
+   "module": "diagrams",
+   "family": "distribution",
+   "status": "implemented",
+   "capabilities": [
+    "group"
+   ],
+   "renderer": "histogram"
+  },
+  {
+   "id": "boxplot",
+   "label": "Tukey · cajas y bigotes",
+   "module": "diagrams",
+   "family": "distribution",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "reverse_y"
+   ],
+   "renderer": "box"
+  },
+  {
+   "id": "qq-normal",
+   "label": "Q–Q normal",
+   "module": "diagrams",
+   "family": "distribution",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "qq"
+  },
+  {
+   "id": "probability",
+   "label": "Probabilidad normal",
+   "module": "diagrams",
+   "family": "distribution",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x"
+   ],
+   "renderer": "probability"
+  },
+  {
+   "id": "ecdf",
+   "label": "Probabilidad acumulada (ECDF)",
+   "module": "diagrams",
+   "family": "distribution",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "ecdf"
+  },
+  {
+   "id": "scatter",
+   "label": "Dispersión XY",
+   "module": "diagrams",
+   "family": "xy",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "line",
+   "label": "Líneas XY",
+   "module": "diagrams",
+   "family": "xy",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "line"
+  },
+  {
+   "id": "ternary",
+   "label": "Ternario ABC",
+   "module": "diagrams",
+   "family": "compositional",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels"
+   ],
+   "renderer": "ternary"
+  },
+  {
+   "id": "downhole",
+   "label": "Downhole · perfil por sondaje",
+   "module": "diagrams",
+   "family": "profiles",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "depth"
+   ],
+   "renderer": "downhole"
+  },
+  {
+   "id": "tas",
+   "label": "TAS · clasificación volcánica",
+   "module": "lithogeochemistry",
+   "family": "classification",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reference_lines"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "qapf",
+   "label": "QAPF · proyección modal",
+   "module": "lithogeochemistry",
+   "family": "classification",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "reference_lines"
+   ],
+   "renderer": "qapf"
+  },
+  {
+   "id": "afm",
+   "label": "AFM · proyección",
+   "module": "lithogeochemistry",
+   "family": "magmatic_series",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels"
+   ],
+   "renderer": "ternary"
+  },
+  {
+   "id": "k2o-sio2",
+   "label": "K2O–SiO2",
+   "module": "lithogeochemistry",
+   "family": "magmatic_series",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "mali",
+   "label": "MALI",
+   "module": "lithogeochemistry",
+   "family": "magmatic_series",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "fe-index",
+   "label": "Fe-index",
+   "module": "lithogeochemistry",
+   "family": "magmatic_series",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "harker",
+   "label": "Harker · SiO2 vs óxido",
+   "module": "lithogeochemistry",
+   "family": "variation",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "ree-normalization",
+   "label": "REE · condrito SM89",
+   "module": "lithogeochemistry",
+   "family": "normalization",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size"
+   ],
+   "renderer": "spider"
+  },
+  {
+   "id": "primitive-mantle",
+   "label": "Multielementos · manto primitivo SM89",
+   "module": "lithogeochemistry",
+   "family": "normalization",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size"
+   ],
+   "renderer": "spider"
+  },
+  {
+   "id": "fertility-eu-eu",
+   "label": "Eu/Eu*",
+   "module": "lithogeochemistry",
+   "family": "normalization",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "fertility-ce-ce",
+   "label": "Ce/Ce*",
+   "module": "lithogeochemistry",
+   "family": "normalization",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "shand-index",
+   "label": "Shand · A/CNK vs A/NK",
+   "module": "lithogeochemistry",
+   "family": "calculations",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "a-cnk",
+   "label": "A/CNK",
+   "module": "lithogeochemistry",
+   "family": "calculations",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "a-nk",
+   "label": "A/NK",
+   "module": "lithogeochemistry",
+   "family": "calculations",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "alteration",
+   "label": "Alteración · AI–CCPI",
+   "module": "exploration",
+   "family": "alteration",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_x",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "fertility-sr-y",
+   "label": "Sr/Y",
+   "module": "exploration",
+   "family": "fertility",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "fertility-la-yb",
+   "label": "La/Yb",
+   "module": "exploration",
+   "family": "fertility",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  },
+  {
+   "id": "fertility-dy-yb",
+   "label": "Dy/Yb",
+   "module": "exploration",
+   "family": "fertility",
+   "status": "implemented",
+   "capabilities": [
+    "group",
+    "color",
+    "symbol",
+    "size",
+    "labels",
+    "log_y",
+    "reverse_y"
+   ],
+   "renderer": "scatter"
+  }
+ ]
+}

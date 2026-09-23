@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "geochemistry.registry.v1",
+  "version": "v1",
+  "method": "geochemistry.registry",
+  "description": "Read-only projection of the Tool Registry for navigation UIs. Dataset independent. Tools arrive in canonical navigation order (module, family, tool); clients group by first appearance. The legacy geochemistry.catalog is unaffected.",
+  "request": {
+    "additionalProperties": false,
+    "properties": {},
+    "title": "RegistryRequest",
+    "type": "object"
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "schema_version",
+      "tools"
+    ],
+    "properties": {
+      "schema_version": {
+        "const": 1
+      },
+      "tools": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "label",
+            "module",
+            "family",
+            "status",
+            "capabilities",
+            "renderer"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "module": {
+              "enum": [
+                "data_analysis",
+                "diagrams",
+                "lithogeochemistry",
+                "exploration"
+              ]
+            },
+            "family": {
+              "type": "string"
+            },
+            "status": {
+              "enum": [
+                "implemented",
+                "planned",
+                "experimental",
+                "deprecated"
+              ]
+            },
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "renderer": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

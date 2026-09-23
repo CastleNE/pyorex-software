@@ -6,12 +6,22 @@ from analysis.data import overlay, storage
 from analysis.geochemistry.catalog import TOOLS
 from analysis.geochemistry.engine import calculate
 from analysis.geochemistry.models import DatasetRequest
+from analysis.geochemistry.registry_view import registry_view
 from analysis.geochemistry.exploration import ExplorationDatasetRequest, explore
 
 
 class CatalogRequest(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
     dataset_id: str
+
+
+class RegistryRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+
+
+async def registry(params):
+    RegistryRequest.model_validate(params)
+    return registry_view()
 
 
 def _catalog(dataset_id):
@@ -64,5 +74,5 @@ async def exploration(params):
     return await asyncio.to_thread(_explore,config)
 
 
-GEOCHEMISTRY_METHODS = {'geochemistry.catalog':catalog,'geochemistry.compute':compute,
+GEOCHEMISTRY_METHODS = {'geochemistry.catalog':catalog,'geochemistry.registry':registry,'geochemistry.compute':compute,
                       'geochemistry.explore':exploration}

@@ -1,9 +1,15 @@
 import { useGeochemistryStore } from '../../stores/geochemistry-store';
+import { useGeoRegistryStore } from '../../stores/geochemistry-registry-store';
+import { offersCapability } from '../../lib/geochemistry-registry';
 import { PALETTES,DEFAULT_PRESENTATION,axisRange,type ChartPresentation,type PaletteName } from '../../lib/chart-presentation';
 
 const field='rounded border border-zinc-600 bg-zinc-900 px-2 py-1 text-xs text-zinc-200';
 export default function ChartControls() {
   const p=useGeochemistryStore(s=>s.presentation);
+  const toolId=useGeochemistryStore(s=>s.selectedTool);
+  const spec=useGeoRegistryStore(s=>s.registry?.tools.find(t=>t.id===toolId));
+  // Capabilities from the Tool Registry hide options the tool does not support; a control that is already switched on stays visible so it can be switched off.
+  const offers=(capability:string,active:boolean)=>active||offersCapability(spec,capability);
   const update=(patch:Partial<ChartPresentation>)=>useGeochemistryStore.setState(s=>({presentation:{...s.presentation,...patch}}));
   return <details className="shrink-0 border-b border-zinc-700 px-4 py-2 text-xs text-zinc-400"><summary className="cursor-pointer text-sky-300">Ejes, paleta y tamaño · actualización inmediata</summary>
     <div className="mt-3 flex flex-wrap items-end gap-4">
@@ -18,8 +24,8 @@ export default function ChartControls() {
     <div className="mt-3 flex flex-wrap gap-4">{(['X','Y'] as const).map(axis=>{
       const isX=axis==='X',log=isX?p.logX:p.logY,min=isX?p.xMin:p.yMin,max=isX?p.xMax:p.yMax;
       const bad=(!!min||!!max)&&!axisRange(min,max,log);
-      return <fieldset key={axis} className="flex flex-wrap items-center gap-2"><legend className="mb-1">Eje {axis}</legend><label><input type="checkbox" checked={log} onChange={e=>update(isX?{logX:e.target.checked}:{logY:e.target.checked})}/> Log10</label><input aria-label={`Mínimo ${axis}`} placeholder="Mínimo auto" className={`${field} w-28`} value={min} onChange={e=>update(isX?{xMin:e.target.value}:{yMin:e.target.value})}/><input aria-label={`Máximo ${axis}`} placeholder="Máximo auto" className={`${field} w-28`} value={max} onChange={e=>update(isX?{xMax:e.target.value}:{yMax:e.target.value})}/>{bad&&<span className="text-amber-300">Introduce ambos límites crecientes{log?' y positivos':''}.</span>}</fieldset>;
-    })}<label className="self-end"><input type="checkbox" checked={p.reverseY} onChange={e=>update({reverseY:e.target.checked})}/> Invertir Y</label></div>
+      return <fieldset key={axis} className="flex flex-wrap items-center gap-2"><legend className="mb-1">Eje {axis}</legend>{offers(isX?'log_x':'log_y',log)&&<label><input type="checkbox" checked={log} onChange={e=>update(isX?{logX:e.target.checked}:{logY:e.target.checked})}/> Log10</label>}<input aria-label={`Mínimo ${axis}`} placeholder="Mínimo auto" className={`${field} w-28`} value={min} onChange={e=>update(isX?{xMin:e.target.value}:{yMin:e.target.value})}/><input aria-label={`Máximo ${axis}`} placeholder="Máximo auto" className={`${field} w-28`} value={max} onChange={e=>update(isX?{xMax:e.target.value}:{yMax:e.target.value})}/>{bad&&<span className="text-amber-300">Introduce ambos límites crecientes{log?' y positivos':''}.</span>}</fieldset>;
+    })}{offers('reverse_y',p.reverseY)&&<label className="self-end"><input type="checkbox" checked={p.reverseY} onChange={e=>update({reverseY:e.target.checked})}/> Invertir Y</label>}</div>
     <p className="mt-2 text-zinc-500">Log10 no muestra valores ≤0. Probabilidad normal y downhole conservan sus convenciones de eje. Los atributos de puntos no alteran el cálculo estadístico.</p>
   </details>;
 }
