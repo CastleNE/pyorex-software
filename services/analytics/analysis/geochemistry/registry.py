@@ -35,6 +35,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from types import MappingProxyType
 
+from analysis.geochemistry.semantics import SemanticRole
+
 REE = ['La', 'Ce', 'Pr', 'Nd', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu']
 TRACE = ['Cs', 'Rb', 'Ba', 'Th', 'U', 'Nb', 'Ta', 'La', 'Ce', 'Pb', 'Pr', 'Sr', 'Nd', 'Zr', 'Hf', 'Sm', 'Eu', 'Gd',
          'Tb', 'Dy', 'Y', 'Ho', 'Er', 'Tm', 'Yb', 'Lu']
@@ -210,6 +212,10 @@ class InputSpec:
     axis: AxisRole | None = None
     label: str | None = None
     required: bool = True
+    # Semantic Variable System (v1): which column roles (analysis.geochemistry.semantics.SemanticRole) the Editor
+    # may offer for this input. Empty = no restriction declared yet (CURRENT BEHAVIOR: any column of this input's
+    # unit_kind, exactly as before this system existed) — backward compatible for every tool that doesn't opt in.
+    allowed_roles: tuple[SemanticRole, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -283,6 +289,10 @@ class ToolSpec:
     rpc_method: str = 'geochemistry.compute'
     warnings: tuple[str, ...] = ()   # reserved: engine warnings are not migrated yet
     aliases: tuple[str, ...] = ()
+    # Semantic Variable System (v1): allowed roles for the *generic* group/hole selector (GeoConfig.group_column),
+    # which is not one of ``inputs`` — it applies uniformly across tools and isn't part of the calculation. Empty =
+    # no restriction declared (CURRENT BEHAVIOR: any column, as before this system existed).
+    group_allowed_roles: tuple[SemanticRole, ...] = ()
 
     @property
     def unit_kind(self) -> UnitKind:
@@ -315,10 +325,26 @@ _SPIDER = frozenset({_C.GROUP, _C.COLOR, _C.SYMBOL, _C.SIZE})
 _GENERIC = ReferenceSpec(kind=ReferenceKind.GENERIC)
 _DERIVED = ReferenceSpec(kind=ReferenceKind.DERIVED_METHOD)
 
+# Semantic Variable System (v1) — role profiles declared for the first four tools (see semantics.py for the
+# vocabulary). Every other tool keeps allowed_roles=() (no restriction declared yet: CURRENT BEHAVIOR).
+_SR = SemanticRole
+# scatter / histogram: any geochemically-numeric column, including coordinates and depth (a generic XY/distribution
+# tool may legitimately need them) — but never row_index (an internal row/order/object id, not a variable), bare
+# identifiers, free text or a categorical/unknown fallback.
+_ROLES_NUMERIC_PERMISSIVE = (_SR.MAJOR_OXIDE, _SR.TRACE_ELEMENT, _SR.REE, _SR.ASSAY, _SR.RATIO, _SR.DEPTH,
+                            _SR.DEPTH_FROM, _SR.DEPTH_TO, _SR.EASTING, _SR.NORTHING, _SR.ELEVATION,
+                            _SR.LONGITUDE, _SR.LATITUDE, _SR.NUMERIC_GENERIC)
+# ternary A/B/C: only compositional/geochemical quantities — explicitly not order, ids, coordinates or depth.
+_ROLES_COMPOSITIONAL = (_SR.MAJOR_OXIDE, _SR.TRACE_ELEMENT, _SR.REE, _SR.ASSAY, _SR.RATIO)
+_ROLES_DEPTH = (_SR.DEPTH, _SR.DEPTH_FROM, _SR.DEPTH_TO)
+_ROLES_DOWNHOLE_VALUE = (_SR.ASSAY, _SR.TRACE_ELEMENT, _SR.REE, _SR.MAJOR_OXIDE, _SR.RATIO, _SR.NUMERIC_GENERIC)
+_ROLES_HOLE_ID = (_SR.HOLE_ID,)
 
-def _inputs(keys, type_, unit, axes=None):
+
+def _inputs(keys, type_, unit, axes=None, allowed_roles=()):
     axes = axes or {}
-    return tuple(InputSpec(key=k, type=type_, unit_kind=unit, axis=axes.get(k)) for k in keys)
+    return tuple(InputSpec(key=k, type=type_, unit_kind=unit, axis=axes.get(k), allowed_roles=allowed_roles)
+                for k in keys)
 
 
 def _out(**fields):
@@ -393,13 +419,15 @@ REGISTRY: tuple[ToolSpec, ...] = (
           formula='Diferencia Y−X frente a media (X+Y)/2. Cada fila debe representar la misma muestra e intervalo.',
           legacy_group=LegacyGroup.DIAGRAMS),
     _tool(id='downhole', label='Downhole · perfil por sondaje', module=_M.DIAGRAMS, family=_F.PROFILES,
-          inputs=(InputSpec(key='Depth', type=_T.DEPTH, unit_kind=_U.RAW, axis=AxisRole.Y),
-                  InputSpec(key='Value', type=_T.NUMERIC, unit_kind=_U.RAW, axis=AxisRole.X)),
+          inputs=(InputSpec(key='Depth', type=_T.DEPTH, unit_kind=_U.RAW, axis=AxisRole.Y,
+                            allowed_roles=_ROLES_DEPTH),
+                  InputSpec(key='Value', type=_T.NUMERIC, unit_kind=_U.RAW, axis=AxisRole.X,
+                            allowed_roles=_ROLES_DOWNHOLE_VALUE)),
           capabilities=_PROFILE, outputs=_out(x='Value', y='Profundidad medida'),
           calculation=CalculationSpec('legacy.coordinates.downhole', _K.PASSTHROUGH), renderer=_R.DOWNHOLE,
           reference=_GENERIC,
           formula='Valor frente a profundidad medida, creciente hacia abajo. Selecciona el ID del sondaje como grupo. No desurvey ni compositado.',
-          legacy_group=LegacyGroup.DIAGRAMS),
+          legacy_group=LegacyGroup.DIAGRAMS, group_allowed_roles=_ROLES_HOLE_ID),
     _tool(id='downhole-compare', label='Downhole · comparar ensayes', module=_M.DATA_ANALYSIS, family=_F.QAQC,
           inputs=(InputSpec(key='Depth', type=_T.DEPTH, unit_kind=_U.RAW, axis=AxisRole.Y),
                   InputSpec(key='Assay1', type=_T.NUMERIC, unit_kind=_U.RAW, axis=AxisRole.X),
@@ -410,13 +438,14 @@ REGISTRY: tuple[ToolSpec, ...] = (
           formula='Dos ensayes por fila a la misma profundidad; perfiles separados por sondaje. Confirmar unidades comparables.',
           legacy_group=LegacyGroup.DIAGRAMS),
     _tool(id='scatter', label='Dispersión XY', module=_M.DIAGRAMS, family=_F.XY,
-          inputs=_inputs(['X', 'Y'], _T.NUMERIC, _U.RAW, {'X': AxisRole.X, 'Y': AxisRole.Y}),
+          inputs=_inputs(['X', 'Y'], _T.NUMERIC, _U.RAW, {'X': AxisRole.X, 'Y': AxisRole.Y},
+                        allowed_roles=_ROLES_NUMERIC_PERMISSIVE),
           capabilities=_XY, outputs=_out(x='X', y='Y'),
           calculation=CalculationSpec('legacy.coordinates.scatter', _K.PASSTHROUGH), renderer=_R.SCATTER,
           reference=_GENERIC, formula='Pares de observaciones X e Y; sin imputación.',
           legacy_group=LegacyGroup.DIAGRAMS),
     _tool(id='histogram', label='Histograma', module=_M.DIAGRAMS, family=_F.DISTRIBUTION,
-          inputs=_inputs(['X'], _T.NUMERIC, _U.RAW, {'X': AxisRole.X}),
+          inputs=_inputs(['X'], _T.NUMERIC, _U.RAW, {'X': AxisRole.X}, allowed_roles=_ROLES_NUMERIC_PERMISSIVE),
           capabilities=_HISTOGRAM, outputs=_out(x='Valor'),  # CURRENT: the engine also echoes y = x
           calculation=CalculationSpec('legacy.coordinates.univariate', _K.PASSTHROUGH), renderer=_R.HISTOGRAM,
           reference=_GENERIC, formula='Frecuencias de observaciones válidas; intervalos calculados por Plotly.',
@@ -429,7 +458,8 @@ REGISTRY: tuple[ToolSpec, ...] = (
           formula='Cuartiles lineales; bigotes hasta 1.5 IQR, mediana y puntos originales. Los valores extremos no se eliminanan.',
           legacy_group=LegacyGroup.DIAGRAMS),
     _tool(id='ternary', label='Ternario ABC', module=_M.DIAGRAMS, family=_F.COMPOSITIONAL,
-          inputs=_inputs(['A', 'B', 'C'], _T.NUMERIC, _U.RAW, {'A': AxisRole.A, 'B': AxisRole.B, 'C': AxisRole.C}),
+          inputs=_inputs(['A', 'B', 'C'], _T.NUMERIC, _U.RAW, {'A': AxisRole.A, 'B': AxisRole.B, 'C': AxisRole.C},
+                        allowed_roles=_ROLES_COMPOSITIONAL),
           capabilities=_TERNARY, outputs=_out(x='% A', y='% B', z='% C'),
           calculation=CalculationSpec('legacy.coordinates.ternary', _K.PER_ROW), renderer=_R.TERNARY,
           reference=_GENERIC, formula='100 × componente / (A+B+C). Componentes no negativos y de la misma unidad.',
@@ -619,6 +649,10 @@ def validate_registry(specs: tuple[ToolSpec, ...]) -> None:
             raise RegistryError(f'{where}: input keys must be non-empty and unique')
         if any(not isinstance(i.type, InputType) or not isinstance(i.unit_kind, UnitKind) for i in s.inputs):
             raise RegistryError(f'{where}: invalid input type or unit kind')
+        if any(not isinstance(r, SemanticRole) for i in s.inputs for r in i.allowed_roles):
+            raise RegistryError(f'{where}: allowed_roles must be SemanticRole values')
+        if any(not isinstance(r, SemanticRole) for r in s.group_allowed_roles):
+            raise RegistryError(f'{where}: group_allowed_roles must be SemanticRole values')
         if len({i.unit_kind for i in s.inputs}) != 1:
             raise RegistryError(f'{where}: the legacy contract has a single unit per tool')
         if s.input_rule.kind is InputRuleKind.AT_LEAST and not (s.input_rule.minimum and 1 <= s.input_rule.minimum <= len(keys)):

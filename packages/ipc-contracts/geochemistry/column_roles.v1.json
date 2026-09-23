@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "geochemistry.column_roles.v1",
+  "version": "v1",
+  "method": "geochemistry.column_roles",
+  "description": "Semantic Variable System (v1): deterministic per-column classification (analysis/geochemistry/semantics.py) for one dataset. Read-only; never reads or changes a value. Intersected client-side against a Tool Registry input's allowed_roles to filter the Editor.",
+  "request": {
+    "additionalProperties": false,
+    "properties": {
+      "dataset_id": {
+        "title": "Dataset Id",
+        "type": "string"
+      }
+    },
+    "required": ["dataset_id"],
+    "title": "ColumnRolesRequest",
+    "type": "object"
+  },
+  "response": {
+    "type": "object",
+    "required": ["dataset_id", "columns"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "columns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["column", "semantic_role", "analyte", "unit", "confidence", "source"],
+          "properties": {
+            "column": { "type": "string" },
+            "semantic_role": {
+              "enum": [
+                "sample_id", "hole_id", "row_index", "depth", "depth_from", "depth_to", "easting", "northing",
+                "elevation", "longitude", "latitude", "major_oxide", "trace_element", "ree", "assay", "ratio",
+                "categorical", "numeric_generic", "unknown"
+              ]
+            },
+            "analyte": { "type": ["string", "null"] },
+            "unit": { "type": ["string", "null"] },
+            "confidence": { "enum": ["high", "medium", "low"] },
+            "source": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

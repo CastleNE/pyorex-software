@@ -32,7 +32,9 @@
             "family",
             "status",
             "capabilities",
-            "renderer"
+            "renderer",
+            "inputs",
+            "group_allowed_roles"
           ],
           "properties": {
             "id": {
@@ -68,6 +70,24 @@
             },
             "renderer": {
               "type": "string"
+            },
+            "inputs": {
+              "description": "Semantic Variable System (v1): per-input role constraints. Empty allowed_roles = no restriction declared (CURRENT BEHAVIOR).",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["key", "allowed_roles"],
+                "properties": {
+                  "key": { "type": "string" },
+                  "allowed_roles": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            },
+            "group_allowed_roles": {
+              "description": "Semantic Variable System (v1): allowed roles for the generic group/hole selector, not one of inputs. Empty = no restriction declared.",
+              "type": "array",
+              "items": { "type": "string" }
             }
           }
         }

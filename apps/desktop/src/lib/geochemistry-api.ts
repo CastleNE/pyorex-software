@@ -15,19 +15,30 @@ export interface GeoResult {
   warnings:string[]; formula:string; reference:string; pipeline:Record<string,unknown>;created_at:string;
 }
 /** Projection served by `geochemistry.registry` (Tool Registry). Tools arrive in canonical navigation order. */
-export interface GeoRegistryTool { id:string; label:string; module:string; family:string; status:string; capabilities:string[]; renderer:string }
+export interface GeoRegistryInput { key:string; allowed_roles:string[] }
+export interface GeoRegistryTool { id:string; label:string; module:string; family:string; status:string; capabilities:string[]; renderer:string; inputs:GeoRegistryInput[]; group_allowed_roles:string[] }
 export interface GeoRegistry { schema_version:number; tools:GeoRegistryTool[] }
 export interface GeoCatalog { tools:GeoTool[];columns:GeoColumn[];dataset_id:string;dataset_name:string }
+/** Semantic Variable System (v1): one column's classification, served by `geochemistry.column_roles`. */
+export interface GeoColumnRole { column:string; semantic_role:string; analyte:string|null; unit:string|null; confidence:'high'|'medium'|'low'; source:string }
+export interface GeoColumnRoles { dataset_id:string; columns:GeoColumnRole[] }
 export const geoApi={
   catalog:(datasetId:string)=>callRpc<GeoCatalog>('geochemistry.catalog',{dataset_id:datasetId}),
   registry:()=>callRpc<GeoRegistry>('geochemistry.registry',{}),
+  columnRoles:(datasetId:string)=>callRpc<GeoColumnRoles>('geochemistry.column_roles',{dataset_id:datasetId}),
   compute:(datasetId:string,config:GeoConfig)=>callRpc<GeoResult>('geochemistry.compute',{dataset_id:datasetId,...config}),
 };
 
 function analyte(name:string) {
   return name.toLowerCase().replace(/(?:[_\s(\[]?(?:wt%|wtpct|pct|ppm|ppb|%)[)\]]?)$/,'').replace(/[^a-z0-9]/g,'');
 }
-export function guessMapping(tool:GeoTool,columns:GeoColumn[]) {
+/**
+ * `registryTool`/`columnRoles` are optional (Semantic Variable System v1, see lib/semantic-roles.ts): when the tool
+ * has no matching registry entry, or the registry declares no `allowed_roles` for a key, the raw X/Y/A/B/C
+ * fallback below behaves exactly as before this system existed (first unused numeric column). Only tools that
+ * declare `allowed_roles` get the stricter, confidence-gated pick — never a blind first-numeric-column guess.
+ */
+export function guessMapping(tool:GeoTool,columns:GeoColumn[],registryTool?:GeoRegistryTool,columnRoles?:Record<string,GeoColumnRole>) {
   const result:Record<string,string>={};
   const numeric=columns.filter(c=>c.numeric);
   for(const key of tool.inputs){
@@ -36,12 +47,26 @@ export function guessMapping(tool:GeoTool,columns:GeoColumn[]) {
   }
   if(tool.unit==='raw'){
     const used=new Set(Object.values(result));
-    for(const key of tool.inputs){if(['X','Y','A','B','C'].includes(key)&&!result[key]){const next=numeric.find(c=>!used.has(c.name));if(next){result[key]=next.name;used.add(next.name);}}}
+    for(const key of tool.inputs){
+      if(!['X','Y','A','B','C'].includes(key)||result[key])continue;
+      const allowedRoles=registryTool?.inputs.find(i=>i.key===key)?.allowed_roles;
+      const unused=numeric.filter(c=>!used.has(c.name));
+      const next=allowedRoles&&allowedRoles.length
+        ?confidentMatch(unused,columnRoles,allowedRoles)
+        :unused[0];
+      if(next){result[key]=next.name;used.add(next.name);}
+    }
   }
   return result;
 }
-export function initialConfig(tool:GeoTool,columns:GeoColumn[]):GeoConfig {
-  const mapping=guessMapping(tool,columns);
+function confidentMatch(candidates:GeoColumn[],columnRoles:Record<string,GeoColumnRole>|undefined,allowedRoles:string[]) {
+  return candidates.find(c=>{
+    const role=columnRoles?.[c.name];
+    return !!role&&allowedRoles.includes(role.semantic_role)&&role.confidence==='high';
+  });
+}
+export function initialConfig(tool:GeoTool,columns:GeoColumn[],registryTool?:GeoRegistryTool,columnRoles?:Record<string,GeoColumnRole>):GeoConfig {
+  const mapping=guessMapping(tool,columns,registryTool,columnRoles);
   return {tool:tool.id,columns:mapping,units:Object.fromEntries(Object.keys(mapping).map(k=>[k,inferUnit(mapping[k],tool.unit)])),iron_basis:'FeOT',include_qaqc:false,log_x:false,log_y:false,group_column:null,label_column:null};
 }
 export function inferUnit(column:string,fallback:GeoUnit):GeoUnit {

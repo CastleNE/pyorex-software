@@ -39,6 +39,7 @@ function answerRpc(){
     if(method==='geochemistry.registry')return REGISTRY;
     if(method==='geochemistry.catalog')return {tools:CATALOG_TOOLS,columns:COLUMNS,dataset_id:'ds',dataset_name:'Demo'};
     if(method==='geochemistry.compute')return {tool:'x',rows:[],quality:{total:0,used:0,invalid:0,excluded_qaqc:0}};
+    if(method==='geochemistry.column_roles')return {dataset_id:'ds',columns:[]};
     throw new Error(`unexpected ${method}`);
   });
 }

@@ -20,7 +20,7 @@ from app.routers.rpc import METHOD_REGISTRY
 
 ROOT = Path(__file__).resolve().parents[3]
 GOLDEN_CATALOG = json.loads((Path(__file__).with_name('golden') / 'geochemistry_catalog.json').read_text(encoding='utf-8'))
-TOOL_KEYS = {'id', 'label', 'module', 'family', 'status', 'capabilities', 'renderer'}
+TOOL_KEYS = {'id', 'label', 'module', 'family', 'status', 'capabilities', 'renderer', 'inputs', 'group_allowed_roles'}
 
 DIAGRAMS_NAVIGATION = {
     'distribution': ['histogram', 'boxplot', 'qq-normal', 'probability', 'ecdf'],
@@ -87,7 +87,9 @@ def test_every_tool_has_exactly_the_documented_keys_and_json_safe_values(view):
 def test_no_bibliographic_or_calculation_metadata_leaks(view):
     assert set(view) == {'schema_version', 'tools'}
     keys = {key for tool in view['tools'] for key in tool}
-    assert not keys & {'handler_id', 'calculation', 'reference', 'formula', 'legacy_text', 'parameters', 'aliases', 'inputs'}
+    assert not keys & {'handler_id', 'calculation', 'reference', 'formula', 'legacy_text', 'parameters', 'aliases'}
+    for tool in view['tools']:
+        assert all(set(i) == {'key', 'allowed_roles'} for i in tool['inputs'])
 
 
 def test_projection_matches_the_registry_field_by_field(view):
@@ -98,6 +100,10 @@ def test_projection_matches_the_registry_field_by_field(view):
             spec.label, spec.module.value, spec.family.value, spec.status.value, spec.renderer.value)
         assert set(tool['capabilities']) == {c.value for c in spec.capabilities}
         assert all(Capability(c) for c in tool['capabilities'])
+        assert [i['key'] for i in tool['inputs']] == [i.key for i in spec.inputs]
+        for projected_input, spec_input in zip(tool['inputs'], spec.inputs):
+            assert projected_input['allowed_roles'] == [r.value for r in spec_input.allowed_roles]
+        assert tool['group_allowed_roles'] == [r.value for r in spec.group_allowed_roles]
 
 
 def test_module_counts(view):

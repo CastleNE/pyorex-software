@@ -7,6 +7,7 @@ from analysis.geochemistry.catalog import TOOLS
 from analysis.geochemistry.engine import calculate
 from analysis.geochemistry.models import DatasetRequest
 from analysis.geochemistry.registry_view import registry_view
+from analysis.geochemistry.semantics import classification_to_dict, classify_column_with_hint
 from analysis.geochemistry.exploration import ExplorationDatasetRequest, explore
 
 
@@ -38,6 +39,30 @@ def _catalog(dataset_id):
 async def catalog(params):
     config = CatalogRequest.model_validate(params)
     return await asyncio.to_thread(_catalog, config.dataset_id)
+
+
+class ColumnRolesRequest(BaseModel):
+    model_config = ConfigDict(extra='forbid', strict=True)
+    dataset_id: str
+
+
+def _column_roles(dataset_id):
+    """Semantic Variable System (v1): the actual per-column classification for one dataset, enriched (only where
+    ambiguous) by the coarse ColumnRole already computed at import time. Never reads or changes a value."""
+    df, hidden = overlay.get_effective_dataframe(dataset_id)
+    existing_role = {c['name']: c.get('role') for c in storage.load_metadata(dataset_id)['columns']}
+    columns = []
+    for name, dtype in df.schema.items():
+        if name in hidden or name.startswith('_') or name == 'internal_feature_id':
+            continue
+        classification = classify_column_with_hint(name, dtype.is_numeric(), existing_role.get(name))
+        columns.append(classification_to_dict(classification))
+    return {'dataset_id': dataset_id, 'columns': columns}
+
+
+async def column_roles(params):
+    config = ColumnRolesRequest.model_validate(params)
+    return await asyncio.to_thread(_column_roles, config.dataset_id)
 
 
 def _compute(config):
@@ -74,5 +99,6 @@ async def exploration(params):
     return await asyncio.to_thread(_explore,config)
 
 
-GEOCHEMISTRY_METHODS = {'geochemistry.catalog':catalog,'geochemistry.registry':registry,'geochemistry.compute':compute,
+GEOCHEMISTRY_METHODS = {'geochemistry.catalog':catalog,'geochemistry.registry':registry,
+                      'geochemistry.column_roles':column_roles,'geochemistry.compute':compute,
                       'geochemistry.explore':exploration}

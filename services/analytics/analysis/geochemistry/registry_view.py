@@ -33,6 +33,10 @@ def project_tool(spec: ToolSpec) -> dict:
         'status': spec.status.value,
         'capabilities': [c.value for c in sorted(spec.capabilities, key=_CAPABILITY_INDEX.__getitem__)],
         'renderer': spec.renderer.value,
+        # Semantic Variable System (v1): per-input role constraints (empty allowed_roles = no restriction declared,
+        # CURRENT BEHAVIOR). group_allowed_roles is the generic group/hole selector, not one of ``inputs``.
+        'inputs': [{'key': i.key, 'allowed_roles': [r.value for r in i.allowed_roles]} for i in spec.inputs],
+        'group_allowed_roles': [r.value for r in spec.group_allowed_roles],
     }
 
 

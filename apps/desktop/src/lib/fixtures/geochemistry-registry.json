@@ -16,7 +16,18 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "numerator",
+     "allowed_roles": []
+    },
+    {
+     "key": "denominator",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "assay-compare",
@@ -34,7 +45,18 @@
     "log_y",
     "reference_lines"
    ],
-   "renderer": "assay"
+   "renderer": "assay",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": []
+    },
+    {
+     "key": "Y",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "assay-difference",
@@ -52,7 +74,18 @@
     "log_y",
     "reference_lines"
    ],
-   "renderer": "difference"
+   "renderer": "difference",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": []
+    },
+    {
+     "key": "Y",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "downhole-compare",
@@ -69,7 +102,22 @@
     "log_x",
     "depth"
    ],
-   "renderer": "downhole"
+   "renderer": "downhole",
+   "inputs": [
+    {
+     "key": "Depth",
+     "allowed_roles": []
+    },
+    {
+     "key": "Assay1",
+     "allowed_roles": []
+    },
+    {
+     "key": "Assay2",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "histogram",
@@ -80,7 +128,29 @@
    "capabilities": [
     "group"
    ],
-   "renderer": "histogram"
+   "renderer": "histogram",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": [
+      "major_oxide",
+      "trace_element",
+      "ree",
+      "assay",
+      "ratio",
+      "depth",
+      "depth_from",
+      "depth_to",
+      "easting",
+      "northing",
+      "elevation",
+      "longitude",
+      "latitude",
+      "numeric_generic"
+     ]
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "boxplot",
@@ -92,7 +162,14 @@
     "group",
     "reverse_y"
    ],
-   "renderer": "box"
+   "renderer": "box",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "qq-normal",
@@ -109,7 +186,14 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "qq"
+   "renderer": "qq",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "probability",
@@ -125,7 +209,14 @@
     "labels",
     "log_x"
    ],
-   "renderer": "probability"
+   "renderer": "probability",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "ecdf",
@@ -143,7 +234,14 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "ecdf"
+   "renderer": "ecdf",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "scatter",
@@ -161,7 +259,48 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": [
+      "major_oxide",
+      "trace_element",
+      "ree",
+      "assay",
+      "ratio",
+      "depth",
+      "depth_from",
+      "depth_to",
+      "easting",
+      "northing",
+      "elevation",
+      "longitude",
+      "latitude",
+      "numeric_generic"
+     ]
+    },
+    {
+     "key": "Y",
+     "allowed_roles": [
+      "major_oxide",
+      "trace_element",
+      "ree",
+      "assay",
+      "ratio",
+      "depth",
+      "depth_from",
+      "depth_to",
+      "easting",
+      "northing",
+      "elevation",
+      "longitude",
+      "latitude",
+      "numeric_generic"
+     ]
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "line",
@@ -179,7 +318,18 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "line"
+   "renderer": "line",
+   "inputs": [
+    {
+     "key": "X",
+     "allowed_roles": []
+    },
+    {
+     "key": "Y",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "ternary",
@@ -194,7 +344,40 @@
     "size",
     "labels"
    ],
-   "renderer": "ternary"
+   "renderer": "ternary",
+   "inputs": [
+    {
+     "key": "A",
+     "allowed_roles": [
+      "major_oxide",
+      "trace_element",
+      "ree",
+      "assay",
+      "ratio"
+     ]
+    },
+    {
+     "key": "B",
+     "allowed_roles": [
+      "major_oxide",
+      "trace_element",
+      "ree",
+      "assay",
+      "ratio"
+     ]
+    },
+    {
+     "key": "C",
+     "allowed_roles": [
+      "major_oxide",
+      "trace_element",
+      "ree",
+      "assay",
+      "ratio"
+     ]
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "downhole",
@@ -211,7 +394,31 @@
     "log_x",
     "depth"
    ],
-   "renderer": "downhole"
+   "renderer": "downhole",
+   "inputs": [
+    {
+     "key": "Depth",
+     "allowed_roles": [
+      "depth",
+      "depth_from",
+      "depth_to"
+     ]
+    },
+    {
+     "key": "Value",
+     "allowed_roles": [
+      "assay",
+      "trace_element",
+      "ree",
+      "major_oxide",
+      "ratio",
+      "numeric_generic"
+     ]
+    }
+   ],
+   "group_allowed_roles": [
+    "hole_id"
+   ]
   },
   {
    "id": "tas",
@@ -229,7 +436,22 @@
     "log_y",
     "reference_lines"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "SiO2",
+     "allowed_roles": []
+    },
+    {
+     "key": "Na2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "qapf",
@@ -245,7 +467,26 @@
     "labels",
     "reference_lines"
    ],
-   "renderer": "qapf"
+   "renderer": "qapf",
+   "inputs": [
+    {
+     "key": "Q",
+     "allowed_roles": []
+    },
+    {
+     "key": "A",
+     "allowed_roles": []
+    },
+    {
+     "key": "P",
+     "allowed_roles": []
+    },
+    {
+     "key": "F",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "afm",
@@ -260,7 +501,26 @@
     "size",
     "labels"
    ],
-   "renderer": "ternary"
+   "renderer": "ternary",
+   "inputs": [
+    {
+     "key": "Na2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "FeTotal",
+     "allowed_roles": []
+    },
+    {
+     "key": "MgO",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "k2o-sio2",
@@ -278,7 +538,18 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "SiO2",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "mali",
@@ -296,7 +567,26 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "SiO2",
+     "allowed_roles": []
+    },
+    {
+     "key": "Na2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "CaO",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "fe-index",
@@ -314,7 +604,22 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "SiO2",
+     "allowed_roles": []
+    },
+    {
+     "key": "FeTotal",
+     "allowed_roles": []
+    },
+    {
+     "key": "MgO",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "harker",
@@ -332,7 +637,18 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "SiO2",
+     "allowed_roles": []
+    },
+    {
+     "key": "Oxide",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "ree-normalization",
@@ -346,7 +662,66 @@
     "symbol",
     "size"
    ],
-   "renderer": "spider"
+   "renderer": "spider",
+   "inputs": [
+    {
+     "key": "La",
+     "allowed_roles": []
+    },
+    {
+     "key": "Ce",
+     "allowed_roles": []
+    },
+    {
+     "key": "Pr",
+     "allowed_roles": []
+    },
+    {
+     "key": "Nd",
+     "allowed_roles": []
+    },
+    {
+     "key": "Sm",
+     "allowed_roles": []
+    },
+    {
+     "key": "Eu",
+     "allowed_roles": []
+    },
+    {
+     "key": "Gd",
+     "allowed_roles": []
+    },
+    {
+     "key": "Tb",
+     "allowed_roles": []
+    },
+    {
+     "key": "Dy",
+     "allowed_roles": []
+    },
+    {
+     "key": "Ho",
+     "allowed_roles": []
+    },
+    {
+     "key": "Er",
+     "allowed_roles": []
+    },
+    {
+     "key": "Tm",
+     "allowed_roles": []
+    },
+    {
+     "key": "Yb",
+     "allowed_roles": []
+    },
+    {
+     "key": "Lu",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "primitive-mantle",
@@ -360,7 +735,114 @@
     "symbol",
     "size"
    ],
-   "renderer": "spider"
+   "renderer": "spider",
+   "inputs": [
+    {
+     "key": "Cs",
+     "allowed_roles": []
+    },
+    {
+     "key": "Rb",
+     "allowed_roles": []
+    },
+    {
+     "key": "Ba",
+     "allowed_roles": []
+    },
+    {
+     "key": "Th",
+     "allowed_roles": []
+    },
+    {
+     "key": "U",
+     "allowed_roles": []
+    },
+    {
+     "key": "Nb",
+     "allowed_roles": []
+    },
+    {
+     "key": "Ta",
+     "allowed_roles": []
+    },
+    {
+     "key": "La",
+     "allowed_roles": []
+    },
+    {
+     "key": "Ce",
+     "allowed_roles": []
+    },
+    {
+     "key": "Pb",
+     "allowed_roles": []
+    },
+    {
+     "key": "Pr",
+     "allowed_roles": []
+    },
+    {
+     "key": "Sr",
+     "allowed_roles": []
+    },
+    {
+     "key": "Nd",
+     "allowed_roles": []
+    },
+    {
+     "key": "Zr",
+     "allowed_roles": []
+    },
+    {
+     "key": "Hf",
+     "allowed_roles": []
+    },
+    {
+     "key": "Sm",
+     "allowed_roles": []
+    },
+    {
+     "key": "Eu",
+     "allowed_roles": []
+    },
+    {
+     "key": "Gd",
+     "allowed_roles": []
+    },
+    {
+     "key": "Tb",
+     "allowed_roles": []
+    },
+    {
+     "key": "Dy",
+     "allowed_roles": []
+    },
+    {
+     "key": "Y",
+     "allowed_roles": []
+    },
+    {
+     "key": "Ho",
+     "allowed_roles": []
+    },
+    {
+     "key": "Er",
+     "allowed_roles": []
+    },
+    {
+     "key": "Tm",
+     "allowed_roles": []
+    },
+    {
+     "key": "Yb",
+     "allowed_roles": []
+    },
+    {
+     "key": "Lu",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "fertility-eu-eu",
@@ -377,7 +859,22 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "Sm",
+     "allowed_roles": []
+    },
+    {
+     "key": "Eu",
+     "allowed_roles": []
+    },
+    {
+     "key": "Gd",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "fertility-ce-ce",
@@ -394,7 +891,22 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "La",
+     "allowed_roles": []
+    },
+    {
+     "key": "Ce",
+     "allowed_roles": []
+    },
+    {
+     "key": "Pr",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "shand-index",
@@ -412,7 +924,26 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "Al2O3",
+     "allowed_roles": []
+    },
+    {
+     "key": "CaO",
+     "allowed_roles": []
+    },
+    {
+     "key": "Na2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "a-cnk",
@@ -429,7 +960,26 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "Al2O3",
+     "allowed_roles": []
+    },
+    {
+     "key": "CaO",
+     "allowed_roles": []
+    },
+    {
+     "key": "Na2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "a-nk",
@@ -446,7 +996,22 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "Al2O3",
+     "allowed_roles": []
+    },
+    {
+     "key": "Na2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "alteration",
@@ -464,7 +1029,30 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "MgO",
+     "allowed_roles": []
+    },
+    {
+     "key": "K2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "Na2O",
+     "allowed_roles": []
+    },
+    {
+     "key": "CaO",
+     "allowed_roles": []
+    },
+    {
+     "key": "FeTotal",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "fertility-sr-y",
@@ -481,7 +1069,18 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "Sr",
+     "allowed_roles": []
+    },
+    {
+     "key": "Y",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "fertility-la-yb",
@@ -498,7 +1097,18 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "La",
+     "allowed_roles": []
+    },
+    {
+     "key": "Yb",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   },
   {
    "id": "fertility-dy-yb",
@@ -515,7 +1125,18 @@
     "log_y",
     "reverse_y"
    ],
-   "renderer": "scatter"
+   "renderer": "scatter",
+   "inputs": [
+    {
+     "key": "Dy",
+     "allowed_roles": []
+    },
+    {
+     "key": "Yb",
+     "allowed_roles": []
+    }
+   ],
+   "group_allowed_roles": []
   }
  ]
 }

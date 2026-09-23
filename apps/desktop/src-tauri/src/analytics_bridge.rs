@@ -67,7 +67,7 @@ pub async fn check_analytics_service() -> Result<bool, AnalyticsBridgeError> {
 // esta lista cada vez que se agregue un método RPC nuevo del lado Python,
 // o el bridge lo rechaza con -32601 aunque el backend lo implemente.
 const ALLOWED_RPC_METHODS: &[&str] = &[
-    "geochemistry.catalog", "geochemistry.registry", "geochemistry.compute", "geochemistry.explore",
+    "geochemistry.catalog", "geochemistry.registry", "geochemistry.column_roles", "geochemistry.compute", "geochemistry.explore",
     // Andean Exploration Hub v0.1
     "hub.catalog", "hub.markets", "hub.archive.list", "hub.archive.save", "hub.archive.remove",
     "health.ping",
