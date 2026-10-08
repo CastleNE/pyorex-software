@@ -12,30 +12,30 @@ export default function AnalysisHistoryPanel({ onReopenTool }: Props) {
   if (entries.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-xs">
-        <p className="text-zinc-600">No analyses run yet this session.</p>
+        <p className="text-subtle">No analyses run yet this session.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-zinc-900 p-2 text-xs">
+    <div className="flex h-full flex-col overflow-y-auto bg-app p-2 text-xs">
       {entries.map((e) => (
-        <div key={e.id} className="mb-2 rounded-md border border-zinc-700 p-2">
+        <div key={e.id} className="mb-2 rounded-md border border-line p-2">
           <div className="mb-1 flex items-center justify-between">
-            <p className="font-semibold text-zinc-200">{e.toolLabel}</p>
-            <p className="text-zinc-600">{new Date(e.timestamp).toLocaleTimeString()}</p>
+            <p className="font-semibold text-fg">{e.toolLabel}</p>
+            <p className="text-subtle">{new Date(e.timestamp).toLocaleTimeString()}</p>
           </div>
-          <p className="text-zinc-500">
+          <p className="text-subtle">
             {e.datasetName} · {e.variables.length} var(s) · {e.resultSummary}
           </p>
           <div className="mt-1.5 flex gap-3">
-            <button onClick={() => onReopenTool(e.toolId)} className="text-blue-400 hover:underline">
+            <button onClick={() => onReopenTool(e.toolId)} className="text-accent-fg hover:underline">
               Rerun
             </button>
-            <button onClick={() => duplicateEntry(e.id)} className="text-zinc-400 hover:underline">
+            <button onClick={() => duplicateEntry(e.id)} className="text-muted hover:underline">
               Duplicate
             </button>
-            <button onClick={() => removeEntry(e.id)} className="text-red-400 hover:underline">
+            <button onClick={() => removeEntry(e.id)} className="text-danger hover:underline">
               Delete
             </button>
           </div>

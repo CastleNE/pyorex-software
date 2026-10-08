@@ -14,6 +14,7 @@ import {
   type ProcessedTableField,
 } from "@/lib/spectrometry-api";
 import { useSpectrometryStore } from "@/stores/spectrometry-store";
+import RecentProjectsPanel from "@/components/tool-windows/RecentProjectsPanel";
 
 const FIELD_GROUPS: { title: string; fields: ProcessedTableField[] }[] = [
   { title: "Identification", fields: ["Sample ID", "Drillhole ID", "Project", "Prospect", "Date", "Instrument"] },
@@ -97,7 +98,8 @@ export default function ImportProcessedResultsWizard({ onImported }: Props) {
   }, []);
 
   if (!activeProject) {
-    return <div className="p-4 text-xs text-zinc-500">Create or open a spectral project first.</div>;
+    // No project yet: create or open one right here, then the wizard continues (File → Import data lands here).
+    return <div className="flex h-full flex-col"><p className="px-4 pt-3 text-xs text-muted">Crea o abre un proyecto espectral para importar · Create or open a spectral project to import.</p><div className="min-h-0 flex-1"><RecentProjectsPanel /></div></div>;
   }
 
   return (

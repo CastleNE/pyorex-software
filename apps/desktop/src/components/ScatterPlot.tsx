@@ -9,7 +9,7 @@
  * - Lazy-loads all dataset rows on mount
  */
 import { useEffect, useMemo, useState } from "react";
-import Plot from "react-plotly.js";
+import Plot from "@/components/ThemedPlot";
 import type { Layout } from "plotly.js";
 import { useDatasetStore } from "@/stores/dataset-store";
 import { getRows } from "@/lib/data-api";

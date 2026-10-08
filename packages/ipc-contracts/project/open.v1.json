@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project.open.v1",
+  "version": "v1",
+  "method": "project.open",
+  "description": "Restore every dataset of a .orex into local storage and return the presentation state. A dataset id that exists locally with different content is restored under a new id (local data is never overwritten); id_map maps archived id -> local id.",
+  "request": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "path"
+    ],
+    "properties": {
+      "path": {
+        "type": "string"
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "manifest",
+      "state",
+      "id_map",
+      "datasets"
+    ],
+    "properties": {
+      "manifest": {
+        "type": "object",
+        "required": [
+          "format",
+          "version",
+          "app",
+          "name",
+          "saved_at",
+          "datasets"
+        ],
+        "properties": {
+          "format": {
+            "const": "pyorex-project"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "app": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "saved_at": {
+            "type": "string"
+          },
+          "datasets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "sha256"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "column_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "has_ops": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      },
+      "state": {
+        "type": "object"
+      },
+      "id_map": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "datasets": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "description": "Dataset metadata as stored (storage.load_metadata)."
+        }
+      }
+    }
+  }
+}

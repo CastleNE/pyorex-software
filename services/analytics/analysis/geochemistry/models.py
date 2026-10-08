@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from analysis.geochemistry.custom_diagram import DiagramSpec
+
 
 class ComputeRequest(BaseModel):
     model_config = ConfigDict(extra='forbid', strict=True)
@@ -16,6 +18,8 @@ class ComputeRequest(BaseModel):
     label_column: str | None = None
     size_column: str | None = None
     color_column: str | None = None
+    # Only for tool 'custom-diagram' (Diagram Builder): the user's diagram definition.
+    diagram: DiagramSpec | None = None
 
 
 class DatasetRequest(ComputeRequest):

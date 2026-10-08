@@ -1,44 +1,42 @@
 interface Props {
   size?: number;
+  /** Show the "PyOreX" wordmark next to the mark. */
+  wordmark?: boolean;
+  className?: string;
 }
 
-export default function PyOrexLogo({ size = 28 }: Props) {
+/**
+ * PyOreX mark — the official node-network rhombus (design system › Logos).
+ * Inherits colour from `currentColor`; accent nodes use the brand teal.
+ */
+export default function PyOrexLogo({ size = 24, wordmark = true, className = "" }: Props) {
   return (
-    <div className="flex items-center gap-2 py-2">
-      {/* Network graph icon — recreado del logo oficial */}
-      <svg width={size} height={size} viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Connections */}
-        <line x1="14" y1="4" x2="9" y2="10" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="14" y1="4" x2="19" y2="10" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="9" y1="10" x2="14" y2="14" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="19" y1="10" x2="14" y2="14" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="9" y1="10" x2="5" y2="16" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="19" y1="10" x2="23" y2="16" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="14" y1="14" x2="9" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="14" y1="14" x2="19" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="5" y1="16" x2="9" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="23" y1="16" x2="19" y2="18" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="9" y1="18" x2="14" y2="24" stroke="#60a5fa" strokeWidth="1.2" />
-        <line x1="19" y1="18" x2="14" y2="24" stroke="#60a5fa" strokeWidth="1.2" />
-        {/* Nodes */}
-        <circle cx="14" cy="4" r="2.2" fill="#3b82f6" />
-        <circle cx="9" cy="10" r="2.2" fill="#3b82f6" />
-        <circle cx="19" cy="10" r="2.2" fill="#3b82f6" />
-        <circle cx="5" cy="16" r="2.2" fill="#3b82f6" />
-        <circle cx="14" cy="14" r="2.2" fill="#60a5fa" />
-        <circle cx="23" cy="16" r="2.2" fill="#3b82f6" />
-        <circle cx="9" cy="18" r="2.2" fill="#3b82f6" />
-        <circle cx="19" cy="18" r="2.2" fill="#3b82f6" />
-        <circle cx="14" cy="24" r="2.2" fill="#3b82f6" />
+    <div className={`flex items-center gap-2 ${className}`}>
+      <svg width={size} height={size} viewBox="0 0 29.9 30.2" aria-hidden="true" className="shrink-0">
+        <g stroke="currentColor" strokeWidth={1.4} opacity={0.85}>
+          <line x1="6.2" y1="10.5" x2="14.6" y2="18.9" />
+          <line x1="14.6" y1="18.9" x2="10.6" y2="23.1" />
+          <line x1="14.6" y1="18.9" x2="18.5" y2="23.1" />
+          <line x1="26.9" y1="14.8" x2="18.5" y2="23.1" />
+        </g>
+        <g fill="currentColor">
+          <circle cx="14.6" cy="2.2" r="2.6" />
+          <circle cx="10.6" cy="6.2" r="2.6" />
+          <circle cx="18.5" cy="6.2" r="2.6" />
+          <circle cx="6.2" cy="10.5" r="2.6" className="fill-accent" />
+          <circle cx="14.6" cy="10.5" r="2.6" />
+          <circle cx="22.9" cy="10.5" r="2.6" />
+          <circle cx="2.2" cy="14.8" r="2.6" />
+          <circle cx="18.5" cy="14.8" r="2.6" />
+          <circle cx="26.9" cy="14.8" r="2.6" className="fill-accent" />
+          <circle cx="6.0" cy="18.9" r="2.6" />
+          <circle cx="14.6" cy="18.9" r="2.6" className="fill-accent" />
+          <circle cx="10.6" cy="23.1" r="2.6" />
+          <circle cx="18.5" cy="23.1" r="2.6" />
+          <circle cx="14.6" cy="27.2" r="2.6" />
+        </g>
       </svg>
-
-      {/* Divider */}
-      <div className="h-5 w-px bg-zinc-600" />
-
-      {/* Wordmark */}
-      <span className="text-sm font-bold tracking-wide text-zinc-100">
-        PyOre<span className="text-blue-400">X</span>
-      </span>
+      {wordmark && <span className="text-[15px] font-bold tracking-tight">PyOreX</span>}
     </div>
   );
 }

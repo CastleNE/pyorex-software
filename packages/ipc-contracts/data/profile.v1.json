@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "data.profile.v1",
+  "title": "Column profile of the rows the data grid shows",
+  "description": "Per visible column (internal and hidden columns excluded): valid / missing / below detection limit / not analysed counts, distinct values, and either the numeric distribution (quantiles, mean, std, IQR outliers, 16-bin histogram, in log10 for strongly right-skewed positive columns) or the most frequent text values. Same filters and selection as data.rows (analysis/data/profile.py). Censored values are counted, never imputed.",
+  "version": "v1",
+  "method": "data.profile",
+  "request": {
+    "type": "object",
+    "required": ["dataset_id"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "only_rows": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "description": "Only these row indices (shared selection); omitted = all rows." },
+      "filters": { "type": "array", "items": { "type": "object" }, "description": "Same filters as data.rows." },
+      "filter_combinator": { "type": "string", "enum": ["and", "or"], "default": "and" }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["dataset_id", "rows", "total_rows", "columns"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "rows": { "type": "integer", "description": "Rows profiled (after filters and selection)" },
+      "total_rows": { "type": "integer" },
+      "columns": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "kind", "valid", "below_lod", "not_analyzed", "missing", "distinct", "constant", "numeric", "top"],
+          "properties": {
+            "name": { "type": "string" },
+            "kind": { "enum": ["numeric", "text", "datetime", "boolean", "other"] },
+            "valid": { "type": "integer" },
+            "below_lod": { "type": "integer" },
+            "not_analyzed": { "type": "integer" },
+            "missing": { "type": "integer" },
+            "distinct": { "type": "integer" },
+            "constant": { "type": "boolean" },
+            "numeric": {
+              "type": ["object", "null"],
+              "required": ["min", "q1", "median", "q3", "max", "mean", "std", "outliers", "histogram"],
+              "properties": {
+                "min": { "type": ["number", "null"] }, "q1": { "type": ["number", "null"] }, "median": { "type": ["number", "null"] },
+                "q3": { "type": ["number", "null"] }, "max": { "type": ["number", "null"] }, "mean": { "type": ["number", "null"] },
+                "std": { "type": ["number", "null"] }, "outliers": { "type": "integer" },
+                "histogram": {
+                  "type": "object",
+                  "required": ["scale", "start", "width", "counts"],
+                  "properties": {
+                    "scale": { "enum": ["linear", "log10"] },
+                    "start": { "type": "number" },
+                    "width": { "type": "number" },
+                    "counts": { "type": "array", "items": { "type": "integer" } }
+                  }
+                }
+              }
+            },
+            "top": {
+              "type": ["array", "null"],
+              "items": { "type": "object", "required": ["value", "count"], "properties": { "value": { "type": "string" }, "count": { "type": "integer" } } }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,12 +9,14 @@
 import { useEffect, useState } from "react";
 import type { OperationType, OverlayOpEntry } from "@/lib/data-api";
 import { useDataOpsStore } from "@/stores/data-ops-store";
+import { tx, useL } from "@/lib/i18n";
 
 interface Props {
   datasetId: string;
 }
 
 export default function AppliedStepsWindow({ datasetId }: Props) {
+  const L = useL();
   const overlay = useDataOpsStore((s) => s.getOverlay(datasetId));
   const loadOverlay = useDataOpsStore((s) => s.loadOverlay);
   const undo = useDataOpsStore((s) => s.undo);
@@ -50,7 +52,7 @@ export default function AppliedStepsWindow({ datasetId }: Props) {
   if (!overlay) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
       </div>
     );
   }
@@ -58,26 +60,26 @@ export default function AppliedStepsWindow({ datasetId }: Props) {
   const hasSteps = overlay.ops.length > 0 || overlay.redo_stack.length > 0;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-zinc-900 text-xs">
+    <div className="flex h-full flex-col overflow-hidden bg-app text-xs">
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
-        {!hasSteps && <p className="py-4 text-center text-zinc-600">No operations applied yet.</p>}
+        {!hasSteps && <p className="py-4 text-center text-subtle">{L({ es: "Aún no se han aplicado operaciones.", en: "No operations applied yet." })}</p>}
 
         {overlay.ops.map((op, i) => {
           const isLast = i === overlay.ops.length - 1;
           return (
-            <div key={op.id} className="flex items-center gap-2 border-b border-zinc-850 py-1.5">
-              <span className="w-5 shrink-0 text-right font-mono text-zinc-600">{i + 1}</span>
+            <div key={op.id} className="flex items-center gap-2 border-b border-line py-1.5">
+              <span className="w-5 shrink-0 text-right font-mono text-subtle">{i + 1}</span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-zinc-200">{describeOperation(op)}</p>
-                <p className="text-[10px] text-zinc-600">{new Date(op.applied_at).toLocaleTimeString()}</p>
+                <p className="truncate text-fg">{describeOperation(op)}</p>
+                <p className="text-[10px] text-subtle">{new Date(op.applied_at).toLocaleTimeString()}</p>
               </div>
               {!isLast && (
                 <button
                   onClick={() => undoToStep(i)}
                   disabled={busy}
-                  className="shrink-0 rounded border border-zinc-700 px-2 py-0.5 text-zinc-400 hover:bg-zinc-700 disabled:opacity-40"
+                  className="shrink-0 rounded border border-line px-2 py-0.5 text-muted hover:bg-hover disabled:opacity-40"
                 >
-                  Undo to here
+                  {L({ es: "Deshacer hasta aquí", en: "Undo to here" })}
                 </button>
               )}
             </div>
@@ -85,22 +87,22 @@ export default function AppliedStepsWindow({ datasetId }: Props) {
         })}
 
         {overlay.redo_stack.length > 0 && (
-          <p className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-zinc-600">Undone (redo available)</p>
+          <p className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-subtle">{L({ es: "Deshecho (se puede rehacer)", en: "Undone (redo available)" })}</p>
         )}
         {[...overlay.redo_stack].reverse().map((op, i, arr) => {
           const forwardIndex = arr.length - 1 - i; // index within redo_stack from the bottom
           return (
-            <div key={op.id} className="flex items-center gap-2 border-b border-dashed border-zinc-850 py-1.5 opacity-50">
-              <span className="w-5 shrink-0 text-right font-mono text-zinc-600">↷</span>
+            <div key={op.id} className="flex items-center gap-2 border-b border-dashed border-line py-1.5 opacity-50">
+              <span className="w-5 shrink-0 text-right font-mono text-subtle">↷</span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-zinc-400">{describeOperation(op)}</p>
+                <p className="truncate text-muted">{describeOperation(op)}</p>
               </div>
               <button
                 onClick={() => redoToStep(forwardIndex)}
                 disabled={busy}
-                className="shrink-0 rounded border border-zinc-700 px-2 py-0.5 text-zinc-400 hover:bg-zinc-700 disabled:opacity-40"
+                className="shrink-0 rounded border border-line px-2 py-0.5 text-muted hover:bg-hover disabled:opacity-40"
               >
-                Redo to here
+                {L({ es: "Rehacer hasta aquí", en: "Redo to here" })}
               </button>
             </div>
           );
@@ -115,17 +117,17 @@ function describeOperation(op: OverlayOpEntry): string {
   const type = op.type as OperationType;
   switch (type) {
     case "rename_column":
-      return `Renamed "${p.column}" → "${p.new_name}"`;
+      return tx({ es: `Renombrada "${p.column}" → "${p.new_name}"`, en: `Renamed "${p.column}" → "${p.new_name}"` });
     case "hide_column":
-      return `Hid column "${p.column}"`;
+      return tx({ es: `Columna oculta "${p.column}"`, en: `Hid column "${p.column}"` });
     case "unhide_column":
-      return `Unhid column "${p.column}"`;
+      return tx({ es: `Columna mostrada "${p.column}"`, en: `Unhid column "${p.column}"` });
     case "drop_column":
-      return `Dropped column "${p.column}"`;
+      return tx({ es: `Columna eliminada "${p.column}"`, en: `Dropped column "${p.column}"` });
     case "change_dtype":
-      return `Changed type of "${p.column}" to ${p.new_dtype}`;
+      return tx({ es: `Tipo de "${p.column}" cambiado a ${p.new_dtype}`, en: `Changed type of "${p.column}" to ${p.new_dtype}` });
     case "add_calculated_column":
-      return `Added calculated column "${p.name}" (${p.formula})`;
+      return tx({ es: `Columna calculada agregada "${p.name}" (${p.formula})`, en: `Added calculated column "${p.name}" (${p.formula})` });
     default:
       return String(type);
   }

@@ -103,8 +103,9 @@ def _prepare(df, config, roles):
 
 
 def _idw(xy, values, config):
-    crs = CRS.from_epsg(config.epsg)
-    if not crs.is_projected:
+    # epsg None: local grid in its own (metric) units, no CRS to check.
+    crs = CRS.from_epsg(config.epsg) if config.epsg is not None else None
+    if crs is not None and not crs.is_projected:
         raise ValueError('IDW requiere coordenadas proyectadas; longitud/latitud en grados no es válida')
     points,inverse = np.unique(xy,axis=0,return_inverse=True)
     counts = np.bincount(inverse)
@@ -132,7 +133,7 @@ def _idw(xy, values, config):
     predicted[hull.find_simplex(targets) < 0] = np.nan
     grid = predicted.reshape(len(gy),len(gx))
     return dict(x=gx.tolist(),y=gy.tolist(),z=[[float(v) if np.isfinite(v) else None for v in line] for line in grid],
-                epsg=config.epsg,coordinate_unit=crs.axis_info[0].unit_name), dict(
+                epsg=config.epsg,coordinate_unit=crs.axis_info[0].unit_name if crs is not None else None), dict(
                 unique_locations=len(points),duplicate_locations=len(xy)-len(points),
                 supported_cells=int(np.isfinite(grid).sum()),total_cells=int(grid.size))
 

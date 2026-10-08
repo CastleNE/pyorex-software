@@ -11,6 +11,7 @@ import { getRows } from "@/lib/data-api";
 import { needsValue, needsValue2, opsForDtype } from "@/lib/filter-ops";
 import { useDataOpsStore } from "@/stores/data-ops-store";
 import { useDatasetStore } from "@/stores/dataset-store";
+import { useL } from "@/lib/i18n";
 
 interface Props {
   datasetId: string;
@@ -29,6 +30,7 @@ interface DraftCondition {
 let nextKey = 1;
 
 export default function FilterBuilderWindow({ datasetId }: Props) {
+  const L = useL();
   const dataset = useDatasetStore((s) => s.dataset);
   const view = useDataOpsStore((s) => s.getView(datasetId));
   const setFilters = useDataOpsStore((s) => s.setFilters);
@@ -118,22 +120,24 @@ export default function FilterBuilderWindow({ datasetId }: Props) {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-zinc-900 text-xs">
-      <div className="flex shrink-0 items-center gap-2 border-b border-zinc-800 px-3 py-2">
-        <span className="text-zinc-500">Match</span>
+    <div className="flex h-full flex-col overflow-hidden bg-app text-xs">
+      <div className="flex shrink-0 items-center gap-2 border-b border-line px-3 py-2">
+        <span className="text-subtle">{L({ es: "Coincidir", en: "Match" })}</span>
         <SegmentedToggle
           value={combinator}
           onChange={setCombinator}
           options={[
-            { value: "and", label: "ALL (AND)" },
-            { value: "or", label: "ANY (OR)" },
+            { value: "and", label: L({ es: "TODAS (AND)", en: "ALL (AND)" }) },
+            { value: "or", label: L({ es: "ALGUNA (OR)", en: "ANY (OR)" }) },
           ]}
         />
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
         {draft.length === 0 && (
-          <p className="py-4 text-center text-zinc-600">No conditions yet — add one below.</p>
+          <p className="py-4 text-center text-subtle">
+            {L({ es: "Aún no hay condiciones: agrega una abajo.", en: "No conditions yet — add one below." })}
+          </p>
         )}
         <div className="flex flex-col gap-2">
           {draft.map((d) => {
@@ -141,14 +145,14 @@ export default function FilterBuilderWindow({ datasetId }: Props) {
             const ops = opsForDtype(dtype);
             const isNumeric = dtype === "numeric";
             return (
-              <div key={d.key} className="flex items-center gap-1.5 rounded border border-zinc-800 bg-zinc-850 p-1.5">
+              <div key={d.key} className="flex items-center gap-1.5 rounded border border-line bg-panel p-1.5">
                 <select
                   value={d.column}
                   onChange={(e) => {
                     const col = e.target.value;
                     updateCondition(d.key, { column: col, op: opsForDtype(dtypeOf(col))[0].value, value: "", value2: "" });
                   }}
-                  className="w-32 rounded border border-zinc-700 bg-zinc-800 px-1.5 py-1 text-zinc-200"
+                  className="w-32 rounded border border-line bg-raised px-1.5 py-1 text-fg"
                 >
                   {columns.map((c) => (
                     <option key={c.name} value={c.name}>
@@ -159,7 +163,7 @@ export default function FilterBuilderWindow({ datasetId }: Props) {
                 <select
                   value={d.op}
                   onChange={(e) => updateCondition(d.key, { op: e.target.value as FilterOp })}
-                  className="w-32 rounded border border-zinc-700 bg-zinc-800 px-1.5 py-1 text-zinc-200"
+                  className="w-32 rounded border border-line bg-raised px-1.5 py-1 text-fg"
                 >
                   {ops.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -172,8 +176,8 @@ export default function FilterBuilderWindow({ datasetId }: Props) {
                     type={isNumeric ? "number" : "text"}
                     value={d.value}
                     onChange={(e) => updateCondition(d.key, { value: e.target.value })}
-                    placeholder="valor"
-                    className="w-24 rounded border border-zinc-700 bg-zinc-800 px-1.5 py-1 text-zinc-200"
+                    placeholder={L({ es: "valor", en: "value" })}
+                    className="w-24 rounded border border-line bg-raised px-1.5 py-1 text-fg"
                   />
                 )}
                 {needsValue2(d.op) && (
@@ -181,14 +185,14 @@ export default function FilterBuilderWindow({ datasetId }: Props) {
                     type={isNumeric ? "number" : "text"}
                     value={d.value2}
                     onChange={(e) => updateCondition(d.key, { value2: e.target.value })}
-                    placeholder="valor 2"
-                    className="w-24 rounded border border-zinc-700 bg-zinc-800 px-1.5 py-1 text-zinc-200"
+                    placeholder={L({ es: "valor 2", en: "value 2" })}
+                    className="w-24 rounded border border-line bg-raised px-1.5 py-1 text-fg"
                   />
                 )}
                 <button
                   onClick={() => removeCondition(d.key)}
-                  title="Remove condition"
-                  className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded text-zinc-500 hover:bg-zinc-700 hover:text-red-400"
+                  title={L({ es: "Quitar condición", en: "Remove condition" })}
+                  className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded text-subtle hover:bg-hover hover:text-danger"
                 >
                   ✕
                 </button>
@@ -199,22 +203,29 @@ export default function FilterBuilderWindow({ datasetId }: Props) {
         <button
           onClick={addCondition}
           disabled={columns.length === 0}
-          className="mt-2 w-full rounded border border-dashed border-zinc-700 py-1.5 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-2 w-full rounded border border-dashed border-line py-1.5 text-muted hover:border-line-strong hover:text-fg disabled:cursor-not-allowed disabled:opacity-40"
         >
-          + Add condition
+          {L({ es: "+ Agregar condición", en: "+ Add condition" })}
         </button>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 border-t border-zinc-800 px-3 py-2">
-        <span className="text-zinc-500">
-          {counting ? "Counting…" : matchCount !== null ? `${matchCount.toLocaleString()} rows match` : ""}
+      <div className="flex shrink-0 items-center gap-2 border-t border-line px-3 py-2">
+        <span className="text-subtle">
+          {counting
+            ? L({ es: "Contando…", en: "Counting…" })
+            : matchCount !== null
+              ? L({
+                  es: `${matchCount.toLocaleString()} filas coinciden`,
+                  en: `${matchCount.toLocaleString()} rows match`,
+                })
+              : ""}
         </span>
         <div className="ml-auto flex gap-1.5">
-          <button onClick={clearAll} className="rounded border border-zinc-700 px-2.5 py-1 text-zinc-400 hover:bg-zinc-700">
-            Clear all
+          <button onClick={clearAll} className="rounded border border-line px-2.5 py-1 text-muted hover:bg-hover">
+            {L({ es: "Limpiar todo", en: "Clear all" })}
           </button>
-          <button onClick={apply} className="rounded bg-blue-600 px-3 py-1 font-medium text-white hover:bg-blue-500">
-            Apply
+          <button onClick={apply} className="rounded bg-accent-strong px-3 py-1 font-medium text-white hover:bg-accent-hover">
+            {L({ es: "Aplicar", en: "Apply" })}
           </button>
         </div>
       </div>
@@ -232,13 +243,13 @@ function SegmentedToggle<T extends string>({
   options: { value: T; label: string }[];
 }) {
   return (
-    <div className="flex overflow-hidden rounded border border-zinc-700">
+    <div className="flex overflow-hidden rounded border border-line">
       {options.map((o) => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
           className={`px-2.5 py-1 text-[11px] font-medium transition-colors ${
-            value === o.value ? "bg-blue-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700"
+            value === o.value ? "bg-accent-strong text-white" : "bg-raised text-muted hover:bg-hover"
           }`}
         >
           {o.label}

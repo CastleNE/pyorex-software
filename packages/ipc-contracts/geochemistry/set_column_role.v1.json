@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "geochemistry.set_column_role.v1",
+  "version": "v1",
+  "method": "geochemistry.set_column_role",
+  "description": "User correction of one column's semantic role (and analyte) for a dataset. Stored in the dataset metadata (semantic_overrides); applied by geochemistry.column_roles with source='user' and confidence 'high'. semantic_role null removes the correction. Never reads or changes a value.",
+  "request": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "dataset_id",
+      "column",
+      "semantic_role"
+    ],
+    "properties": {
+      "dataset_id": {
+        "type": "string"
+      },
+      "column": {
+        "type": "string"
+      },
+      "semantic_role": {
+        "enum": [
+          "sample_id",
+          "hole_id",
+          "row_index",
+          "depth",
+          "depth_from",
+          "depth_to",
+          "easting",
+          "northing",
+          "elevation",
+          "longitude",
+          "latitude",
+          "major_oxide",
+          "trace_element",
+          "ree",
+          "assay",
+          "ratio",
+          "categorical",
+          "numeric_generic",
+          "unknown",
+          null
+        ]
+      },
+      "analyte": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "Only for major_oxide, trace_element, ree or assay; must belong to that role's vocabulary."
+      }
+    }
+  },
+  "response": {
+    "$ref": "geochemistry.column_roles.v1#/response",
+    "description": "Same response as geochemistry.column_roles, after applying the correction."
+  }
+}

@@ -11,6 +11,7 @@ import type { WorkspaceAreaHandle } from "@/components/window-manager/types";
 import { classifyColumns } from "@/lib/variable-classification";
 import { qaqcCalculate, type QaqcCalculateResult } from "@/lib/data-api";
 import { useDatasetStore } from "@/stores/dataset-store";
+import { useL } from "@/lib/i18n";
 
 interface Props {
   datasetId: string;
@@ -18,13 +19,14 @@ interface Props {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  pass: "text-emerald-400",
-  warning: "text-amber-400",
-  fail: "text-red-400",
-  critical: "text-red-400",
+  pass: "text-success",
+  warning: "text-warning",
+  fail: "text-danger",
+  critical: "text-danger",
 };
 
 export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
+  const L = useL();
   const dataset = useDatasetStore((s) => s.dataset);
   const [result, setResult] = useState<QaqcCalculateResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
     const id = `qaqc-chart-${crmName}-${variable}`;
     workspaceRef.current?.openWindow({
       id,
-      title: `Control Chart — ${crmName} / ${variable}`,
+      title: `${L({ es: "Gráfico de control", en: "Control Chart" })} — ${crmName} / ${variable}`,
       icon: "📈",
       defaultPos: { x: 80, y: 60, width: 520, height: 420 },
       render: () => <QaqcControlChartWindow datasetId={datasetId} crmName={crmName} variable={variable} />,
@@ -64,7 +66,7 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
   function openCrmLibrary() {
     workspaceRef.current?.openWindow({
       id: "crm-library",
-      title: "CRM Library",
+      title: L({ es: "Biblioteca de MRC (CRM)", en: "CRM Library" }),
       icon: "🧪",
       defaultPos: { x: 40, y: 30, width: 560, height: 420 },
       render: () => <CrmLibraryWindow />,
@@ -74,16 +76,16 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
       </div>
     );
   }
   if (error) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-xs">
-        <p className="text-red-400">Failed to load QAQC data</p>
-        <p className="font-mono text-zinc-600">{error}</p>
-        <button onClick={load} className="text-blue-400 hover:underline">Retry</button>
+        <p className="text-danger">{L({ es: "No se pudieron cargar los datos QAQC", en: "Failed to load QAQC data" })}</p>
+        <p className="font-mono text-subtle">{error}</p>
+        <button onClick={load} className="text-accent-fg hover:underline">{L({ es: "Reintentar", en: "Retry" })}</button>
       </div>
     );
   }
@@ -91,8 +93,8 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-center text-xs">
         <div className="text-3xl opacity-20">🧪</div>
-        <p className="text-zinc-500">{result?.reason ?? "QAQC no disponible para este dataset."}</p>
-        <p className="text-zinc-700">Reimportá el dataset asignando la columna "Sample Type / QAQC" en el wizard.</p>
+        <p className="text-subtle">{result?.reason ?? L({ es: "QAQC no disponible para este dataset.", en: "QAQC is not available for this dataset." })}</p>
+        <p className="text-subtle">{L({ es: 'Reimportá el dataset asignando la columna "Sample Type / QAQC" en el wizard.', en: 'Re-import the dataset assigning the "Sample Type / QAQC" column in the wizard.' })}</p>
       </div>
     );
   }
@@ -100,16 +102,16 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
   const summary = result.summary!;
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto bg-zinc-900 p-3 text-xs">
+    <div className="flex h-full flex-col overflow-y-auto bg-app p-3 text-xs">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-zinc-500">Generated {new Date(result.generated_at!).toLocaleString()}</p>
-        <button onClick={openCrmLibrary} className="text-blue-400 hover:underline">
-          Manage CRM Library
+        <p className="text-subtle">{L({ es: "Generado", en: "Generated" })} {new Date(result.generated_at!).toLocaleString()}</p>
+        <button onClick={openCrmLibrary} className="text-accent-fg hover:underline">
+          {L({ es: "Gestionar biblioteca de MRC (CRM)", en: "Manage CRM Library" })}
         </button>
       </div>
 
       {result.warnings && result.warnings.length > 0 && (
-        <div className="mb-3 space-y-1 rounded-md border border-amber-800/60 bg-amber-950/40 px-3 py-2 text-amber-300">
+        <div className="mb-3 space-y-1 rounded-md border border-warning-line/60 bg-warning-soft/40 px-3 py-2 text-warning">
           {result.warnings.map((w, i) => (
             <p key={i}>⚠ {w}</p>
           ))}
@@ -127,13 +129,13 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
         ))}
       </div>
 
-      <QaqcSection title={`Blanks (${result.blank_flags?.length ?? 0})`}>
+      <QaqcSection title={`${L({ es: "Blancos", en: "Blanks" })} (${result.blank_flags?.length ?? 0})`}>
         {(result.blank_flags ?? []).length === 0 ? (
           <EmptyRow />
         ) : (
-          <Table headers={["Sample", "Type", "Variable", "Value", "Threshold", "Severity", ""]}>
+          <Table headers={[L({ es: "Muestra", en: "Sample" }), L({ es: "Tipo", en: "Type" }), L({ es: "Variable", en: "Variable" }), L({ es: "Valor", en: "Value" }), L({ es: "Umbral", en: "Threshold" }), L({ es: "Severidad", en: "Severity" }), ""]}>
             {result.blank_flags!.map((f, i) => (
-              <tr key={i} className="border-t border-zinc-800">
+              <tr key={i} className="border-t border-line">
                 <td className="px-2 py-1">{f.sample_id}</td>
                 <td className="px-2 py-1">{f.sample_type}</td>
                 <td className="px-2 py-1">{f.variable}</td>
@@ -141,8 +143,8 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
                 <td className="px-2 py-1">{f.threshold.toFixed(3)}</td>
                 <td className={`px-2 py-1 font-medium ${STATUS_BADGE[f.severity]}`}>{f.severity}</td>
                 <td className="px-2 py-1">
-                  <button disabled title="Manual override + audit trail — coming soon" className="text-zinc-700">
-                    Override
+                  <button disabled title={L({ es: "Anulación manual + registro de auditoría — próximamente", en: "Manual override + audit trail — coming soon" })} className="text-subtle">
+                    {L({ es: "Anular", en: "Override" })}
                   </button>
                 </td>
               </tr>
@@ -151,13 +153,13 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
         )}
       </QaqcSection>
 
-      <QaqcSection title={`Duplicates (${result.duplicate_pairs?.length ?? 0})`}>
+      <QaqcSection title={`${L({ es: "Duplicados", en: "Duplicates" })} (${result.duplicate_pairs?.length ?? 0})`}>
         {(result.duplicate_pairs ?? []).length === 0 ? (
           <EmptyRow />
         ) : (
-          <Table headers={["Original", "Duplicate", "Type", "Failed vars", "Status"]}>
+          <Table headers={[L({ es: "Original", en: "Original" }), L({ es: "Duplicado", en: "Duplicate" }), L({ es: "Tipo", en: "Type" }), L({ es: "Variables fallidas", en: "Failed vars" }), L({ es: "Estado", en: "Status" })]}>
             {result.duplicate_pairs!.map((p, i) => (
-              <tr key={i} className="border-t border-zinc-800">
+              <tr key={i} className="border-t border-line">
                 <td className="px-2 py-1">{p.original_id}</td>
                 <td className="px-2 py-1">{p.duplicate_id}</td>
                 <td className="px-2 py-1">{p.dup_type}</td>
@@ -173,9 +175,9 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
         {(result.crm_results ?? []).length === 0 ? (
           <EmptyRow />
         ) : (
-          <Table headers={["Sample", "CRM", "Failed vars", "Status", ""]}>
+          <Table headers={[L({ es: "Muestra", en: "Sample" }), "CRM", L({ es: "Variables fallidas", en: "Failed vars" }), L({ es: "Estado", en: "Status" }), ""]}>
             {result.crm_results!.map((r, i) => (
-              <tr key={i} className="border-t border-zinc-800">
+              <tr key={i} className="border-t border-line">
                 <td className="px-2 py-1">{r.sample_id}</td>
                 <td className="px-2 py-1">{r.crm_name}</td>
                 <td className="px-2 py-1">{r.failed_variables.join(", ") || "—"}</td>
@@ -185,9 +187,9 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
                     <button
                       key={v}
                       onClick={() => openControlChart(r.crm_name, v)}
-                      className="mr-2 text-blue-400 hover:underline"
+                      className="mr-2 text-accent-fg hover:underline"
                     >
-                      {v} chart
+                      {L({ es: `Gráfico ${v}`, en: `${v} chart` })}
                     </button>
                   ))}
                 </td>
@@ -197,8 +199,8 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
         )}
       </QaqcSection>
 
-      <div className="mt-2 flex gap-3 text-zinc-700">
-        <button disabled title="PDF export — blocked on PDF engine ADR">Export PDF</button>
+      <div className="mt-2 flex gap-3 text-subtle">
+        <button disabled title={L({ es: "Exportación PDF — bloqueada por el ADR del motor PDF", en: "PDF export — blocked on PDF engine ADR" })}>{L({ es: "Exportar PDF", en: "Export PDF" })}</button>
       </div>
     </div>
   );
@@ -207,7 +209,7 @@ export default function QaqcPanel({ datasetId, workspaceRef }: Props) {
 function QaqcSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <p className="mb-1 font-semibold text-zinc-300">{title}</p>
+      <p className="mb-1 font-semibold text-fg">{title}</p>
       {children}
     </div>
   );
@@ -215,9 +217,9 @@ function QaqcSection({ title, children }: { title: string; children: React.React
 
 function Table({ headers, children }: { headers: string[]; children: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-md border border-zinc-700">
+    <div className="overflow-x-auto rounded-md border border-line">
       <table className="min-w-full">
-        <thead className="bg-zinc-850 text-zinc-400">
+        <thead className="bg-panel text-muted">
           <tr>
             {headers.map((h) => (
               <th key={h} className="px-2 py-1.5 text-left font-semibold whitespace-nowrap">{h}</th>
@@ -231,5 +233,6 @@ function Table({ headers, children }: { headers: string[]; children: React.React
 }
 
 function EmptyRow() {
-  return <p className="text-zinc-600">No hay registros.</p>;
+  const L = useL();
+  return <p className="text-subtle">{L({ es: "No hay registros.", en: "No records." })}</p>;
 }

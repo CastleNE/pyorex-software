@@ -152,6 +152,8 @@ export interface ImportedDatasetMeta {
 
 export interface DatasetRowsResult {
   columns: string[];
+  /** Position of each row in the effective dataset = row_index of analysis results (linked selection). */
+  row_indices: number[];
   rows: Record<string, unknown>[];
   total_rows: number;
   total_rows_unfiltered: number;
@@ -287,6 +289,8 @@ export function getRows(
     combinator?: FilterCombinator;
     sort?: RowSort | null;
     includeHidden?: boolean;
+    /** Only these row indices (the selection shared with the chart windows). */
+    onlyRows?: number[] | null;
   } = {}
 ): Promise<DatasetRowsResult> {
   return callRpc("data.rows", {
@@ -297,6 +301,36 @@ export function getRows(
     filter_combinator: opts.combinator ?? "and",
     sort: opts.sort ?? null,
     include_hidden: opts.includeHidden ?? false,
+    ...(opts.onlyRows ? { only_rows: opts.onlyRows } : {}),
+  });
+}
+
+// ── Column profile (Tabla y preparación) ─────────────────────────────────────
+
+export interface ColumnHistogram { scale: "linear" | "log10"; start: number; width: number; counts: number[] }
+export interface NumericProfile {
+  min: number | null; q1: number | null; median: number | null; q3: number | null; max: number | null;
+  mean: number | null; std: number | null; outliers: number; histogram: ColumnHistogram;
+}
+export interface ColumnProfile {
+  name: string;
+  kind: "numeric" | "text" | "datetime" | "boolean" | "other";
+  valid: number; below_lod: number; not_analyzed: number; missing: number; distinct: number; constant: boolean;
+  numeric: NumericProfile | null;
+  top: { value: string; count: number }[] | null;
+}
+export interface DataProfile { dataset_id: string; rows: number; total_rows: number; columns: ColumnProfile[] }
+
+/** Per-column summary of the rows the grid shows (same filters and selection as getRows); computed in Python. */
+export function getProfile(
+  datasetId: string,
+  opts: { filters?: RowFilter[]; combinator?: FilterCombinator; onlyRows?: number[] | null } = {}
+): Promise<DataProfile> {
+  return callRpc("data.profile", {
+    dataset_id: datasetId,
+    filters: opts.filters ?? [],
+    filter_combinator: opts.combinator ?? "and",
+    ...(opts.onlyRows ? { only_rows: opts.onlyRows } : {}),
   });
 }
 

@@ -12,6 +12,7 @@ import type { GeoRegistry,GeoRegistryTool,GeoTool } from './geochemistry-api';
 import { assertRegistry,diagramFamilies,familyLabel,familyOf,missingFromCatalog,offersCapability,toolForFamily } from './geochemistry-registry';
 import { DiagramsNavView,type DiagramsNavProps } from '../components/geochemistry/DiagramsNav';
 import { useGeoRegistryStore } from '../stores/geochemistry-registry-store';
+import { useLangStore } from './i18n';
 import { useGeochemistryStore } from '../stores/geochemistry-store';
 
 const call=vi.mocked(callRpc);
@@ -133,6 +134,7 @@ describe('DIAGRAMS navigation built from the registry',()=>{
 });
 
 describe('rendered navigation',()=>{
+  beforeEach(()=>useLangStore.setState({lang:'es'}));
   it('shows Familia and Herramienta selects for the default scatter selection, and no chip row',()=>{
     const html=renderToStaticMarkup(DiagramsNavView(ready()) as ReactElement);
     expect(html).toContain('Familia');
@@ -149,6 +151,12 @@ describe('rendered navigation',()=>{
     for(const label of ['Histograma','Tukey · cajas y bigotes','Q–Q normal','Probabilidad normal','Probabilidad acumulada (ECDF)'])expect(html).toContain(label);
     expect(html).not.toContain('Dispersión XY');
     expect(html).toMatch(/<option value="distribution" selected="">Distribución<\/option>/);
+  });
+  it('shows the English tool names when the interface is in English',()=>{
+    useLangStore.setState({lang:'en'});
+    const html=renderToStaticMarkup(DiagramsNavView(ready({selectedTool:'histogram'})) as ReactElement);
+    for(const label of ['Histogram','Tukey · box and whiskers','Normal Q–Q','Cumulative probability (ECDF)'])expect(html).toContain(label);
+    expect(html).not.toContain('Tukey · cajas y bigotes');
   });
   it('offers the four families, and no others',()=>{
     expect(optionValues(selectNamed(ready(),'Familia de diagrama'))).toEqual(['distribution','xy','compositional','profiles']);

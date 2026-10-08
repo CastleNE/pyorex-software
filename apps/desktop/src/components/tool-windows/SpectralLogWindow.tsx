@@ -4,19 +4,14 @@
  * fresh, so editing an interpretation is reflected automatically.
  */
 import { useEffect, useState } from "react";
-import Plot from "react-plotly.js";
-import { DARK_BG, FONT_COLOR, GRID_COLOR } from "@/components/analysis-results/shared";
+import Plot from "@/components/ThemedPlot";
+import { mineralColor } from "@/lib/mineral-colors";
+import { GRID_COLOR } from "@/components/analysis-results/shared";
 import { getSpectralLogData, type SpectralSample, type SpectrumInterpretation } from "@/lib/spectrometry-api";
 import { useSpectrometryStore } from "@/stores/spectrometry-store";
 
-const MINERAL_COLORS: Record<string, string> = {};
-const PALETTE = ["#60a5fa", "#34d399", "#facc15", "#f87171", "#a78bfa", "#fb923c", "#22d3ee"];
-function colorFor(label: string): string {
-  if (!MINERAL_COLORS[label]) {
-    MINERAL_COLORS[label] = PALETTE[Object.keys(MINERAL_COLORS).length % PALETTE.length];
-  }
-  return MINERAL_COLORS[label];
-}
+// Fixed alteration-mineral colours (design system `min-*`), stable across windows.
+const colorFor = (label: string) => mineralColor(label);
 
 export default function SpectralLogWindow() {
   const { activeProject } = useSpectrometryStore();
@@ -51,35 +46,44 @@ export default function SpectralLogWindow() {
   const interpByample = new Map(interpretations.map((it) => [it.sample_id, it]));
   const sorted = [...samples].sort((a, b) => (a.from_m ?? 0) - (b.from_m ?? 0));
 
+  // One trace per mineral so the legend doubles as the mineral key.
+  const byMineral = new Map<string, SpectralSample[]>();
+  for (const s of sorted) {
+    const label = interpByample.get(s.sample_id)?.primary_mineral ?? "Unclassified";
+    byMineral.set(label, [...(byMineral.get(label) ?? []), s]);
+  }
+  const stripTraces = [...byMineral.entries()].map(([label, rows]) => ({
+    type: "bar" as const,
+    orientation: "h" as const,
+    name: label,
+    y: rows.map((s) => ((s.from_m ?? 0) + (s.to_m ?? 0)) / 2),
+    x: rows.map(() => 1),
+    base: rows.map(() => 0),
+    width: rows.map((s) => (s.to_m ?? 0) - (s.from_m ?? 0)),
+    marker: { color: colorFor(label), line: { width: 0 } },
+    hovertext: rows.map((s) => `${s.sample_id} · ${s.from_m}–${s.to_m} m · ${label}`),
+    hoverinfo: "text" as const,
+  }));
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-zinc-900 text-xs">
       <div className="flex shrink-0 items-center justify-between border-b border-zinc-700 px-2 py-1.5">
-        <p className="text-zinc-500">{sorted.length} interval(s)</p>
-        <button onClick={load} className="text-blue-400 hover:underline">Refresh</button>
+        <p className="text-muted"><span className="tabular font-mono">{sorted.length}</span> intervalos · color = mineral principal</p>
+        <button onClick={load} className="text-accent-fg hover:underline">Actualizar</button>
       </div>
       <div className="flex-1 overflow-hidden p-2">
         <Plot
-          data={sorted.map((s) => {
-            const it = interpByample.get(s.sample_id);
-            const label = it?.primary_mineral ?? "Unclassified";
-            return {
-              type: "bar" as const,
-              orientation: "h" as const,
-              name: label,
-              y: [((s.from_m ?? 0) + (s.to_m ?? 0)) / 2],
-              x: [(s.to_m ?? 0) - (s.from_m ?? 0)],
-              base: [s.from_m ?? 0],
-              marker: { color: colorFor(label) },
-              hovertext: `${s.sample_id}: ${label}`,
-              showlegend: false,
-              width: [(s.to_m ?? 0) - (s.from_m ?? 0)],
-            };
-          })}
+          data={stripTraces}
           layout={{
-            paper_bgcolor: DARK_BG, plot_bgcolor: DARK_BG, font: { color: FONT_COLOR, size: 10 },
-            margin: { t: 10, r: 10, b: 40, l: 60 }, barmode: "overlay",
-            xaxis: { title: { text: "Primary mineral (bar length arbitrary)" }, gridcolor: GRID_COLOR },
-            yaxis: { title: { text: "Depth (m)" }, gridcolor: GRID_COLOR, autorange: "reversed" },
+            margin: { t: 10, r: 10, b: 10, l: 60 },
+            barmode: "overlay",
+            bargap: 0,
+            showlegend: true,
+            legend: { orientation: "v", x: 1.02, y: 1, font: { size: 11 } },
+            hovermode: "closest",
+            // A strip log: one column, colour = primary mineral (design-system min-* palette).
+            xaxis: { visible: false, range: [0, 1], fixedrange: true },
+            yaxis: { title: { text: "Profundidad (m)" }, gridcolor: GRID_COLOR, autorange: "reversed", zeroline: false },
           }}
           config={{ responsive: true, displaylogo: false }}
           style={{ width: "100%", height: "100%" }}

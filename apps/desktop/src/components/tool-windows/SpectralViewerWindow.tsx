@@ -4,15 +4,18 @@
  * features, interpretations, quality, processing history.
  */
 import { useEffect, useMemo, useState } from "react";
-import Plot from "react-plotly.js";
+import Plot, { useChartTheme } from "@/components/ThemedPlot";
+import { spliceShapes } from "@/lib/chart-theme";
+import { SERIES } from "@/lib/mineral-colors";
 import { DARK_BG, FONT_COLOR, GRID_COLOR } from "@/components/analysis-results/shared";
 import { getSpectrum, listSamples, listSpectraForSample, type SpectralSample, type SpectrumDetail } from "@/lib/spectrometry-api";
 import { useSpectrometryStore } from "@/stores/spectrometry-store";
 
-const TRACE_COLORS = ["#60a5fa", "#34d399", "#facc15", "#f87171", "#a78bfa", "#fb923c"];
+const TRACE_COLORS = SERIES;
 
 export default function SpectralViewerWindow() {
   const { activeProject } = useSpectrometryStore();
+  const chartTheme = useChartTheme();
   const [samples, setSamples] = useState<SpectralSample[]>([]);
   const [search, setSearch] = useState("");
   const [selectedSpectrumIds, setSelectedSpectrumIds] = useState<string[]>([]);
@@ -57,6 +60,9 @@ export default function SpectralViewerWindow() {
 
   const activeDetails = selectedSpectrumIds.map((id) => spectraDetail[id]).filter((d): d is SpectrumDetail => !!d && d.available);
   const primary = activeDetails[0];
+  const plottedNm = activeDetails.flatMap((d) => (showProcessed ? d.processed_wavelength : d.raw_wavelength) ?? []);
+  const nmMin = plottedNm.length ? Math.min(...plottedNm) : 0;
+  const nmMax = plottedNm.length ? Math.max(...plottedNm) : 0;
 
   return (
     <div className="flex h-full overflow-hidden text-xs">
@@ -111,6 +117,8 @@ export default function SpectralViewerWindow() {
                 layout={{
                   paper_bgcolor: DARK_BG, plot_bgcolor: DARK_BG, font: { color: FONT_COLOR, size: 10 },
                   margin: { t: 10, r: 10, b: 40, l: 50 }, showlegend: true,
+                  // Detector splices shaded so instrument jumps aren't read as absorption features.
+                  shapes: plottedNm.length ? spliceShapes(nmMin, nmMax, chartTheme) : [],
                   xaxis: { title: { text: "Wavelength (nm)" }, gridcolor: GRID_COLOR },
                   yaxis: { title: { text: "Reflectance" }, gridcolor: GRID_COLOR },
                 }}

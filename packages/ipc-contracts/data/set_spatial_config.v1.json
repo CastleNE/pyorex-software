@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data.set_spatial_config.v1",
+  "version": "v1",
+  "method": "data.set_spatial_config",
+  "description": "Assign or correct a dataset's coordinate columns and CRS. Metadata only: values are never reprojected. projected_xy requires a projected CRS (validated with pyproj).",
+  "request": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "dataset_id",
+      "geometry_source"
+    ],
+    "properties": {
+      "dataset_id": {
+        "type": "string"
+      },
+      "geometry_source": {
+        "enum": [
+          "projected_xy",
+          "wgs84_lonlat",
+          "local_grid",
+          "none"
+        ]
+      },
+      "east_col": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "north_col": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "projected_epsg": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "description": "e.g. EPSG:32718"
+      },
+      "lon_col": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "lat_col": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "dataset"
+    ],
+    "properties": {
+      "dataset": {
+        "type": "object",
+        "description": "Dataset metadata as stored (storage.load_metadata)."
+      }
+    }
+  }
+}

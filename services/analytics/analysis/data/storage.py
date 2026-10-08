@@ -7,11 +7,15 @@ from __future__ import annotations
 import json
 import os
 import re
+import tempfile
+import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
 
 import polars as pl
+
+from analysis.licensing.plans import check_rows
 
 DATA_DIR = Path(os.getenv("PYOREX_DATA_DIR", "./data"))
 DATASETS_DIR = DATA_DIR / "datasets"
@@ -34,7 +38,11 @@ def _ensure_dirs() -> None:
 
 
 def save_dataset(df: pl.DataFrame, name: str, meta_extra: dict) -> str:
-    """Persist a DataFrame as Parquet + JSON metadata. Returns dataset_id."""
+    """Persist a DataFrame as Parquet + JSON metadata. Returns dataset_id.
+
+    Every way of creating a dataset passes through here, so the sample limit of the active plan is checked here.
+    """
+    check_rows(df.height)
     _ensure_dirs()
     dataset_id = str(uuid.uuid4())
     parquet_path = DATASETS_DIR / f"{dataset_id}.parquet"
@@ -93,6 +101,8 @@ def delete_dataset(dataset_id: str) -> bool:
     found = parquet_path.exists() or meta_path.exists()
     parquet_path.unlink(missing_ok=True)
     meta_path.unlink(missing_ok=True)
+    # The edit overlay belongs to the dataset: a leftover one would re-apply to a dataset restored with this id.
+    (DATASETS_DIR / f"{dataset_id}.ops.json").unlink(missing_ok=True)
     return found
 
 
@@ -106,3 +116,31 @@ def list_datasets() -> list[dict]:
         except Exception:
             pass
     return result
+
+
+_META_LOCK = threading.Lock()
+
+
+def mutate_metadata(dataset_id: str, change) -> dict:
+    """Read-modify-write a dataset's metadata under one lock: ``change(meta)`` returns the keys to merge.
+    The new JSON is written to a unique temp file, flushed and atomically moved into place. Never touches data."""
+    with _META_LOCK:
+        meta = load_metadata(dataset_id)
+        meta.update(change(meta))
+        meta_path = DATASETS_DIR / f"{dataset_id}.meta.json"
+        fd, tmp = tempfile.mkstemp(prefix=f".{dataset_id}.", suffix=".meta.tmp", dir=str(DATASETS_DIR))
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(json.dumps(meta, ensure_ascii=False, indent=2))
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp, meta_path)
+        except BaseException:
+            Path(tmp).unlink(missing_ok=True)
+            raise
+        return meta
+
+
+def update_metadata(dataset_id: str, patch: dict) -> dict:
+    """Merge ``patch`` into a dataset's metadata JSON (serialised, atomic). Never touches the Parquet data."""
+    return mutate_metadata(dataset_id, lambda _meta: patch)

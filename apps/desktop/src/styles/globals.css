@@ -1,7 +1,195 @@
 @import "tailwindcss";
 
+/*
+ * PyOrex design system — tokens (ADR-0007, .claude/memory/design-system.md).
+ *
+ * Two layers:
+ *   1. Semantic tokens (bg-app, bg-panel, text-fg, text-muted, border-line,
+ *      bg-accent-strong, text-warning, bg-min-illite…). NEW CODE USES THESE.
+ *   2. Transitional aliases: Tailwind's zinc / blue / red / amber / emerald /
+ *      sky scales are remapped to the PyOrex palette and follow the theme, so
+ *      the existing ~1 500 zinc and blue classes pick up the new look and the
+ *      light theme without touching every component. Migrate screens to
+ *      semantic tokens module by module; do not add new zinc and blue usages.
+ *
+ * Theme: dark is the default (no attribute). <html data-theme="light"> switches.
+ */
+
+@custom-variant dark (&:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *));
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+/* ── Fonts: IBM Plex, bundled locally (offline-first). OFL — see assets/fonts. ── */
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url("../assets/fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 500; font-display: swap; src: url("../assets/fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 600; font-display: swap; src: url("../assets/fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 700; font-display: swap; src: url("../assets/fonts/ibm-plex-sans-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("../assets/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("../assets/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+
+/* ── Raw palette per theme ─────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
+
+  /* brand (theme-independent) */
+  --px-navy-900: #0b1218;
+  --px-navy-800: #1e2b38;
+  --px-navy-700: #2e4357;
+  --px-navy-600: #354a5e;
+  --px-navy-300: #c3cdd8;
+  --px-teal-500: #21baa0;
+  --px-teal-700: #0f7a68;
+  --px-header: #0b1218;
+
+  /* neutral scale (dark = navy-tinted) */
+  --px-n-50: #f5f7f9;  --px-n-100: #e6edf3; --px-n-200: #d9e1e8; --px-n-300: #c3cdd8;
+  --px-n-400: #93a1b0; --px-n-500: #7d8b99; --px-n-600: #5a6b7d; --px-n-700: #283646;
+  --px-n-800: #1b2631; --px-n-850: #151e27; --px-n-900: #0f161d; --px-n-950: #0b1218;
+
+  /* accent scale (teal) */
+  --px-a-200: #a6f0df; --px-a-300: #5ee0c4; --px-a-400: #3fd0b4; --px-a-500: #12846f;
+  --px-a-600: #0f7a68; --px-a-700: #0b6656; --px-a-800: #1a4a43; --px-a-900: #14332f; --px-a-950: #0d2b27;
+
+  /* status */
+  --px-red-200: #fecaca; --px-red-300: #ff9b8f; --px-red-400: #ff8a7a; --px-red-500: #e5484d;
+  --px-red-800: #7a2219; --px-red-900: #4a1712; --px-red-950: #2a0f0c;
+  --px-amb-200: #fde4a8; --px-amb-300: #f7c56b; --px-amb-400: #f0b44c; --px-amb-500: #d98a00; --px-amb-600: #b86b00;
+  --px-amb-800: #6b4500; --px-amb-900: #4a3000; --px-amb-950: #2a1c00;
+  --px-grn-300: #8ce0b0; --px-grn-400: #5fd08f; --px-grn-500: #2fa865; --px-grn-600: #1f8a4c; --px-grn-700: #176b3a; --px-grn-900: #123d24;
+  --px-info-200: #c2d7ff; --px-info-300: #a3c4ff; --px-info-400: #8ab4ff; --px-info-500: #2563eb; --px-info-600: #1d4ed8; --px-info-950: #0f1d33;
+
+  /* charts (read by lib/chart-theme.ts) */
+  --px-chart-bg: #151e27;
+  --px-chart-grid: #283646;
+  --px-chart-font: #c3cdd8;
+  --px-chart-legend: #1b2631;
+  --px-chart-neutral: #93a1b0;
+  --px-chart-field: #4a5b6d;
+  --px-spec-splice: rgba(240, 180, 76, 0.10);
+
+  --px-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --px-shadow-2: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --px-header: #1e2b38;
+
+  --px-n-50: #121820;  --px-n-100: #1b2530; --px-n-200: #2a333d; --px-n-300: #36404b;
+  --px-n-400: #4f5b68; --px-n-500: #5f6b77; --px-n-600: #7a8794; --px-n-700: #d9dfe5;
+  --px-n-800: #e9edf1; --px-n-850: #ffffff; --px-n-900: #f5f7f9; --px-n-950: #ffffff;
+
+  --px-a-200: #0a5e4f; --px-a-300: #0b6b5a; --px-a-400: #0f7a68; --px-a-500: #12846f;
+  --px-a-600: #0f7a68; --px-a-700: #0b6656; --px-a-800: #c4ebe3; --px-a-900: #dff3ef; --px-a-950: #eef9f6;
+
+  --px-red-200: #8f1d14; --px-red-300: #a3241a; --px-red-400: #b42318; --px-red-500: #d1372a;
+  --px-red-800: #f3c4bd; --px-red-900: #fbe0dc; --px-red-950: #fdf0ee;
+  --px-amb-200: #6e4100; --px-amb-300: #8a5200; --px-amb-400: #a15c00; --px-amb-500: #b86b00; --px-amb-600: #9a5a00;
+  --px-amb-800: #f2d49a; --px-amb-900: #fbe9c4; --px-amb-950: #fdf5e2;
+  --px-grn-300: #136b35; --px-grn-400: #157f3c; --px-grn-500: #1a8a47; --px-grn-600: #157f3c; --px-grn-700: #11602d; --px-grn-900: #dcf3e4;
+  --px-info-200: #1e40af; --px-info-300: #1d4ed8; --px-info-400: #2563eb; --px-info-500: #2563eb; --px-info-600: #1d4ed8; --px-info-950: #eaf1fe;
+
+  --px-chart-bg: #ffffff;
+  --px-chart-grid: #e1e5ea;
+  --px-chart-font: #36404b;
+  --px-chart-legend: #f5f7f9;
+  --px-chart-neutral: #5f6b77;
+  --px-chart-field: #9aa7b4;
+  --px-spec-splice: rgba(161, 92, 0, 0.09);
+
+  --px-shadow-1: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --px-shadow-2: 0 12px 32px rgba(16, 24, 40, 0.14), 0 2px 6px rgba(16, 24, 40, 0.08);
+}
+
+/* ── Tailwind theme ─────────────────────────────────────────────────────── */
+@theme {
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+
+  /* Semantic surfaces & text — use these in new code */
+  --color-app: var(--px-n-900);
+  --color-panel: var(--px-n-850);
+  --color-raised: var(--px-n-800);
+  --color-sunken: var(--px-n-950);
+  --color-hover: var(--px-n-700);
+  --color-selected: var(--px-a-900);
+  --color-line: var(--px-n-700);
+  --color-line-strong: var(--px-n-600);
+  --color-fg: var(--px-n-100);
+  --color-muted: var(--px-n-400);
+  --color-subtle: var(--px-n-500);
+  --color-header: var(--px-header);
+  --color-header-fg: #ffffff;
+  --color-header-muted: var(--px-navy-300);
+
+  --color-brand: var(--px-navy-700);
+  --color-accent: var(--px-teal-500);
+  --color-accent-strong: var(--px-a-600);
+  --color-accent-fg: var(--px-a-400);
+  --color-on-accent: #ffffff;
+  --color-accent-soft: var(--px-a-900);
+  --color-focus: var(--px-a-400);
+
+  --color-accent-hover: var(--px-a-500);
+  --color-accent-press: var(--px-a-700);
+
+  --color-success: var(--px-grn-400);
+  --color-success-soft: var(--px-grn-900);
+  --color-warning: var(--px-amb-400);
+  --color-warning-soft: var(--px-amb-950);
+  --color-warning-line: var(--px-amb-800);
+  --color-danger: var(--px-red-400);
+  --color-danger-soft: var(--px-red-950);
+  --color-danger-line: var(--px-red-800);
+  --color-info: var(--px-info-400);
+
+  /* Data: categorical (Okabe–Ito) — always paired with a symbol shape */
+  --color-cat-1: #0072b2; --color-cat-2: #e69f00; --color-cat-3: #009e73; --color-cat-4: #cc79a7;
+  --color-cat-5: #56b4e9; --color-cat-6: #d55e00; --color-cat-7: #f0e442; --color-cat-8: #8c96a0;
+
+  /* Data: alteration minerals (Spectrometry) — keep in sync with lib/mineral-colors.ts */
+  --color-min-illite: #e69f00;
+  --color-min-muscovite: #b35a00;
+  --color-min-kaolinite: #56b4e9;
+  --color-min-montmorillonite: #9ad0ec;
+  --color-min-pyrophyllite: #8e6bbf;
+  --color-min-alunite: #cc79a7;
+  --color-min-chlorite: #009e73;
+  --color-min-epidote: #0b5d45;
+  --color-min-carbonate: #0072b2;
+  --color-min-gypsum: #c9d1d9;
+  --color-min-none: #8c96a0;
+
+  --shadow-window: var(--px-shadow-1);
+  --shadow-window-active: var(--px-shadow-2);
+
+  /* ── Transitional aliases (see header comment) ── */
+  --color-zinc-50: var(--px-n-50);   --color-zinc-100: var(--px-n-100); --color-zinc-200: var(--px-n-200);
+  --color-zinc-300: var(--px-n-300); --color-zinc-400: var(--px-n-400); --color-zinc-500: var(--px-n-500);
+  --color-zinc-600: var(--px-n-600); --color-zinc-700: var(--px-n-700); --color-zinc-800: var(--px-n-800);
+  --color-zinc-850: var(--px-n-850); --color-zinc-900: var(--px-n-900); --color-zinc-950: var(--px-n-950);
+
+  --color-blue-200: var(--px-a-200); --color-blue-300: var(--px-a-300); --color-blue-400: var(--px-a-400);
+  --color-blue-500: var(--px-a-500); --color-blue-600: var(--px-a-600); --color-blue-700: var(--px-a-700);
+  --color-blue-800: var(--px-a-800); --color-blue-900: var(--px-a-900); --color-blue-950: var(--px-a-950);
+
+  --color-red-200: var(--px-red-200); --color-red-300: var(--px-red-300); --color-red-400: var(--px-red-400);
+  --color-red-500: var(--px-red-500); --color-red-800: var(--px-red-800); --color-red-900: var(--px-red-900);
+  --color-red-950: var(--px-red-950);
+
+  --color-amber-200: var(--px-amb-200); --color-amber-300: var(--px-amb-300); --color-amber-400: var(--px-amb-400);
+  --color-amber-500: var(--px-amb-500); --color-amber-600: var(--px-amb-600); --color-amber-800: var(--px-amb-800);
+  --color-amber-900: var(--px-amb-900); --color-amber-950: var(--px-amb-950);
+
+  --color-emerald-300: var(--px-grn-300); --color-emerald-400: var(--px-grn-400); --color-emerald-500: var(--px-grn-500);
+  --color-emerald-600: var(--px-grn-600); --color-emerald-700: var(--px-grn-700); --color-emerald-900: var(--px-grn-900);
+
+  /* Geochemistry used sky as its accent: unify it with the PyOrex teal accent */
+  --color-sky-200: var(--px-a-200); --color-sky-300: var(--px-a-300); --color-sky-400: var(--px-a-400);
+  --color-sky-500: var(--px-a-500); --color-sky-600: var(--px-a-600); --color-sky-950: var(--px-a-950);
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+:root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -15,25 +203,46 @@ body {
   margin: 0;
   overflow: hidden;
   user-select: none;
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  background-color: #18181b; /* zinc-900 */
-  color: #f4f4f5; /* zinc-100 */
+  font-family: var(--font-sans);
+  font-size: 13px;
+  background-color: var(--color-app);
+  color: var(--color-fg);
 }
 
-/* Custom scrollbar for dark theme */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+/* Numbers in tables line up */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Floating-window canvas: dot grid echoing the logo's node network */
+.px-canvas {
+  background-color: var(--color-app);
+  background-image: radial-gradient(var(--color-line) 1px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+/* Scrollbars follow the theme */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #27272a; /* zinc-800 */
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #52525b; /* zinc-600 */
-  border-radius: 3px;
+  background: var(--color-line-strong);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #71717a; /* zinc-500 */
+  background: var(--color-subtle);
+  background-clip: padding-box;
 }
 
 /* Tauri drag region for window */

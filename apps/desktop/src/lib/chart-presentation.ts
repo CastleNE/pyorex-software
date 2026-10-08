@@ -7,13 +7,21 @@ export const PALETTES = {
   Diverging:['#2166ac','#67a9cf','#d1e5f0','#fddbc7','#ef8a62','#b2182b'],
 };
 export type PaletteName=keyof typeof PALETTES;
-export interface ChartPresentation {
-  palette:PaletteName; sizeMode:'constant'|'linear'|'quantile'; sizeSource:'x'|'y'|'column';
+import type { SizeBoundary, SizeMethod } from './size-classes';
+import type { ColorClassSettings } from './color-classes';
+export interface ChartPresentation extends ColorClassSettings {
+  palette:PaletteName; sizeMode:'constant'|'linear'|'quantile'|'classes'; sizeSource:'x'|'y'|'column';
+  /** sizeMode 'classes' (graduated symbols, see lib/size-classes.ts): class count (2–20) for computed methods, how
+   * limits are set, own limits as values or percentiles, smallest/largest symbol diameter (px), log10 classing and
+   * which class takes a value equal to a limit. */
+  sizeClasses:number; sizeMethod:SizeMethod; sizeBreaks:number[]|null; sizePercentiles:number[]|null; sizeMin:number; sizeMax:number; sizeLog:boolean; sizeBoundary:SizeBoundary;
   logX:boolean;logY:boolean;xMin:string;xMax:string;yMin:string;yMax:string;
   opacity:number;grid:boolean;reverseY:boolean;
 }
-export const DEFAULT_PRESENTATION:ChartPresentation={palette:'Accessible',sizeMode:'constant',sizeSource:'y',logX:false,logY:false,xMin:'',xMax:'',yMin:'',yMax:'',opacity:.85,grid:true,reverseY:false};
-export function displaySizes(values:(number|null|undefined)[],mode:ChartPresentation['sizeMode'],fallback:number) {
+export const DEFAULT_PRESENTATION:ChartPresentation={palette:'Accessible',sizeMode:'constant',sizeSource:'y',sizeClasses:5,sizeMethod:'quantile',sizeBreaks:null,sizePercentiles:null,sizeMin:5,sizeMax:18,sizeLog:false,sizeBoundary:'up',
+  colorClasses:5,colorMethod:'equal',colorBreaks:null,colorPercentiles:null,colorLog:false,colorBoundary:'up',colorRamp:'rainbow',colorReverse:false,colorCustom:null,
+  logX:false,logY:false,xMin:'',xMax:'',yMin:'',yMax:'',opacity:.85,grid:true,reverseY:false};
+export function displaySizes(values:(number|null|undefined)[],mode:Exclude<ChartPresentation['sizeMode'],'classes'>,fallback:number) {
   const finite=values.filter((v):v is number=>typeof v==='number'&&Number.isFinite(v));
   if(mode==='constant'||!finite.length)return values.map(()=>fallback);
   const sorted=[...finite].sort((a,b)=>a-b),min=sorted[0],max=sorted[sorted.length-1];

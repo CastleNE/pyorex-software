@@ -19,11 +19,10 @@ it('changes displayed limits without modifying computed results',()=>{
  expect(chart.layout.xaxis).toMatchObject({type:'log',range:[0,2]});
  expect(JSON.stringify(result)).toBe(original);
 });
-it('provides concentration intervals for the five numeric colors',()=>{
+it('colours by value with five equal intervals by default',()=>{
  const chart=buildGeoChart(result,style);
- expect(chart.colorLegend).toHaveLength(5);
- expect(chart.colorLegend[0].min).toBe(0);
- expect(chart.colorLegend[4].max).toBe(2);
+ expect(chart.colorLegend).toMatchObject({label:'Cu',min:0,max:2,breaks:[0.4,0.8,1.2,1.6],counts:[1,0,0,0,1]});
+ expect(chart.colorLegend!.colors).toHaveLength(5);
 });
 it('labels Tukey boxes with their group names on a categorical axis',()=>{
  const chart=buildGeoChart({...result,plot:{...result.plot,kind:'box'}},style);

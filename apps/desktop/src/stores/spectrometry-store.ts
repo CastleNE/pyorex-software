@@ -11,6 +11,9 @@ interface SpectrometryState {
   clearActiveProject: () => void;
   setSelectedSample: (sampleId: string | null) => void;
   setSelectedSpectrum: (spectrumId: string | null) => void;
+  /** Set by File → Import data; SpectrometryScreen opens the matching import wizard and clears it. */
+  pendingImport: "native" | "processed" | null;
+  requestImport: (kind: "native" | "processed" | null) => void;
 }
 
 /** Spectrometry is its OWN project concept, independent of dataset-store.ts's
@@ -26,4 +29,6 @@ export const useSpectrometryStore = create<SpectrometryState>((set) => ({
   clearActiveProject: () => set({ activeProject: null, hasProject: false, selectedSampleId: null, selectedSpectrumId: null }),
   setSelectedSample: (sampleId) => set({ selectedSampleId: sampleId }),
   setSelectedSpectrum: (spectrumId) => set({ selectedSpectrumId: spectrumId }),
+  pendingImport: null,
+  requestImport: (kind) => set({ pendingImport: kind }),
 }));

@@ -9,12 +9,15 @@ from typing import Any
 from dataclasses import asdict
 import uuid
 
+import polars as pl
+
 from analysis.data.importer import ColumnMapping, ImportConfig, NullMapping, SampleTypeMapping, SpatialConfig, import_file, preview_file
-from analysis.data.storage import save_dataset, load_metadata, list_datasets, delete_dataset
+from analysis.data.storage import save_dataset, load_metadata, list_datasets, delete_dataset, update_metadata
 from analysis.data import overlay
 from analysis.data import query as query_mod
 from analysis.data import formula as formula_mod
 from analysis.data import quality as quality_mod
+from analysis.data import profile as profile_mod
 from analysis.spatial.kml_export import export_kml
 from analysis.analytics.descriptive import run_descriptive
 from analysis.analytics.pca import run_pca
@@ -163,22 +166,44 @@ def _rpc_data_export_kml(params: dict) -> dict:
     return {"kml_path": path}
 
 
+ROW_INDEX_COLUMN = "__pyorex_row_index__"
+
+
+def _grid_rows(params: dict) -> tuple[pl.DataFrame, set[str], int]:
+    """The rows the data grid shows: the effective dataset restricted to the shared selection (``only_rows``) and
+    the grid filters, with the dataset position of each row in ``ROW_INDEX_COLUMN``. Shared by rows and profile."""
+    df, hidden = overlay.get_effective_dataframe(params["dataset_id"])
+    total = df.height
+    # Position of each row in the effective dataset: the same `row_index` every analysis result uses, so the grid
+    # can show and change the selection shared with the chart windows.
+    df = df.with_row_index(ROW_INDEX_COLUMN)
+    only_rows = params.get("only_rows")
+    if isinstance(only_rows, list):
+        df = df.filter(pl.col(ROW_INDEX_COLUMN).is_in([i for i in only_rows if isinstance(i, int) and not isinstance(i, bool)]))
+    df = query_mod.apply_filters(df, params.get("filters"), params.get("filter_combinator", "and"))
+    return df, set(hidden), total
+
+
+def _rpc_data_profile(params: dict) -> dict:
+    """Column profile of the rows the grid shows (same filters and selection as data.rows)."""
+    df, hidden, total = _grid_rows(params)
+    return {"dataset_id": params["dataset_id"], "rows": df.height, "total_rows": total,
+            "columns": profile_mod.profile_dataframe(df.drop(ROW_INDEX_COLUMN), hidden)}
+
+
 def _rpc_data_rows(params: dict) -> dict:
-    dataset_id = params["dataset_id"]
     offset = params.get("offset", 0)
     limit = min(params.get("limit", 200), 5000)
     include_hidden = params.get("include_hidden", False)
 
-    df, hidden = overlay.get_effective_dataframe(dataset_id)
-    total_rows_unfiltered = df.height
-
-    df = query_mod.apply_filters(df, params.get("filters"), params.get("filter_combinator", "and"))
+    df, hidden, total_rows_unfiltered = _grid_rows(params)
     df = query_mod.apply_sort(df, params.get("sort"))
 
-    visible_columns = [c for c in df.columns if include_hidden or c not in hidden]
+    visible_columns = [c for c in df.columns if c != ROW_INDEX_COLUMN and (include_hidden or c not in hidden)]
     page = df.slice(offset, limit)
     return {
         "columns": visible_columns,
+        "row_indices": page[ROW_INDEX_COLUMN].to_list(),
         "rows": page.select(visible_columns).to_dicts(),
         "total_rows": df.height,
         "total_rows_unfiltered": total_rows_unfiltered,
@@ -197,6 +222,56 @@ def _rpc_data_preview_formula(params: dict) -> dict:
 def _rpc_data_apply_operation(params: dict) -> dict:
     op = params["operation"]
     return overlay.append_op(params["dataset_id"], op["type"], op["params"])
+
+
+_GEOMETRY_SOURCES = ("projected_xy", "wgs84_lonlat", "local_grid", "none")
+_SPATIAL_KEYS = {"dataset_id", "geometry_source", "east_col", "north_col", "projected_epsg", "lon_col", "lat_col"}
+
+
+def _rpc_data_set_spatial_config(params: dict) -> dict:
+    """Assign or correct a dataset's coordinate columns and CRS (metadata only — values are never reprojected).
+    A projected source requires a PROJECTED CRS (IDW and distances need metric units)."""
+    if set(params) - _SPATIAL_KEYS:
+        raise ValueError(f"Parámetros no admitidos: {sorted(set(params) - _SPATIAL_KEYS)}")
+    dataset_id = params["dataset_id"]
+    source = params.get("geometry_source")
+    if source not in _GEOMETRY_SOURCES:
+        raise ValueError(f"geometry_source debe ser uno de {_GEOMETRY_SOURCES}")
+    df, hidden = overlay.get_effective_dataframe(dataset_id)
+
+    def numeric_col(key: str) -> str:
+        col = params.get(key)
+        if not isinstance(col, str) or col not in df.columns or col in hidden:
+            raise ValueError(f"Columna inexistente para {key}: {col!r}")
+        if not df[col].dtype.is_numeric():
+            raise ValueError(f"La columna {col!r} no es numérica.")
+        return col
+
+    east = north = lon = lat = epsg = label = None
+    if source in ("projected_xy", "local_grid"):
+        east, north = numeric_col("east_col"), numeric_col("north_col")
+    if source == "wgs84_lonlat":
+        lon, lat = numeric_col("lon_col"), numeric_col("lat_col")
+    if source == "projected_xy":
+        from pyproj import CRS
+        from pyproj.exceptions import CRSError
+        raw = params.get("projected_epsg")
+        try:
+            crs = CRS.from_user_input(raw)
+        except (CRSError, TypeError) as e:
+            raise ValueError(f"CRS no reconocido: {raw!r}") from e
+        if not crs.is_projected:
+            raise ValueError(f"{crs.name} no es un CRS proyectado: usa coordenadas Este/Norte con un CRS métrico (p. ej. UTM).")
+        code = crs.to_epsg()
+        epsg, label = (f"EPSG:{code}" if code else crs.to_string()), crs.name
+    elif source == "wgs84_lonlat":
+        epsg, label = "EPSG:4326", "WGS 84"
+    spatial = SpatialConfig(geometry_source=source, east_col=east, north_col=north, projected_epsg=epsg if source == "projected_xy" else None,
+                            projected_crs_label=label if source == "projected_xy" else None, lon_col=lon, lat_col=lat)
+    ok = source in ("projected_xy", "wgs84_lonlat")
+    meta = update_metadata(dataset_id, {"spatial_config": spatial.to_dict(), "spatial_status": "ok" if ok else "no_coordinates",
+                                        "plot_status": "ok" if ok else "no_coordinates"})
+    return {"dataset": meta}
 
 
 def _rpc_data_save_changes(params: dict) -> dict:
@@ -275,12 +350,26 @@ def _rpc_qaqc_control_chart(params: dict) -> dict:
     return {"available": True, **asdict(chart)}
 
 
+from analysis.licensing.plans import PlanLimitError, active_plan, enforce_rpc
 from app.routers.hub_rpc import HUB_METHODS
 from app.routers.geochemistry_rpc import GEOCHEMISTRY_METHODS
+from app.routers.project_rpc import PROJECT_METHODS
+from app.routers.maps_rpc import MAPS_METHODS
+
+def _dataset_rows(dataset_id: str) -> int | None:
+    """Size of an existing dataset for the plan check (None when it does not exist or the id is not valid)."""
+    try:
+        return load_metadata(dataset_id).get("row_count")
+    except (FileNotFoundError, ValueError):
+        return None
+
 
 METHOD_REGISTRY: dict[str, Any] = {
     **GEOCHEMISTRY_METHODS,
+    "app.plan": lambda _: active_plan().to_dict(),
     **HUB_METHODS,
+    **PROJECT_METHODS,
+    **MAPS_METHODS,
     "health.ping": lambda _: {"pong": True, "service": "pyorex-analytics"},
 
     # Data import / export (RF-02)
@@ -288,6 +377,7 @@ METHOD_REGISTRY: dict[str, Any] = {
     "data.import":     _rpc_data_import,
     "data.list":       lambda _: {"datasets": list_datasets()},
     "data.rows":       _rpc_data_rows,
+    "data.profile":    _rpc_data_profile,
     "data.delete":     lambda p: {"deleted": delete_dataset(p["dataset_id"])},
     "data.export_kml": _rpc_data_export_kml,
 
@@ -299,6 +389,7 @@ METHOD_REGISTRY: dict[str, Any] = {
     "data.redo_operation":  lambda p: overlay.redo(p["dataset_id"]),
     "data.get_operations":  lambda p: overlay.load_overlay(p["dataset_id"]),
     "data.save_changes":    _rpc_data_save_changes,
+    "data.set_spatial_config": _rpc_data_set_spatial_config,
 
     # Analytics (RF-04): descriptive stats + PCA
     "analytics.descriptive": _rpc_analytics_descriptive,
@@ -346,11 +437,14 @@ async def json_rpc(request: RpcRequest) -> RpcResponse:
         )
 
     try:
+        enforce_rpc(request.method, request.params, row_count=_dataset_rows)
         import asyncio
         result = handler(request.params)
         if asyncio.iscoroutine(result):
             result = await result
         return RpcResponse(id=request.id, result=result)
+    except PlanLimitError as exc:
+        return RpcResponse(id=request.id, error=RpcError(code=PlanLimitError.code, message=str(exc)))
     except Exception as exc:
         detail = str(exc) if str(exc) else repr(exc)
         return RpcResponse(

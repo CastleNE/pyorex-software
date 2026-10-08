@@ -7,6 +7,7 @@ import { useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { importNativeSpectra, type ImportFailure, type ImportedSpectrumSummary } from "@/lib/spectrometry-api";
 import { useSpectrometryStore } from "@/stores/spectrometry-store";
+import RecentProjectsPanel from "@/components/tool-windows/RecentProjectsPanel";
 
 interface Props {
   onImported: () => void;
@@ -52,7 +53,8 @@ export default function ImportNativeSpectraWizard({ onImported }: Props) {
   }
 
   if (!activeProject) {
-    return <div className="p-4 text-xs text-zinc-500">Create or open a spectral project first.</div>;
+    // No project yet: create or open one right here, then the wizard continues (File → Import data lands here).
+    return <div className="flex h-full flex-col"><p className="px-4 pt-3 text-xs text-muted">Crea o abre un proyecto espectral para importar · Create or open a spectral project to import.</p><div className="min-h-0 flex-1"><RecentProjectsPanel /></div></div>;
   }
 
   return (

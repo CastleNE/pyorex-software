@@ -1,6 +1,7 @@
-import Plot from "react-plotly.js";
+import Plot from "@/components/ThemedPlot";
 import type { PcaResult } from "@/lib/data-api";
 import { DARK_BG, FONT_COLOR, GRID_COLOR, StatCard, WarningsBanner, fmt } from "@/components/analysis-results/shared";
+import { useL } from "@/lib/i18n";
 
 const SAMPLE_TYPE_COLORS: Record<string, string> = {
   S: "#71717a",
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function PcaResults({ result, onOpenInVisualization }: Props) {
+  const L = useL();
   const pc1 = result.scores.map((row) => row[0] ?? null);
   const pc2 = result.scores.map((row) => row[1] ?? null);
   const pctVar = (i: number) => `${(result.explained_variance_ratio[i] * 100).toFixed(1)}%`;
@@ -36,20 +38,20 @@ export default function PcaResults({ result, onOpenInVisualization }: Props) {
       <WarningsBanner warnings={result.warnings} />
       {onOpenInVisualization && (
         <div className="flex justify-end">
-          <button onClick={onOpenInVisualization} className="text-xs text-blue-400 hover:underline">
-            Open in Visualization →
+          <button onClick={onOpenInVisualization} className="text-xs text-accent-fg hover:underline">
+            {L({ es: "Abrir en Visualización →", en: "Open in Visualization →" })}
           </button>
         </div>
       )}
 
       <div className="grid grid-cols-3 gap-3">
-        <StatCard label="KMO global" value={result.kmo_global.toFixed(2)} />
-        <StatCard label="Bartlett p-value" value={result.bartlett_p_value.toFixed(3)} />
-        <StatCard label="Componentes (≥80%)" value={String(result.components_for_80pct)} />
+        <StatCard label={L({ es: "KMO global", en: "Global KMO" })} value={result.kmo_global.toFixed(2)} />
+        <StatCard label={L({ es: "Valor p de Bartlett", en: "Bartlett p-value" })} value={result.bartlett_p_value.toFixed(3)} />
+        <StatCard label={L({ es: "Componentes (≥80%)", en: "Components (≥80%)" })} value={String(result.components_for_80pct)} />
       </div>
 
-      <div className="rounded-md border border-zinc-700 p-2">
-        <p className="text-xs font-semibold text-zinc-400 mb-1 px-1">Varianza explicada</p>
+      <div className="rounded-md border border-line p-2">
+        <p className="text-xs font-semibold text-muted mb-1 px-1">{L({ es: "Varianza explicada", en: "Explained variance" })}</p>
         <Plot
           data={[
             {
@@ -62,7 +64,7 @@ export default function PcaResults({ result, onOpenInVisualization }: Props) {
             {
               type: "scatter",
               mode: "lines+markers",
-              name: "Acumulada",
+              name: L({ es: "Acumulada", en: "Cumulative" }),
               x: result.cumulative_variance.map((_, i) => `PC${i + 1}`),
               y: result.cumulative_variance,
               line: { color: "#34d399" },
@@ -84,9 +86,9 @@ export default function PcaResults({ result, onOpenInVisualization }: Props) {
       </div>
 
       {result.n_components >= 2 && (
-        <div className="rounded-md border border-zinc-700 p-2">
-          <p className="text-xs font-semibold text-zinc-400 mb-1 px-1">
-            Scores — PC1 ({pctVar(0)}) vs PC2 ({pctVar(1)})
+        <div className="rounded-md border border-line p-2">
+          <p className="text-xs font-semibold text-muted mb-1 px-1">
+            {L({ es: "Puntuaciones (scores)", en: "Scores" })} — PC1 ({pctVar(0)}) vs PC2 ({pctVar(1)})
           </p>
           <Plot
             data={Array.from(groups.entries()).map(([name, { x, y }]) => ({
@@ -112,14 +114,14 @@ export default function PcaResults({ result, onOpenInVisualization }: Props) {
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-md border border-zinc-700">
+      <div className="overflow-x-auto rounded-md border border-line">
         <table className="min-w-full text-xs">
-          <thead className="bg-zinc-850 text-zinc-400">
+          <thead className="bg-panel text-muted">
             <tr>
               <th className="px-3 py-2 text-left font-semibold">Variable</th>
               {Array.from({ length: Math.min(result.n_components, 4) }, (_, i) => (
                 <th key={i} className="px-3 py-2 text-left font-semibold">
-                  PC{i + 1} loading
+                  {L({ es: `Carga PC${i + 1}`, en: `PC${i + 1} loading` })}
                 </th>
               ))}
               <th className="px-3 py-2 text-left font-semibold">VIF</th>
@@ -127,14 +129,14 @@ export default function PcaResults({ result, onOpenInVisualization }: Props) {
           </thead>
           <tbody>
             {result.variables_used.map((v, i) => (
-              <tr key={v} className="border-t border-zinc-800 text-zinc-300">
+              <tr key={v} className="border-t border-line text-fg">
                 <td className="px-3 py-1.5 font-medium">{v}</td>
                 {Array.from({ length: Math.min(result.n_components, 4) }, (_, c) => (
                   <td key={c} className="px-3 py-1.5">
                     {fmt(result.loadings[i]?.[c])}
                   </td>
                 ))}
-                <td className={`px-3 py-1.5 ${result.vif[v] > 10 ? "text-amber-400" : ""}`}>{fmt(result.vif[v])}</td>
+                <td className={`px-3 py-1.5 ${result.vif[v] > 10 ? "text-warning" : ""}`}>{fmt(result.vif[v])}</td>
               </tr>
             ))}
           </tbody>

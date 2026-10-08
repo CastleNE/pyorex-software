@@ -73,3 +73,9 @@ export function confidentColumn(columns: GeoColumn[], roles: ColumnRoleMap, cons
   const candidates = compatibleInputColumns(columns, roles, constraint);
   return isRestricted(constraint) ? candidates.find(c => isConfident(roles, c.name)) : candidates[0];
 }
+
+/** Whether ANY classified column of the dataset satisfies a declared constraint (ribbon availability hint, same rule). */
+export function anyColumnMatches(roles: ColumnRoleMap, constraint: InputConstraint): boolean {
+  if (!isRestricted(constraint)) return true;
+  return Object.keys(roles).some(name => matchesConstraint(roles, name, constraint));
+}

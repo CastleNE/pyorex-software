@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project.save.v1",
+  "version": "v1",
+  "method": "project.save",
+  "description": "Write a PyOreX project (.orex, ZIP) atomically: manifest.json, state.json (desktop presentation state) and, per dataset, its Parquet, metadata and edit overlay copied byte for byte.",
+  "request": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "path",
+      "state"
+    ],
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Absolute path ending in .orex"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "state": {
+        "type": "object"
+      },
+      "dataset_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "path",
+      "name",
+      "saved_at",
+      "datasets",
+      "bytes"
+    ],
+    "properties": {
+      "path": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "saved_at": {
+        "type": "string"
+      },
+      "datasets": {
+        "type": "integer"
+      },
+      "bytes": {
+        "type": "integer"
+      }
+    }
+  }
+}

@@ -18,6 +18,8 @@ __pycache__/
 .venv/
 venv/
 *.egg-info/
+# PyInstaller (packaged engine: services/analytics/build/ and dist/)
+services/analytics/build/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/

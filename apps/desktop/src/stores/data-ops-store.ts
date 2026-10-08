@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { ColumnOperation, FilterCombinator, ImportedDatasetMeta, OverlayState, RowFilter, RowSort } from "@/lib/data-api";
 import { applyOperation, getOperations, redoOperation, saveChanges, undoOperation } from "@/lib/data-api";
+import { markProjectDataChanged } from "@/lib/project-events";
 
 interface ViewState {
   filters: RowFilter[];
@@ -83,22 +84,22 @@ export const useDataOpsStore = create<DataOpsState>((set, get) => ({
   },
 
   applyOp: async (datasetId, operation) => {
-    const overlay = await applyOperation(datasetId, operation);
+    const overlay = await applyOperation(datasetId, operation); markProjectDataChanged();
     set((s) => ({ overlayByDataset: { ...s.overlayByDataset, [datasetId]: overlay }, ...bump(s, datasetId) }));
   },
 
   undo: async (datasetId) => {
-    const overlay = await undoOperation(datasetId);
+    const overlay = await undoOperation(datasetId); markProjectDataChanged();
     set((s) => ({ overlayByDataset: { ...s.overlayByDataset, [datasetId]: overlay }, ...bump(s, datasetId) }));
   },
 
   redo: async (datasetId) => {
-    const overlay = await redoOperation(datasetId);
+    const overlay = await redoOperation(datasetId); markProjectDataChanged();
     set((s) => ({ overlayByDataset: { ...s.overlayByDataset, [datasetId]: overlay }, ...bump(s, datasetId) }));
   },
 
   save: async (datasetId) => {
-    const { dataset } = await saveChanges(datasetId);
+    const { dataset } = await saveChanges(datasetId); markProjectDataChanged();
     set((s) => {
       const { [datasetId]: _overlay, ...restOverlay } = s.overlayByDataset;
       const { [datasetId]: _view, ...restView } = s.viewByDataset;

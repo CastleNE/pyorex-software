@@ -13,6 +13,7 @@
       "offset": { "type": "integer", "default": 0 },
       "limit": { "type": "integer", "default": 200, "maximum": 5000 },
       "include_hidden": { "type": "boolean", "default": false },
+      "only_rows": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "description": "Only these row indices (the selection shared with the chart windows); omitted = all rows." },
       "filters": {
         "type": "array",
         "items": {
@@ -44,9 +45,10 @@
   },
   "response": {
     "type": "object",
-    "required": ["columns", "rows", "total_rows", "total_rows_unfiltered", "offset", "hidden_columns"],
+    "required": ["columns", "row_indices", "rows", "total_rows", "total_rows_unfiltered", "offset", "hidden_columns"],
     "properties": {
       "columns": { "type": "array", "items": { "type": "string" } },
+      "row_indices": { "type": "array", "items": { "type": "integer" }, "description": "Position of each returned row in the effective dataset = row_index of every analysis result (linked selection)." },
       "rows": { "type": "array", "items": { "type": "object" } },
       "total_rows": { "type": "integer", "description": "Rows matching filters" },
       "total_rows_unfiltered": { "type": "integer" },

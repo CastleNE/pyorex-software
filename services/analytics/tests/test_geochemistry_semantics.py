@@ -119,6 +119,21 @@ def test_being_a_precious_metal_assay_does_not_change_the_geochemical_role_a_spe
         assert classify_column(name, numeric=True).semantic_role is SemanticRole.TRACE_ELEMENT
 
 
+# ── Total iron: 'T' makes the reading unambiguous; a bare Fe2O3/FeO does not (fe-index FeTotal automapping) ──────
+@pytest.mark.parametrize('name,analyte', [('Fe2O3T_pct', 'Fe2O3T'), ('FeOT_pct', 'FeOT')])
+def test_explicit_total_iron_is_high_confidence(name, analyte):
+    result = classify_column(name, numeric=True)
+    assert (result.semantic_role, result.analyte, result.confidence) == (SemanticRole.MAJOR_OXIDE, analyte, Confidence.HIGH)
+
+
+@pytest.mark.parametrize('name,analyte', [('Fe2O3_pct', 'Fe2O3'), ('FeO_pct', 'FeO')])
+def test_bare_iron_oxide_without_a_total_suffix_is_recognized_but_only_medium_confidence(name, analyte):
+    """The analyte is not in doubt; whether it represents ALL of the sample's iron is — see the module docstring.
+    MEDIUM keeps it selectable (compatibleInputColumns ignores confidence) but out of automapping (HIGH only)."""
+    result = classify_column(name, numeric=True)
+    assert (result.semantic_role, result.analyte, result.confidence) == (SemanticRole.MAJOR_OXIDE, analyte, Confidence.MEDIUM)
+
+
 def test_bare_element_name_without_a_unit_suffix_still_classifies_but_without_a_unit():
     result = classify_column('Cu', numeric=True)
     assert result.semantic_role is SemanticRole.TRACE_ELEMENT and result.analyte == 'Cu' and result.unit is None

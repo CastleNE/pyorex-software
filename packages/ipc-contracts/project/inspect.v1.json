@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project.inspect.v1",
+  "version": "v1",
+  "method": "project.inspect",
+  "description": "Read and validate the manifest of a .orex without importing anything.",
+  "request": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "path"
+    ],
+    "properties": {
+      "path": {
+        "type": "string"
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "manifest"
+    ],
+    "properties": {
+      "manifest": {
+        "type": "object",
+        "required": [
+          "format",
+          "version",
+          "app",
+          "name",
+          "saved_at",
+          "datasets"
+        ],
+        "properties": {
+          "format": {
+            "const": "pyorex-project"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "app": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "saved_at": {
+            "type": "string"
+          },
+          "datasets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "name",
+                "sha256"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "row_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "column_count": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "has_ops": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

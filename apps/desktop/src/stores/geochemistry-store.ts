@@ -1,10 +1,11 @@
 import { DEFAULT_PRESENTATION,type ChartPresentation } from '../lib/chart-presentation';
-import type { AttributeStyle } from '../lib/geochemistry-attributes';
+import { AUTO_SYMBOL,type AttributeStyle } from '../lib/geochemistry-attributes';
 import { create } from 'zustand';
 import { geoApi,initialConfig,type GeoColumn,type GeoConfig,type GeoGroup,type GeoResult,type GeoTool } from '../lib/geochemistry-api';
 import { buildSession,loadSaved,persistSaved,restoreWorkspace,sanitizeAttributes,workspaceKey,type SavedState,type SessionDocument,type Workspace } from '../lib/geochemistry-session';
 import { roleMapFrom,type ColumnRoleMap } from '../lib/semantic-roles';
 import { useGeoRegistryStore } from './geochemistry-registry-store';
+import { CUSTOM_TOOL } from '../lib/custom-diagrams';
 
 interface GeoState {
   datasetId:string|null;datasetName:string;tools:GeoTool[];columns:GeoColumn[];columnRoles:ColumnRoleMap;selectedTool:string|null;config:GeoConfig|null;result:GeoResult|null;
@@ -37,7 +38,7 @@ export const useGeochemistryStore=create<GeoState>((set,get)=>({
   datasetId:null,datasetName:'',tools:[],columns:[],columnRoles:{},selectedTool:null,config:null,result:null,loading:false,running:false,error:null,requestVersion:0,
   presentation:{...DEFAULT_PRESENTATION},
   attributes:{},saved:loadSaved(),notice:null,
-  pointSize:7,symbol:'circle',showLabels:false,
+  pointSize:7,symbol:AUTO_SYMBOL,showLabels:false,
   load:async(datasetId,group)=>{
     const version=get().requestVersion+1;
     set({presentation:{...DEFAULT_PRESENTATION},attributes:datasetId===get().datasetId?get().attributes:sanitizeAttributes(get().saved.attributes[datasetId]),notice:null,datasetId,loading:true,running:false,result:null,error:null,config:null,selectedTool:null,requestVersion:version});
@@ -53,7 +54,7 @@ export const useGeochemistryStore=create<GeoState>((set,get)=>({
       const columnRoles=roleMapFrom(columnRolesResponse.columns);
       const first=catalog.tools.find(t=>t.group===group&&(group!=='diagrams'||t.id==='scatter'))??catalog.tools.find(t=>t.group===group);
       const {saved,pointSize,symbol,showLabels}=get();
-      set({tools:catalog.tools,columns:catalog.columns,columnRoles,datasetName:catalog.dataset_name,selectedTool:first?.id??null,...(first?workspaceFor(saved,datasetId,first,catalog.columns,columnRoles,{pointSize,symbol,showLabels}):{config:null})});
+      set({tools:[...catalog.tools,CUSTOM_TOOL],columns:catalog.columns,columnRoles,datasetName:catalog.dataset_name,selectedTool:first?.id??null,...(first?workspaceFor(saved,datasetId,first,catalog.columns,columnRoles,{pointSize,symbol,showLabels}):{config:null})});
     }catch(e){if(get().requestVersion===version)set({error:String(e),tools:[],columns:[],columnRoles:{}});}
     finally{if(get().requestVersion===version)set({loading:false});}
   },
@@ -75,7 +76,7 @@ export const useGeochemistryStore=create<GeoState>((set,get)=>({
     const tool=tools.find(t=>t.id===selectedTool);if(!datasetId||!tool)return;
     const {[workspaceKey(datasetId,tool.id)]:_removed,...workspaces}=saved.workspaces;
     const registryTool=useGeoRegistryStore.getState().registry?.tools.find(t=>t.id===tool.id);
-    set({saved:{...saved,workspaces},config:initialConfig(tool,columns,registryTool,columnRoles),presentation:{...DEFAULT_PRESENTATION},pointSize:7,symbol:'circle',showLabels:false,notice:'Configuración de esta herramienta restablecida.',result:null,error:null,running:false,requestVersion:get().requestVersion+1});
+    set({saved:{...saved,workspaces},config:initialConfig(tool,columns,registryTool,columnRoles),presentation:{...DEFAULT_PRESENTATION},pointSize:7,symbol:AUTO_SYMBOL,showLabels:false,notice:'Configuración de esta herramienta restablecida.',result:null,error:null,running:false,requestVersion:get().requestVersion+1});
     persistSaved(get().saved);
   },
   exportSession:()=>{

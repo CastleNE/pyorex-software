@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "geochemistry.diagram_preview.v1",
+  "version": "v1",
+  "method": "geochemistry.diagram_preview",
+  "description": "Diagram Builder: validates each axis expression (x, y, z) against the dataset and reports the columns it uses, how many samples give a finite value and the range. Never changes data.",
+  "request": {
+    "additionalProperties": false,
+    "properties": {
+      "dataset_id": {
+        "title": "Dataset Id",
+        "type": "string"
+      },
+      "expressions": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Expressions",
+        "type": "object"
+      },
+      "include_qaqc": {
+        "default": false,
+        "title": "Include Qaqc",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "dataset_id",
+      "expressions"
+    ],
+    "title": "DiagramPreviewRequest",
+    "type": "object"
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "axes",
+      "dataset_id"
+    ],
+    "properties": {
+      "dataset_id": {
+        "type": "string"
+      },
+      "axes": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "object",
+          "required": [
+            "ok",
+            "error",
+            "columns",
+            "n_valid",
+            "n_invalid",
+            "min",
+            "max",
+            "sample"
+          ],
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            },
+            "error": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "n_valid": {
+              "type": "integer"
+            },
+            "n_invalid": {
+              "type": "integer"
+            },
+            "min": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "max": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "sample": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

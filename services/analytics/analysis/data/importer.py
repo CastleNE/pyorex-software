@@ -675,19 +675,14 @@ def import_file(path: str, config: ImportConfig) -> tuple[pl.DataFrame, dict]:
     for mapping in config.null_mappings:
         if mapping.column not in df.columns:
             continue
-        sentinel = mapping.sentinel_value
-        df = df.with_columns(
-            pl.when(pl.col(mapping.column).cast(pl.String) == str(sentinel))
-            .then(None)
-            .otherwise(pl.col(mapping.column))
-            .alias(mapping.column)
-        )
+        # Flag only the cells that hold this sentinel: blank cells stay unflagged (missing, not <LD), and several
+        # mappings on one column (e.g. "<5" BELOW_LOD and "NA" NOT_ANALYZED) keep each other's flags.
+        hit = pl.col(mapping.column).cast(pl.String) == str(mapping.sentinel_value)
         null_type_col = f"_nulltype_{mapping.column}"
+        previous = pl.col(null_type_col) if null_type_col in df.columns else pl.lit(None, dtype=pl.String)
         df = df.with_columns(
-            pl.when(pl.col(mapping.column).is_null())
-            .then(pl.lit(mapping.null_type))
-            .otherwise(pl.lit(None))
-            .alias(null_type_col)
+            pl.when(hit).then(pl.lit(mapping.null_type)).otherwise(previous).alias(null_type_col),
+            pl.when(hit).then(None).otherwise(pl.col(mapping.column)).alias(mapping.column),
         )
 
     # Apply sample type mapping — __sample_type__ always exists post-import,
@@ -825,7 +820,11 @@ def _read_csv_polars(path: str, separator: str = ",") -> pl.DataFrame:
 
 def _read_excel_polars(path: str, sheet: str | int = 0) -> pl.DataFrame:
     try:
-        df = pl.read_excel(path, sheet_name=sheet, infer_schema_length=2000)
+        # Polars ≥ 1 takes a sheet NAME in sheet_name and a 1-based position in sheet_id (0 = all sheets).
+        if isinstance(sheet, int):
+            df = pl.read_excel(path, sheet_id=sheet + 1, infer_schema_length=2000)
+        else:
+            df = pl.read_excel(path, sheet_name=sheet, infer_schema_length=2000)
     except Exception as e:
         detail = str(e) or repr(e)
         raise ValueError(

@@ -5,7 +5,7 @@ export const FONT_COLOR = "#d4d4d8"; // zinc-300
 export function WarningsBanner({ warnings }: { warnings: string[] }) {
   if (warnings.length === 0) return null;
   return (
-    <div className="space-y-1 rounded-md border border-amber-800/60 bg-amber-950/40 px-3 py-2 text-xs text-amber-300">
+    <div className="space-y-1 rounded-md border border-warning-line/60 bg-warning-soft/40 px-3 py-2 text-xs text-warning">
       {warnings.map((w, i) => (
         <p key={i}>⚠ {w}</p>
       ))}
@@ -15,9 +15,9 @@ export function WarningsBanner({ warnings }: { warnings: string[] }) {
 
 export function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-zinc-700 px-3 py-2">
-      <p className="text-[10px] uppercase tracking-wide text-zinc-500">{label}</p>
-      <p className="text-lg font-semibold text-zinc-200">{value}</p>
+    <div className="rounded-md border border-line px-3 py-2">
+      <p className="text-[10px] uppercase tracking-wide text-subtle">{label}</p>
+      <p className="text-lg font-semibold text-fg">{value}</p>
     </div>
   );
 }

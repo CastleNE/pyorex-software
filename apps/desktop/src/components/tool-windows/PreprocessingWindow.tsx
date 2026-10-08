@@ -6,7 +6,7 @@
  * friendly, avoids 13 bespoke forms for 13 different operations).
  */
 import { useEffect, useState } from "react";
-import Plot from "react-plotly.js";
+import Plot from "@/components/ThemedPlot";
 import { DARK_BG, FONT_COLOR, GRID_COLOR } from "@/components/analysis-results/shared";
 import {
   applyPreprocessingOp,
@@ -195,7 +195,7 @@ export default function PreprocessingWindow() {
           <Plot
             data={[
               { type: "scatter", mode: "lines", name: "Current", x: rawPreview.wavelength, y: rawPreview.reflectance, line: { color: "#71717a" } },
-              ...(preview ? [{ type: "scatter" as const, mode: "lines" as const, name: "Preview", x: preview.wavelength, y: preview.reflectance, line: { color: "#60a5fa" } }] : []),
+              ...(preview ? [{ type: "scatter" as const, mode: "lines" as const, name: "Preview", x: preview.wavelength, y: preview.reflectance, line: { color: "#e69f00" } }] : []),
             ]}
             layout={{
               paper_bgcolor: DARK_BG, plot_bgcolor: DARK_BG, font: { color: FONT_COLOR, size: 10 },

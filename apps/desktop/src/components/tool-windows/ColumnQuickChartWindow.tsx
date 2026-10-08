@@ -5,9 +5,10 @@
  * dashboard just by exploring the grid — no trip to Data Analysis needed.
  */
 import { useEffect, useMemo, useState } from "react";
-import Plot from "react-plotly.js";
+import Plot from "@/components/ThemedPlot";
 import type { Data, Layout } from "plotly.js";
 import { getRows } from "@/lib/data-api";
+import { useL } from "@/lib/i18n";
 
 const DARK_BG = "#18181b";
 const GRID_COLOR = "#3f3f46";
@@ -22,6 +23,8 @@ interface Props {
 }
 
 export default function ColumnQuickChartWindow({ datasetId, column, kind }: Props) {
+  const L = useL();
+  const countLabel = L({ es: "conteo", en: "count" });
   const [values, setValues] = useState<unknown[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,7 +77,7 @@ export default function ColumnQuickChartWindow({ datasetId, column, kind }: Prop
         layout: {
           ...baseLayout,
           margin: { ...baseLayout.margin, l: 100 },
-          xaxis: { gridcolor: GRID_COLOR, zerolinecolor: GRID_COLOR, title: { text: "count" } },
+          xaxis: { gridcolor: GRID_COLOR, zerolinecolor: GRID_COLOR, title: { text: countLabel } },
           yaxis: { gridcolor: GRID_COLOR, automargin: true },
         },
         n: values.filter((v) => v != null).length,
@@ -116,16 +119,16 @@ export default function ColumnQuickChartWindow({ datasetId, column, kind }: Prop
       layout: {
         ...baseLayout,
         xaxis: { gridcolor: GRID_COLOR, zerolinecolor: GRID_COLOR, title: { text: column }, automargin: true },
-        yaxis: { gridcolor: GRID_COLOR, zerolinecolor: GRID_COLOR, title: { text: "count" } },
+        yaxis: { gridcolor: GRID_COLOR, zerolinecolor: GRID_COLOR, title: { text: countLabel } },
       },
       n: nums.length,
     };
-  }, [values, kind, column]);
+  }, [values, kind, column, countLabel]);
 
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center p-4 text-xs text-red-400">
-        Failed to load: {error}
+      <div className="flex h-full items-center justify-center p-4 text-xs text-danger">
+        {L({ es: "No se pudo cargar:", en: "Failed to load:" })} {error}
       </div>
     );
   }
@@ -133,16 +136,16 @@ export default function ColumnQuickChartWindow({ datasetId, column, kind }: Prop
   if (!values) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden bg-zinc-900">
-      <div className="flex shrink-0 items-center justify-between border-b border-zinc-800 px-2.5 py-1 text-[10px] text-zinc-600">
+    <div className="flex h-full flex-col overflow-hidden bg-app">
+      <div className="flex shrink-0 items-center justify-between border-b border-line px-2.5 py-1 text-[10px] text-subtle">
         <span>n = {n.toLocaleString()}</span>
-        <span className="capitalize">{kind === "bar" ? "top values" : kind}</span>
+        <span className="capitalize">{kind === "bar" ? L({ es: "valores más frecuentes", en: "top values" }) : kind === "box" ? L({ es: "caja (box)", en: "box" }) : L({ es: "histograma", en: "histogram" })}</span>
       </div>
       <div className="min-h-0 flex-1">
         <Plot data={data} layout={layout} config={{ responsive: true, displaylogo: false }} style={{ width: "100%", height: "100%" }} useResizeHandler />

@@ -4,6 +4,157 @@
   "version": "v1",
   "method": "geochemistry.compute",
   "request": {
+    "$defs": {
+      "DiagramField": {
+        "additionalProperties": false,
+        "description": "A classification field: closed polygon in the diagram's data coordinates (XY diagrams only).",
+        "properties": {
+          "id": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "points": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "maxItems": 200,
+            "minItems": 3,
+            "title": "Points",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "points"
+        ],
+        "title": "DiagramField",
+        "type": "object"
+      },
+      "DiagramSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "kind": {
+            "default": "xy",
+            "enum": [
+              "xy",
+              "ternary"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "x": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "X",
+            "type": "string"
+          },
+          "y": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Y",
+            "type": "string"
+          },
+          "z": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Z"
+          },
+          "x_label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "X Label"
+          },
+          "y_label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Y Label"
+          },
+          "z_label": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Z Label"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/$defs/DiagramField"
+            },
+            "maxItems": 60,
+            "title": "Fields",
+            "type": "array"
+          },
+          "reference": {
+            "default": "",
+            "maxLength": 600,
+            "title": "Reference",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "x",
+          "y"
+        ],
+        "title": "DiagramSpec",
+        "type": "object"
+      }
+    },
     "additionalProperties": false,
     "properties": {
       "tool": {
@@ -101,6 +252,17 @@
         ],
         "default": null,
         "title": "Color Column"
+      },
+      "diagram": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/DiagramSpec"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
       },
       "dataset_id": {
         "title": "Dataset Id",

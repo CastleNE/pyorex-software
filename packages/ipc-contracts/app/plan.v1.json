@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "app.plan.v1",
+  "version": "v1",
+  "method": "app.plan",
+  "description": "Edition of PyOreX that the engine is enforcing (PYOREX_PLAN): modules, features and sample limit per dataset. The interface only reflects it; the engine refuses what the plan does not include with JSON-RPC error -32010.",
+  "request": {
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {}
+  },
+  "response": {
+    "type": "object",
+    "required": [
+      "plan",
+      "label",
+      "modules",
+      "features",
+      "max_rows"
+    ],
+    "properties": {
+      "plan": {
+        "enum": [
+          "demo",
+          "geochem",
+          "full",
+          "academic"
+        ]
+      },
+      "label": {
+        "type": "string"
+      },
+      "modules": {
+        "type": "array",
+        "items": {
+          "enum": [
+            "geochemistry",
+            "spectrometry"
+          ]
+        }
+      },
+      "features": {
+        "type": "array",
+        "items": {
+          "enum": [
+            "projects"
+          ]
+        }
+      },
+      "max_rows": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -15,6 +15,7 @@ from analysis.geochemistry.core.indices import (
     calculate_shand_indices, convert_fe2o3t_to_feot,
 )
 from analysis.geochemistry.core.ratios import calculate_ratio
+from analysis.geochemistry.custom_diagram import CUSTOM_TOOL_ID, calculate_custom
 from analysis.geochemistry.models import ComputeRequest
 from analysis.qaqc.common import infer_sample_id_column
 
@@ -135,6 +136,12 @@ def _coordinates(tool, v, ordinal):
 
 def calculate(df: pl.DataFrame, request: dict, roles=None):
     config = ComputeRequest.model_validate(request)
+    if config.tool == CUSTOM_TOOL_ID:
+        if config.diagram is None:
+            raise ValueError('Falta la definición del diagrama propio')
+        return calculate_custom(df, config.model_dump(), roles)
+    if config.diagram is not None:
+        raise ValueError('La definición de diagrama solo aplica a diagramas propios')
     spec = BY_ID.get(config.tool)
     if not spec:
         raise ValueError('Herramienta no disponible')
@@ -273,6 +280,6 @@ def calculate(df: pl.DataFrame, request: dict, roles=None):
         warnings.append('Controles QAQC incluidos por solicitud explícita.')
     return {'tool':config.tool,'title':spec['label'],'rows':rows,'plot':plot,'quality':quality,'warnings':warnings,
             'formula':spec['formula'],'reference':spec['reference'],
-            'pipeline':{**config.model_dump(),'units':units,'missing_policy':'exclude_without_imputation',
+            'pipeline':{**config.model_dump(exclude={'diagram'}),'units':units,'missing_policy':'exclude_without_imputation',
                         'reference_version':'pyrolite@ab651b448ecd2ce1bc22d752b80a977a1f4dd1ca','engine_version':'1.0.0'},
             'created_at':datetime.now(timezone.utc).isoformat()}

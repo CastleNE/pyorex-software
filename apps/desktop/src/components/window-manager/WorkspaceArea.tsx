@@ -12,7 +12,9 @@ interface OpenWindowState extends ToolWindowDescriptor {
 }
 
 interface Props {
-  emptyState: ReactNode;
+  emptyState?: ReactNode;
+  /** Windows float over the content below (transparent, click-through layer) instead of an own canvas. */
+  overlay?: boolean;
   /** Optional strip pinned above the windows layer, always visible regardless of open-window count. */
   banner?: ReactNode;
 }
@@ -27,7 +29,7 @@ const CASCADE_OFFSET = 28;
  * Analysis, and vice versa).
  */
 const WorkspaceArea = forwardRef<WorkspaceAreaHandle, Props>(function WorkspaceArea(
-  { emptyState, banner },
+  { emptyState, banner, overlay = false },
   ref
 ) {
   const [windows, setWindows] = useState<OpenWindowState[]>([]);
@@ -72,10 +74,12 @@ const WorkspaceArea = forwardRef<WorkspaceAreaHandle, Props>(function WorkspaceA
     },
   }));
 
+  const topZ = windows.reduce((max, w) => Math.max(max, w.zIndex), -Infinity);
+
   return (
-    <div className="flex flex-1 flex-col overflow-hidden bg-zinc-900">
+    <div className={overlay ? "pointer-events-none absolute inset-0 z-20 overflow-hidden" : "flex flex-1 flex-col overflow-hidden bg-app"}>
       {banner}
-      <div className="relative flex-1 overflow-hidden">
+      <div className={overlay ? "relative h-full w-full [&>*]:pointer-events-auto" : "px-canvas relative flex-1 overflow-hidden"}>
         {windows.length === 0 && emptyState}
         {windows.map((w) => (
           <FloatingWindow
@@ -88,6 +92,7 @@ const WorkspaceArea = forwardRef<WorkspaceAreaHandle, Props>(function WorkspaceA
             height={w.height}
             zIndex={w.zIndex}
             minimized={w.minimized}
+            active={w.zIndex === topZ}
             onFocus={() => bringToFront(w.id)}
             onClose={() => setWindows((prev) => prev.filter((win) => win.id !== w.id))}
             onMinimizeToggle={() =>

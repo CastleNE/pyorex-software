@@ -5,7 +5,7 @@
  * verified reference coordinates before it can be implemented responsibly).
  */
 import { useEffect, useMemo, useState } from "react";
-import Plot from "react-plotly.js";
+import Plot from "@/components/ThemedPlot";
 import type { Data, Layout } from "plotly.js";
 import { tasClassify, type TasClassifyResult, type TasSeries } from "@/lib/lithogeochemistry-api";
 import { useDatasetStore } from "@/stores/dataset-store";

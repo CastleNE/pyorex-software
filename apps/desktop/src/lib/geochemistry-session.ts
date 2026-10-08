@@ -1,6 +1,9 @@
 import { DEFAULT_PRESENTATION,PALETTES,type ChartPresentation } from './chart-presentation';
 import type { AttributeStyle } from './geochemistry-attributes';
 import type { GeoColumn,GeoConfig,GeoTool,GeoUnit } from './geochemistry-api';
+import { CUSTOM_TOOL_ID,sanitizeSpec } from './custom-diagrams';
+import { COLOR_RAMP_NAMES,isHexColor,type ColorRamp } from './color-classes';
+import { MAX_CLASSES,MIN_CLASSES,SIZE_METHODS,breaksProblem,percentilesProblem,type SizeMethod } from './size-classes';
 
 /** Configuración y presentación de una herramienta. Nunca incluye resultados calculados ni datos de muestras. */
 export interface Workspace { config:GeoConfig; presentation:ChartPresentation; pointSize:number; symbol:string; showLabels:boolean }
@@ -27,9 +30,22 @@ export function sanitizePresentation(raw:unknown):ChartPresentation {
   const d=DEFAULT_PRESENTATION;
   if(!isRecord(raw))return {...d};
   const palette=typeof raw.palette==='string'&&raw.palette in PALETTES?raw.palette as ChartPresentation['palette']:d.palette;
-  const sizeMode=raw.sizeMode==='linear'||raw.sizeMode==='quantile'||raw.sizeMode==='constant'?raw.sizeMode:d.sizeMode;
+  const sizeMode=raw.sizeMode==='linear'||raw.sizeMode==='quantile'||raw.sizeMode==='constant'||raw.sizeMode==='classes'?raw.sizeMode:d.sizeMode;
+  // Class settings are validated the same way for size (size*) and colour (color*).
+  const numbers=(v:unknown)=>Array.isArray(v)&&v.every(b=>typeof b==='number'&&Number.isFinite(b))?v as number[]:null;
+  const classes=(k:unknown,fallback:number)=>typeof k==='number'&&Number.isInteger(k)&&k>=MIN_CLASSES&&k<=MAX_CLASSES?k:fallback;
+  const method=(m:unknown,fallback:SizeMethod)=>SIZE_METHODS.includes(m as SizeMethod)?m as SizeMethod:fallback;
+  const breaks=(v:unknown)=>{const b=numbers(v);return b&&!breaksProblem(b,false)?b:null;};
+  const pcts=(v:unknown)=>{const b=numbers(v);return b&&!percentilesProblem(b)?b:null;};
+  const sizeClasses=classes(raw.sizeClasses,d.sizeClasses),sizeMethod=method(raw.sizeMethod,d.sizeMethod);
+  const sizeBreaks=breaks(raw.sizeBreaks),sizePercentiles=pcts(raw.sizePercentiles);
+  const color={colorClasses:classes(raw.colorClasses,d.colorClasses),colorMethod:method(raw.colorMethod,d.colorMethod),colorBreaks:breaks(raw.colorBreaks),colorPercentiles:pcts(raw.colorPercentiles),
+    colorLog:bool(raw.colorLog,d.colorLog),colorBoundary:raw.colorBoundary==='down'?'down' as const:'up' as const,
+    colorRamp:COLOR_RAMP_NAMES.includes(raw.colorRamp as ColorRamp)?raw.colorRamp as ColorRamp:d.colorRamp,colorReverse:bool(raw.colorReverse,d.colorReverse),
+    colorCustom:Array.isArray(raw.colorCustom)&&raw.colorCustom.length>=MIN_CLASSES&&raw.colorCustom.length<=MAX_CLASSES&&raw.colorCustom.every(isHexColor)?raw.colorCustom as string[]:null};
+  const sizeMin=num(raw.sizeMin,d.sizeMin,2,40),sizeMax=Math.max(sizeMin,num(raw.sizeMax,d.sizeMax,2,48));
   const sizeSource=raw.sizeSource==='x'||raw.sizeSource==='y'||raw.sizeSource==='column'?raw.sizeSource:d.sizeSource;
-  return {palette,sizeMode,sizeSource,logX:bool(raw.logX,d.logX),logY:bool(raw.logY,d.logY),xMin:str(raw.xMin,d.xMin),xMax:str(raw.xMax,d.xMax),yMin:str(raw.yMin,d.yMin),yMax:str(raw.yMax,d.yMax),opacity:num(raw.opacity,d.opacity,0.05,1),grid:bool(raw.grid,d.grid),reverseY:bool(raw.reverseY,d.reverseY)};
+  return {palette,sizeMode,sizeSource,sizeClasses,sizeMethod,sizeBreaks,sizePercentiles,sizeMin,sizeMax,sizeLog:bool(raw.sizeLog,d.sizeLog),sizeBoundary:raw.sizeBoundary==='down'?'down':'up',...color,logX:bool(raw.logX,d.logX),logY:bool(raw.logY,d.logY),xMin:str(raw.xMin,d.xMin),xMax:str(raw.xMax,d.xMax),yMin:str(raw.yMin,d.yMin),yMax:str(raw.yMax,d.yMax),opacity:num(raw.opacity,d.opacity,0.05,1),grid:bool(raw.grid,d.grid),reverseY:bool(raw.reverseY,d.reverseY)};
 }
 
 export function sanitizeAttributes(raw:unknown):Record<string,AttributeStyle> {
@@ -72,8 +88,11 @@ export function restoreWorkspace(raw:unknown,tool:GeoTool,columns:GeoColumn[]):{
     if(!(mustBeNumeric?numeric:names).has(value)){dropped.push(`${key} → ${value}`);return null;}
     return value;
   };
+  // User diagrams (Diagram Builder) carry their definition; without a usable one the workspace is not restored.
+  const diagram=tool.id===CUSTOM_TOOL_ID?sanitizeSpec(raw.config.diagram):null;
+  if(tool.id===CUSTOM_TOOL_ID&&!diagram)return null;
   const config:GeoConfig={
-    tool:tool.id,columns:mapped,units,
+    tool:tool.id,columns:mapped,units,...(diagram?{diagram}:{}),
     iron_basis:raw.config.iron_basis==='Fe2O3T'?'Fe2O3T':'FeOT',
     include_qaqc:bool(raw.config.include_qaqc,false),log_x:bool(raw.config.log_x,false),log_y:bool(raw.config.log_y,false),
     group_column:optional('group_column',false),label_column:optional('label_column',false),

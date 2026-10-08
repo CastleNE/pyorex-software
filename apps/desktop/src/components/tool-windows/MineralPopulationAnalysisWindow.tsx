@@ -5,7 +5,8 @@
  * proxies, not direct chemical analyses.
  */
 import { useEffect, useState } from "react";
-import Plot from "react-plotly.js";
+import Plot from "@/components/ThemedPlot";
+import { SERIES } from "@/lib/mineral-colors";
 import { DARK_BG, FONT_COLOR, GRID_COLOR } from "@/components/analysis-results/shared";
 import { analyzeChlorite, analyzeWhiteMica, type PopulationResult } from "@/lib/spectrometry-api";
 import { useSpectrometryStore } from "@/stores/spectrometry-store";
@@ -14,7 +15,7 @@ interface Props {
   analysisId: "white-mica" | "chlorite";
 }
 
-const CLASS_COLORS = ["#60a5fa", "#34d399", "#facc15", "#f87171", "#a78bfa"];
+const CLASS_COLORS = SERIES;
 
 export default function MineralPopulationAnalysisWindow({ analysisId }: Props) {
   const { activeProject } = useSpectrometryStore();

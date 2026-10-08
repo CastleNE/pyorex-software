@@ -2,7 +2,13 @@
 use serde::{Deserialize, Serialize};
 use tauri::command;
 
-const ANALYTICS_BASE_URL: &str = "http://127.0.0.1:5174";
+use crate::engine::EngineState;
+
+/// One HTTP client for every call (keeps the local connection alive).
+fn client() -> &'static reqwest::Client {
+    static CLIENT: std::sync::OnceLock<reqwest::Client> = std::sync::OnceLock::new();
+    CLIENT.get_or_init(reqwest::Client::new)
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum AnalyticsBridgeError {
@@ -50,10 +56,10 @@ pub struct RpcError {
 /// Check if the Python analytics service is running.
 /// Called on app startup and when UI needs to verify connectivity.
 #[command]
-pub async fn check_analytics_service() -> Result<bool, AnalyticsBridgeError> {
-    let client = reqwest::Client::new();
-    let response = client
-        .get(format!("{ANALYTICS_BASE_URL}/health"))
+pub async fn check_analytics_service(state: tauri::State<'_, EngineState>) -> Result<bool, AnalyticsBridgeError> {
+    let base = state.base_url();
+    let response = client()
+        .get(format!("{base}/health"))
         .timeout(std::time::Duration::from_secs(3))
         .send()
         .await
@@ -68,13 +74,17 @@ pub async fn check_analytics_service() -> Result<bool, AnalyticsBridgeError> {
 // o el bridge lo rechaza con -32601 aunque el backend lo implemente.
 const ALLOWED_RPC_METHODS: &[&str] = &[
     "geochemistry.catalog", "geochemistry.registry", "geochemistry.column_roles", "geochemistry.compute", "geochemistry.explore",
+    "geochemistry.set_column_role", "geochemistry.diagram_preview", "maps.sample_map", "maps.section",
+    // project.* (.orex project files)
+    "project.save", "project.open", "project.inspect",
     // Andean Exploration Hub v0.1
     "hub.catalog", "hub.markets", "hub.archive.list", "hub.archive.save", "hub.archive.remove",
-    "health.ping",
+    "health.ping", "app.plan",
     // data.*
-    "data.preview", "data.import", "data.list", "data.rows", "data.delete", "data.export_kml",
+    "data.preview", "data.import", "data.list", "data.rows", "data.profile", "data.delete", "data.export_kml",
     "data.quality_report", "data.preview_formula", "data.apply_operation",
     "data.undo_operation", "data.redo_operation", "data.get_operations", "data.save_changes",
+    "data.set_spatial_config",
     // analytics.*
     "analytics.descriptive", "analytics.pca",
     // qaqc.*
@@ -113,6 +123,7 @@ const ALLOWED_RPC_METHODS: &[&str] = &[
 /// params: JSON object with the request parameters
 #[command]
 pub async fn call_analytics(
+    state: tauri::State<'_, EngineState>,
     method: String,
     params: serde_json::Value,
 ) -> Result<serde_json::Value, AnalyticsBridgeError> {
@@ -130,11 +141,12 @@ pub async fn call_analytics(
         id: request_id,
     };
 
-    let client = reqwest::Client::new();
-    let response: RpcResponse = client
-        .post(format!("{ANALYTICS_BASE_URL}/rpc"))
+    let base = state.base_url();
+    let response: RpcResponse = client()
+        .post(format!("{base}/rpc"))
         .json(&rpc_request)
-        .timeout(std::time::Duration::from_secs(30))
+        // Large IDW grids, PCA or a big import can take a while on a laptop.
+        .timeout(std::time::Duration::from_secs(180))
         .send()
         .await?
         .json()

@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "maps.section.v1",
+  "title": "Vertical section along a line A–A'",
+  "description": "Samples (and optionally drill-hole intervals placed along straight holes from collar, azimuth and dip) projected perpendicularly onto a vertical plane along start→end, keeping those within width/2. Elevation from a column, a DEM (ESRI ASCII .asc or north-up GeoTIFF; never reprojected, CRS must match) or none. Topography from the DEM along the line, else from surface samples/collars in the band. Value: column or expression, censored/missing never imputed. Projected or local-grid coordinates only. analysis/maps/section.py.",
+  "version": "v1",
+  "method": "maps.section",
+  "request": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["dataset_id", "start", "end"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "start": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+      "end": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+      "width": { "type": "number", "exclusiveMinimum": 0, "default": 200, "description": "Total band width in map units; samples within width/2 of the line" },
+      "value": { "type": ["string", "null"], "maxLength": 500 },
+      "category_column": { "type": ["string", "null"] },
+      "label_column": { "type": ["string", "null"] },
+      "include_qaqc": { "type": "boolean", "default": false },
+      "elevation_column": { "type": ["string", "null"] },
+      "dem_path": { "type": ["string", "null"], "maxLength": 1024 },
+      "drill": {
+        "type": ["object", "null"],
+        "additionalProperties": false,
+        "required": ["hole_column"],
+        "properties": {
+          "hole_column": { "type": "string" },
+          "from_column": { "type": ["string", "null"] },
+          "to_column": { "type": ["string", "null"] },
+          "depth_column": { "type": ["string", "null"] },
+          "azimuth_column": { "type": ["string", "null"] },
+          "dip_column": { "type": ["string", "null"] },
+          "azimuth": { "type": "number", "minimum": 0, "maximum": 360, "default": 0 },
+          "dip": { "type": "number", "minimum": -90, "maximum": 90, "default": -90 }
+        }
+      }
+    }
+  },
+  "response": {
+    "type": "object",
+    "required": ["dataset_id", "line", "crs", "value_label", "category_column", "points", "holes", "topography", "topography_source", "dem", "quality", "warnings", "created_at"],
+    "properties": {
+      "dataset_id": { "type": "string" },
+      "line": { "type": "object", "required": ["start", "end", "length", "azimuth", "width"] },
+      "crs": { "type": "object", "required": ["epsg", "label", "source", "x_column", "y_column"] },
+      "value_label": { "type": ["string", "null"] },
+      "category_column": { "type": ["string", "null"] },
+      "points": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["row_index", "sample_id", "distance", "offset", "z", "value", "category", "hole", "depth"],
+          "properties": {
+            "row_index": { "type": "integer" }, "sample_id": { "type": "string" },
+            "distance": { "type": "number", "description": "Along the line from A" }, "offset": { "type": "number", "description": "Perpendicular distance, + to the right of A→A'" },
+            "z": { "type": ["number", "null"] }, "value": { "type": ["number", "null"] }, "category": { "type": ["string", "null"] },
+            "hole": { "type": ["string", "null"] }, "depth": { "type": ["number", "null"] }
+          }
+        }
+      },
+      "holes": {
+        "type": "array",
+        "items": { "type": "object", "required": ["hole", "collar_distance", "collar_offset", "collar_z", "end_distance", "end_z", "max_depth", "azimuth", "dip"] }
+      },
+      "topography": { "type": ["array", "null"], "items": { "type": "array", "items": { "type": ["number", "null"] }, "minItems": 2, "maxItems": 2 } },
+      "topography_source": { "enum": ["dem", "samples", null] },
+      "dem": { "type": ["object", "null"] },
+      "quality": { "type": "object", "required": ["total", "in_section", "outside", "no_coordinates", "no_elevation", "no_value", "excluded_qaqc"] },
+      "warnings": { "type": "array", "items": { "type": "string" } },
+      "created_at": { "type": "string" }
+    }
+  }
+}

@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "PyOrex",
+        "title": "PyOreX",
         "width": 1440,
         "height": 900,
         "minWidth": 1024,
@@ -29,13 +29,31 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis"],
+    "publisher": "PyOreX",
+    "copyright": "© 2026 PyOreX",
+    "category": "Education",
+    "shortDescription": "Análisis geoquímico y espectral para geología",
+    "longDescription": "PyOreX: litogeoquímica, exploración mineral, mapas y secciones, y espectrometría, con un motor de cálculo científico local.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": {
+      "../../../services/analytics/dist/pyorex-engine/": "engine/"
+    },
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["Spanish", "English"],
+        "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico",
+        "compression": "lzma"
+      }
+    }
   }
 }

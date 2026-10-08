@@ -12,6 +12,7 @@ import PcaResults from "@/components/analysis-results/PcaResults";
 import { runDescriptive, runPca, type DescriptiveResult, type PcaResult } from "@/lib/data-api";
 import { useDatasetStore } from "@/stores/dataset-store";
 import { useAnalysisHistoryStore } from "@/stores/analysis-history-store";
+import { useL } from "@/lib/i18n";
 
 type ActiveAnalysisToolId = "descriptive-statistics" | "correlation-analysis" | "principal-component-analysis";
 
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function AnalysisToolWindow({ toolId, toolLabel, onOpenVisualization }: Props) {
+  const L = useL();
   const dataset = useDatasetStore((s) => s.dataset);
   const addHistoryEntry = useAnalysisHistoryStore((s) => s.addEntry);
 
@@ -39,7 +41,7 @@ export default function AnalysisToolWindow({ toolId, toolLabel, onOpenVisualizat
   async function handleRun() {
     if (selectedVars.length === 0) return;
     if (isPca && selectedVars.length < 2) {
-      setError("PCA requiere al menos 2 variables.");
+      setError(L({ es: "PCA requiere al menos 2 variables.", en: "PCA requires at least 2 variables." }));
       return;
     }
     setLoading(true);
@@ -55,7 +57,10 @@ export default function AnalysisToolWindow({ toolId, toolLabel, onOpenVisualizat
           datasetName: dataset!.name,
           variables: selectedVars,
           params: {},
-          resultSummary: `${result.n_components} components, KMO ${result.kmo_global.toFixed(2)}`,
+          resultSummary: L({
+            es: `${result.n_components} componentes, KMO ${result.kmo_global.toFixed(2)}`,
+            en: `${result.n_components} components, KMO ${result.kmo_global.toFixed(2)}`,
+          }),
         });
       } else {
         const result = await runDescriptive(dataset!.id, selectedVars, includeQaqcFlagged);
@@ -81,7 +86,7 @@ export default function AnalysisToolWindow({ toolId, toolLabel, onOpenVisualizat
 
   return (
     <div className="flex h-full overflow-hidden text-xs">
-      <aside className="w-56 shrink-0 border-r border-zinc-700">
+      <aside className="w-56 shrink-0 border-r border-line">
         <VariablePicker
           columns={dataset.columns}
           selected={selectedVars}
@@ -90,39 +95,54 @@ export default function AnalysisToolWindow({ toolId, toolLabel, onOpenVisualizat
         />
       </aside>
 
-      <div className="flex w-40 shrink-0 flex-col gap-2 border-r border-zinc-700 p-2.5">
-        <p className="font-semibold text-zinc-400">{toolLabel}</p>
-        <p className="text-zinc-600">{selectedVars.length} variable(s) selected.</p>
+      <div className="flex w-40 shrink-0 flex-col gap-2 border-r border-line p-2.5">
+        <p className="font-semibold text-muted">{toolLabel}</p>
+        <p className="text-subtle">
+          {L({
+            es: `${selectedVars.length} variable(s) seleccionada(s).`,
+            en: `${selectedVars.length} variable(s) selected.`,
+          })}
+        </p>
         {isPca && selectedVars.length > 0 && selectedVars.length < 2 && (
-          <p className="text-amber-400">PCA needs ≥ 2 variables.</p>
+          <p className="text-warning">{L({ es: "PCA necesita ≥ 2 variables.", en: "PCA needs ≥ 2 variables." })}</p>
         )}
-        <label className="flex items-start gap-1.5 text-zinc-500">
+        <label className="flex items-start gap-1.5 text-subtle">
           <input
             type="checkbox"
             checked={includeQaqcFlagged}
             onChange={(e) => setIncludeQaqcFlagged(e.target.checked)}
-            className="mt-0.5 accent-blue-500"
+            className="mt-0.5 accent-accent"
           />
-          <span>Include QAQC-flagged samples (not recommended)</span>
+          <span>
+            {L({
+              es: "Incluir muestras marcadas por QAQC (no recomendado)",
+              en: "Include QAQC-flagged samples (not recommended)",
+            })}
+          </span>
         </label>
         <button
           onClick={handleRun}
           disabled={loading || selectedVars.length === 0}
-          className="mt-auto w-full rounded-md bg-blue-600 px-3 py-1.5 font-semibold text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-auto w-full rounded-md bg-accent-strong px-3 py-1.5 font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {loading ? "Running…" : "Run Analysis"}
+          {loading ? L({ es: "Calculando…", en: "Running…" }) : L({ es: "Ejecutar análisis", en: "Run Analysis" })}
         </button>
       </div>
 
-      <main className="flex-1 overflow-y-auto bg-zinc-900 p-3">
+      <main className="flex-1 overflow-y-auto bg-app p-3">
         {error && (
-          <div className="mb-3 rounded-md border border-red-800 bg-red-950/50 px-3 py-2 text-red-300">{error}</div>
+          <div className="mb-3 rounded-md border border-danger-line bg-danger-soft/50 px-3 py-2 text-danger">{error}</div>
         )}
         {!isPca && descriptive && <DescriptiveResults result={descriptive} onOpenInVisualization={onOpenVisualization} />}
         {isPca && pca && <PcaResults result={pca} onOpenInVisualization={onOpenVisualization} />}
         {!error && !hasResult && (
           <div className="flex h-full flex-col items-center justify-center gap-2">
-            <p className="text-zinc-600">Select variables and click Run Analysis.</p>
+            <p className="text-subtle">
+              {L({
+                es: "Selecciona variables y pulsa Ejecutar análisis.",
+                en: "Select variables and click Run Analysis.",
+              })}
+            </p>
           </div>
         )}
       </main>

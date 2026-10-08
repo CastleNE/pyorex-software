@@ -1,4 +1,5 @@
 import { callRpc } from './rpc';
+import type { DiagramSpec } from './custom-diagrams';
 import { saveFile,type SaveOutcome } from './save-file';
 import { confidentColumn,inputConstraintFor } from './semantic-roles';
 
@@ -6,7 +7,9 @@ export type GeoGroup = 'diagrams'|'lithogeochemistry'|'mineral-exploration';
 export type GeoUnit = 'pct'|'ppm'|'ppb'|'raw';
 export interface GeoColumn { name:string; numeric:boolean }
 export interface GeoTool { id:string; label:string; group:GeoGroup; inputs:string[]; kind:string; unit:GeoUnit; formula:string; reference:string; optional_inputs:boolean }
-export interface GeoConfig { tool:string; columns:Record<string,string>; units:Record<string,GeoUnit>; iron_basis:'FeOT'|'Fe2O3T'; include_qaqc:boolean; log_x:boolean; log_y:boolean; group_column:string|null; label_column:string|null; size_column?:string|null; color_column?:string|null }
+export interface GeoConfig { tool:string; columns:Record<string,string>; units:Record<string,GeoUnit>; iron_basis:'FeOT'|'Fe2O3T'; include_qaqc:boolean; log_x:boolean; log_y:boolean; group_column:string|null; label_column:string|null; size_column?:string|null; color_column?:string|null;
+  /** Only for tool 'custom-diagram' (Diagram Builder, lib/custom-diagrams.ts). */
+  diagram?:DiagramSpec|null }
 export interface GeoRow { size_value?:number|null; color_value?:number|null; sample_id:string; row_index:number; group:string; status:'valid'|'invalid'|'excluded'; reason:string|null; x:number|null; y:number|null; z:number|null; values:(number|null)[]|null; classification:string|null }
 export interface GeoResult {
   grid?:{x:number[];y:number[];z:(number|null)[][];epsg:number;coordinate_unit:string}|null;
@@ -23,11 +26,15 @@ export interface GeoCatalog { tools:GeoTool[];columns:GeoColumn[];dataset_id:str
 /** Semantic Variable System (v1): one column's classification, served by `geochemistry.column_roles`. */
 export interface GeoColumnRole { column:string; semantic_role:string; analyte:string|null; unit:string|null; confidence:'high'|'medium'|'low'; source:string }
 export interface GeoColumnRoles { dataset_id:string; columns:GeoColumnRole[] }
+/** `geochemistry.diagram_preview`: live check of each Diagram Builder axis expression. */
+export interface DiagramAxisPreview { ok:boolean; error:string|null; columns:string[]; n_valid:number; n_invalid:number; min:number|null; max:number|null; sample:number[] }
+export interface DiagramPreview { dataset_id:string; axes:Record<string,DiagramAxisPreview> }
 export const geoApi={
   catalog:(datasetId:string)=>callRpc<GeoCatalog>('geochemistry.catalog',{dataset_id:datasetId}),
   registry:()=>callRpc<GeoRegistry>('geochemistry.registry',{}),
   columnRoles:(datasetId:string)=>callRpc<GeoColumnRoles>('geochemistry.column_roles',{dataset_id:datasetId}),
   compute:(datasetId:string,config:GeoConfig)=>callRpc<GeoResult>('geochemistry.compute',{dataset_id:datasetId,...config}),
+  diagramPreview:(datasetId:string,expressions:Partial<Record<'x'|'y'|'z',string>>)=>callRpc<DiagramPreview>('geochemistry.diagram_preview',{dataset_id:datasetId,expressions}),
 };
 
 function analyte(name:string) {
@@ -68,9 +75,21 @@ export function guessMapping(tool:GeoTool,columns:GeoColumn[],registryTool?:GeoR
   }
   return result;
 }
+/**
+ * Sync iron_basis to the analyte actually auto-mapped for FeTotal (any tool using that input key: fe-index, afm,
+ * alteration) — but only when it is unambiguous. 'FeOT'/'Fe2O3T' say "total" in the name and classify at HIGH
+ * confidence, so FeTotal only ever auto-maps to one of those two or stays empty (see semantic-roles.ts's
+ * confidentColumn); a bare 'Fe2O3'/'FeO' is MEDIUM confidence precisely so it never reaches this function having
+ * been auto-picked (see analysis/geochemistry/semantics.py). iron_basis itself only ever takes these two values
+ * (Editor.tsx's "Forma del hierro total" select); this never guesses beyond them.
+ */
+function ironBasisFor(mapping:Record<string,string>,columnRoles?:Record<string,GeoColumnRole>):'FeOT'|'Fe2O3T'|undefined {
+  const analyte=columnRoles?.[mapping.FeTotal??'']?.analyte;
+  return analyte==='FeOT'||analyte==='Fe2O3T'?analyte:undefined;
+}
 export function initialConfig(tool:GeoTool,columns:GeoColumn[],registryTool?:GeoRegistryTool,columnRoles?:Record<string,GeoColumnRole>):GeoConfig {
   const mapping=guessMapping(tool,columns,registryTool,columnRoles);
-  return {tool:tool.id,columns:mapping,units:Object.fromEntries(Object.keys(mapping).map(k=>[k,inferUnit(mapping[k],tool.unit)])),iron_basis:'FeOT',include_qaqc:false,log_x:false,log_y:false,group_column:null,label_column:null};
+  return {tool:tool.id,columns:mapping,units:Object.fromEntries(Object.keys(mapping).map(k=>[k,inferUnit(mapping[k],tool.unit)])),iron_basis:ironBasisFor(mapping,columnRoles)??'FeOT',include_qaqc:false,log_x:false,log_y:false,group_column:null,label_column:null};
 }
 export function inferUnit(column:string,fallback:GeoUnit):GeoUnit {
   if(fallback==='raw')return 'raw';

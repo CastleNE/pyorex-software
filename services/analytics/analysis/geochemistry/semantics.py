@@ -13,9 +13,12 @@ WHAT THIS IS
 
 WHAT THIS IS NOT (yet)
     No machine learning, no aggressive inference. Ambiguous columns fall back to NUMERIC_GENERIC (numeric dtype)
-    or UNKNOWN (anything else) rather than guessing — see ``classify_column``. Manual correction of a column's
-    role is not implemented; the ``source``/``confidence`` fields exist so a future override layer (mirroring
-    ``role_override`` already used for the coarse ``ColumnRole``) can decide when to prompt the user.
+    or UNKNOWN (anything else) rather than guessing — see ``classify_column``.
+
+USER CORRECTION
+    A user may correct a column's role (and analyte) from the desktop. Corrections are stored per dataset in its
+    metadata (``semantic_overrides``) and applied by ``with_override`` on top of the classifier: they win, carry
+    ``source='user'`` and HIGH confidence, and never change a value — only which tools offer the column.
 """
 from __future__ import annotations
 
@@ -172,9 +175,12 @@ def classify_column(name: str, numeric: bool) -> ColumnClassification:
         return ColumnClassification(name, SemanticRole.LONGITUDE, confidence=Confidence.HIGH, source='name')
     if normalized in _LATITUDE_NAMES:
         return ColumnClassification(name, SemanticRole.LATITUDE, confidence=Confidence.HIGH, source='name')
-    if 'east' in normalized:
+    # Spanish field names (Este/Norte, UTM_Este, Norte_PSAD56…) as whole tokens only — never a substring such as
+    # 'oeste' or 'nordeste', which name directions, not coordinate columns.
+    tokens = set(normalized.split('_'))
+    if 'east' in normalized or 'este' in tokens:
         return ColumnClassification(name, SemanticRole.EASTING, confidence=Confidence.HIGH, source='name')
-    if 'north' in normalized:
+    if 'north' in normalized or 'norte' in tokens:
         return ColumnClassification(name, SemanticRole.NORTHING, confidence=Confidence.HIGH, source='name')
     if any(token in normalized for token in ('elevation', 'elev', 'cota')) or normalized in {'z', 'rl'}:
         return ColumnClassification(name, SemanticRole.ELEVATION, confidence=Confidence.HIGH, source='name')
@@ -183,7 +189,15 @@ def classify_column(name: str, numeric: bool) -> ColumnClassification:
     matched = _match_analyte(base)
     if matched:
         analyte, role = matched
-        return ColumnClassification(name, role, analyte=analyte, unit=unit, confidence=Confidence.HIGH,
+        # 'Fe2O3T'/'FeOT' say "total" in the name; a bare 'Fe2O3'/'FeO' does not — it may be the whole sample's
+        # iron (a common assay-certificate shorthand) or only the ferric/ferrous fraction, with the other one
+        # reported in a separate column. The analyte itself is not in doubt (it really is Fe2O3 or FeO); what is
+        # ambiguous is whether it stands for "total iron", which is exactly what a tool's FeTotal input needs.
+        # MEDIUM keeps it fully selectable (compatibleInputColumns does not look at confidence) while keeping it
+        # out of automapping, which only ever acts on HIGH (see lib/semantic-roles.ts's confidentColumn) — no
+        # separate "ambiguous total" concept was introduced for this.
+        confidence = Confidence.MEDIUM if analyte in ('Fe2O3', 'FeO') else Confidence.HIGH
+        return ColumnClassification(name, role, analyte=analyte, unit=unit, confidence=confidence,
                                     source='unit' if unit else 'name')
 
     # No resolvable analyte: SemanticRole.ASSAY is reserved for this case (generic assay/ensaye columns like
@@ -219,3 +233,36 @@ def classify_column_with_hint(name: str, numeric: bool, existing_role: str | Non
     analyte = existing_analyte or result.analyte
     unit = _UNIT_PRESENTATION.get((existing_unit or '').lower(), existing_unit) if existing_unit else result.unit
     return ColumnClassification(name, role, analyte=analyte, unit=unit, confidence=Confidence.MEDIUM, source='catalog')
+
+
+# ── User corrections (semantic_overrides in dataset metadata) ───────────────────────────────────────
+_CHEMICAL_VOCAB = {SemanticRole.MAJOR_OXIDE: MAJOR_OXIDES, SemanticRole.TRACE_ELEMENT: TRACE_ELEMENT_SYMBOLS,
+                   SemanticRole.REE: REE_ELEMENTS, SemanticRole.ASSAY: TRACE_ELEMENT_SYMBOLS + MAJOR_OXIDES + REE_ELEMENTS}
+
+
+def validate_override(semantic_role: str, analyte: str | None) -> tuple[SemanticRole, str | None]:
+    """Validated (role, analyte) for a user correction. An analyte is only accepted for chemical roles and must
+    belong to that role's vocabulary (e.g. SiO2 for major_oxide, La for ree)."""
+    try:
+        role = SemanticRole(semantic_role)
+    except ValueError as e:
+        raise ValueError(f'Rol semántico desconocido: {semantic_role!r}') from e
+    if analyte is None:
+        return role, None
+    vocab = _CHEMICAL_VOCAB.get(role)
+    if vocab is None:
+        raise ValueError(f'El rol {role.value} no admite analito.')
+    if analyte not in vocab:
+        raise ValueError(f'{analyte!r} no es un analito válido para {role.value}.')
+    return role, analyte
+
+
+def with_override(result: ColumnClassification, override: dict | None) -> ColumnClassification:
+    """Apply a stored user correction to a classifier result. Without an explicit analyte, the classifier's analyte
+    is kept only when it is valid for the corrected role."""
+    if not override:
+        return result
+    role, analyte = validate_override(override.get('semantic_role', ''), override.get('analyte'))
+    if analyte is None and result.analyte and result.analyte in _CHEMICAL_VOCAB.get(role, ()):
+        analyte = result.analyte
+    return ColumnClassification(result.column, role, analyte=analyte, unit=result.unit, confidence=Confidence.HIGH, source='user')
